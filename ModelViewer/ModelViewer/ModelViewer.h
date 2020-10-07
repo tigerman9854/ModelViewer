@@ -4,7 +4,7 @@
 
 class ViewerGraphicsWindow;
 
-class ModelViewer : public QMainWindow
+class Q_DECL_EXPORT ModelViewer : public QMainWindow
 {
     Q_OBJECT
 

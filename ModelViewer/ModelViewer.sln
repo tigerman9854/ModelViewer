@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelViewer", "ModelViewer\ModelViewer.vcxproj", "{D2539373-74D7-431A-9114-47CC2891EF52}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelViewerRun", "ModelViewerRun\ModelViewerRun.vcxproj", "{426FDD09-B6AA-44CD-B106-6839C5CF5D73}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelViewerTest", "ModelViewerTest\ModelViewerTest.vcxproj", "{02BAA89F-086E-4AB2-A906-82BE182D76D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +19,14 @@ Global
 		{D2539373-74D7-431A-9114-47CC2891EF52}.Debug|x64.Build.0 = Debug|x64
 		{D2539373-74D7-431A-9114-47CC2891EF52}.Release|x64.ActiveCfg = Release|x64
 		{D2539373-74D7-431A-9114-47CC2891EF52}.Release|x64.Build.0 = Release|x64
+		{426FDD09-B6AA-44CD-B106-6839C5CF5D73}.Debug|x64.ActiveCfg = Debug|x64
+		{426FDD09-B6AA-44CD-B106-6839C5CF5D73}.Debug|x64.Build.0 = Debug|x64
+		{426FDD09-B6AA-44CD-B106-6839C5CF5D73}.Release|x64.ActiveCfg = Release|x64
+		{426FDD09-B6AA-44CD-B106-6839C5CF5D73}.Release|x64.Build.0 = Release|x64
+		{02BAA89F-086E-4AB2-A906-82BE182D76D4}.Debug|x64.ActiveCfg = Debug|x64
+		{02BAA89F-086E-4AB2-A906-82BE182D76D4}.Debug|x64.Build.0 = Debug|x64
+		{02BAA89F-086E-4AB2-A906-82BE182D76D4}.Release|x64.ActiveCfg = Release|x64
+		{02BAA89F-086E-4AB2-A906-82BE182D76D4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
