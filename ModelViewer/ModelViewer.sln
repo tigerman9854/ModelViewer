@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelViewer", "ModelViewer\ModelViewer.vcxproj", "{D2539373-74D7-431A-9114-47CC2891EF52}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelViewerRun", "ModelViewerRun\ModelViewerRun.vcxproj", "{426FDD09-B6AA-44CD-B106-6839C5CF5D73}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelViewer", "ModelViewer\ModelViewer.vcxproj", "{D2539373-74D7-431A-9114-47CC2891EF52}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelViewerTest", "ModelViewerTest\ModelViewerTest.vcxproj", "{02BAA89F-086E-4AB2-A906-82BE182D76D4}"
 EndProject
