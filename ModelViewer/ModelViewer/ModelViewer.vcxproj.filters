@@ -24,10 +24,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="ModelViewer.h">
+    <ClCompile Include="ModelViewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <QtMoc Include="OpenGLWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <ClCompile Include="ModelViewer.cpp">
+    <ClCompile Include="ViewerGraphicsWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,5 +38,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OpenGLWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="ModelViewer.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ViewerGraphicsWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

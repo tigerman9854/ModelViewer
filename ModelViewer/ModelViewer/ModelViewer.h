@@ -1,6 +1,8 @@
 #pragma once
 
-#include <QtWidgets/QMainWindow>
+#include <QMainWindow>
+
+class ViewerGraphicsWindow;
 
 class ModelViewer : public QMainWindow
 {
@@ -10,4 +12,5 @@ public:
     ModelViewer(QWidget *parent = Q_NULLPTR);
 
 private:
+    ViewerGraphicsWindow* m_pGraphicsWindow;
 };
