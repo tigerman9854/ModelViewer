@@ -46,6 +46,32 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc142-mtd.lib</AdditionalDependencies>
+    </Lib>
+    <PostBuildEvent>
+      <Message>Copy dll files to output folder</Message>
+      <Command>xcopy /s /y "$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Debug\*.dll" "$(OUTPUTPATH)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc142-mt.lib</AdditionalDependencies>
+    </Lib>
+    <PostBuildEvent>
+      <Message>Copy dll files to output folder</Message>
+      <Command>xcopy /s /y "$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Release\*.dll" "$(OUTPUTPATH)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>msvc2019_64</QtInstall>
     <QtModules>core;gui;widgets</QtModules>
@@ -86,6 +112,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="OpenGLWindow.cpp" />
     <ClCompile Include="ViewerGraphicsWindow.cpp" />
     <QtMoc Include="ModelViewer.h" />
@@ -95,6 +122,7 @@
     <QtMoc Include="OpenGLWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ModelLoader.h" />
     <ClInclude Include="ViewerGraphicsWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
