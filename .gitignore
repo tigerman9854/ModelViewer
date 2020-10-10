@@ -360,3 +360,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Make sure we do not ignore anything in the third party folder
+!ModelViewer/ThirdParty/**
