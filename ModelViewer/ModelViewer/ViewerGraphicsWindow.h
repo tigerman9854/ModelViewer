@@ -13,7 +13,11 @@ public:
     void initialize() override;
     void render() override;
 
+    void loadModel();
+
 private:
+    bool initialized = false;
+
     GLint m_posAttr = 0;
     GLint m_colAttr = 0;
     GLint m_matrixUniform = 0;

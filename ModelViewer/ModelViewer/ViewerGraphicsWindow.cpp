@@ -1,5 +1,7 @@
 #include "ViewerGraphicsWindow.h"
 
+#include "ModelLoader.h"
+
 #include <QGuiApplication>
 #include <QMatrix4x4>
 #include <QOpenGLShaderProgram>
@@ -34,6 +36,15 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     setAnimating(true);
 }
 
+void ViewerGraphicsWindow::loadModel() {
+    if (!initialized) {
+        return;
+    }
+    // TODO: Implement native windows dialog
+    ModelLoader m;
+    Model loaded = m.LoadModel("../Data/Models/cube.obj");
+}
+
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
@@ -46,6 +57,8 @@ void ViewerGraphicsWindow::initialize()
     Q_ASSERT(m_colAttr != -1);
     m_matrixUniform = m_program->uniformLocation("matrix");
     Q_ASSERT(m_matrixUniform != -1);
+
+    initialized = true;
 }
 
 void ViewerGraphicsWindow::render()

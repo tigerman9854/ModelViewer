@@ -43,8 +43,8 @@ void ModelViewerTest::testShow()
 void ModelViewerTest::loadModel()
 {
 	ModelLoader m;
-	const bool success = m.LoadModel("../Data/Models/cube.obj");
-	QVERIFY(success);
+	Model loaded = m.LoadModel("../Data/Models/cube.obj");
+	QVERIFY(loaded.m_isValid);
 }
 
 
