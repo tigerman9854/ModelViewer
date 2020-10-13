@@ -59,6 +59,8 @@ void ViewerGraphicsWindow::initialize()
     m_matrixUniform = m_program->uniformLocation("matrix");
     Q_ASSERT(m_matrixUniform != -1);
 
+    // TODO: Find attribute locations for m_normAttr and m_uvAttr
+
     initialized = true;
 }
 
@@ -67,7 +69,6 @@ void ViewerGraphicsWindow::render()
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
-    glClearColor(1., 1., 1., 0.);
     glClear(GL_COLOR_BUFFER_BIT);
 
     m_program->bind();
@@ -79,44 +80,67 @@ void ViewerGraphicsWindow::render()
 
     m_program->setUniformValue(m_matrixUniform, matrix);
 
-    static const GLfloat vertices[] = {
-         0.0f,  0.707f,
-        -0.5f, -0.5f,
-         0.5f, -0.5f
-    };
-
-    static const GLfloat colors[] = {
-        1.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 1.0f
-    };
 
     if (m_currentModel.m_isValid)
     {
+        // Loop through all meshes in the current model
         for (Mesh& mesh : m_currentModel.m_meshes) {
             mesh.m_vertexBuffer.bind();
             mesh.m_indexBuffer.bind();
 
-            int x = glGetError();
-
-            glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_vertexOffset);
-            glVertexAttribPointer(m_colAttr, 3, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_colorOffset); // Start
-
-            x = glGetError();
-
+            // Positions
+            glVertexAttribPointer(m_posAttr, mesh.m_numPositionComponents, GL_FLOAT, GL_FALSE, 0, (int*)mesh.m_positionOffset);
             glEnableVertexAttribArray(m_posAttr);
-            glEnableVertexAttribArray(m_colAttr);
+
+            // Normals
+            if (mesh.m_hasNormals) {
+                glVertexAttribPointer(m_normAttr, mesh.m_numNormalComponents, GL_FLOAT, GL_FALSE, 0, (int*)mesh.m_normalOffset);
+                glEnableVertexAttribArray(m_normAttr);
+            }
+
+            // UV Coords
+            if (mesh.m_hasUVCoordinates) {
+                glVertexAttribPointer(m_uvAttr, mesh.m_numUVComponents, GL_FLOAT, GL_FALSE, 0, (int*)mesh.m_uvOffset);
+                glEnableVertexAttribArray(m_uvAttr);
+            }
+
+            // Colors
+            if (mesh.m_hasColors) {
+                glVertexAttribPointer(m_colAttr, mesh.m_numColorComponents, GL_FLOAT, GL_FALSE, 0, (int*)mesh.m_colorOffset);
+                glEnableVertexAttribArray(m_colAttr);
+            }
 
             glDrawElements(GL_TRIANGLES, mesh.m_indexCount, GL_UNSIGNED_INT, nullptr);
 
-            x = glGetError();
+            // Disable all attributes
+            if (mesh.m_hasColors) {
+                glDisableVertexAttribArray(m_colAttr);
+            }
+            if (mesh.m_hasNormals) {
+                glDisableVertexAttribArray(m_normAttr);
+            }
+            if (mesh.m_hasUVCoordinates) {
+                glDisableVertexAttribArray(m_uvAttr);
+            }
 
-            glDisableVertexAttribArray(m_colAttr);
             glDisableVertexAttribArray(m_posAttr);
         }
     }
     else
     {
+        // Default shape
+        static const GLfloat vertices[] = {
+             0.0f,  0.707f,
+            -0.5f, -0.5f,
+             0.5f, -0.5f
+        };
+
+        static const GLfloat colors[] = {
+            1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f
+        };
+
         glVertexAttribPointer(m_posAttr, 2, GL_FLOAT, GL_FALSE, 0, vertices);
         glVertexAttribPointer(m_colAttr, 3, GL_FLOAT, GL_FALSE, 0, colors);
 

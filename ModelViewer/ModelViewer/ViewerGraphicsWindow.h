@@ -20,6 +20,8 @@ private:
     bool initialized = false;
 
     GLint m_posAttr = 0;
+    GLint m_normAttr = -1;
+    GLint m_uvAttr = -1;
     GLint m_colAttr = 0;
     GLint m_matrixUniform = 0;
 

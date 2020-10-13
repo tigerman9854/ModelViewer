@@ -7,12 +7,20 @@
 struct aiScene;
 
 struct Mesh {
-	// Contains vertex attribute data
+	// Stores vertex attribute data
 	QOpenGLBuffer m_vertexBuffer;
-	int m_vertexOffset;
+	int m_positionOffset;
+	int m_normalOffset;
+	int m_uvOffset;
 	int m_colorOffset;
 
-	// Contains indices
+	// Allows for different sized positions, colors, normals, and texture coords
+	int m_numPositionComponents;
+	int m_numNormalComponents;
+	int m_numUVComponents;
+	int m_numColorComponents;
+
+	// Stores the indices in order to generate faces
 	QOpenGLBuffer m_indexBuffer;
 	int m_indexCount;
 
@@ -22,9 +30,10 @@ struct Mesh {
 	GLfloat m_diffuse[4];
 	GLfloat m_shininess;
 
+	// Keep track of what features this mesh has
 	bool m_hasNormals;
+	bool m_hasUVCoordinates;
 	bool m_hasColors;
-	bool m_hasTextureCoords;
 };
 
 struct Model {

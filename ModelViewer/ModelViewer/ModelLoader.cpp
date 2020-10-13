@@ -32,7 +32,7 @@ Model ModelLoader::ProcessModel(aiScene const* pObject)
 	for (int i = 0; i < pObject->mNumMeshes; ++i) {
 		Mesh newMesh;
 
-		// Generate and bind  vertex/index buffers
+		// Generate and bind vertex/index buffers
 		newMesh.m_vertexBuffer = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
 		if (!newMesh.m_vertexBuffer.create()) {
 			return ret;
@@ -48,7 +48,7 @@ Model ModelLoader::ProcessModel(aiScene const* pObject)
 			return ret;
 		}
 
-		// Grab the important items from the scene
+		// Get pointers to the important information from ASSIMP
 		aiMesh const* pMesh = pObject->mMeshes[i];
 		aiMaterial const* pMaterial = pObject->mMaterials[pMesh->mMaterialIndex];
 
@@ -71,45 +71,75 @@ Model ModelLoader::ProcessModel(aiScene const* pObject)
 		pMaterial->Get(AI_MATKEY_SHININESS, val);
 		newMesh.m_shininess = val;
 
+
+
 		// TODO: Handle textures
+
+
 
 		// Determine if we have colors, normals, or texture coordinates
 		newMesh.m_hasNormals = (pMesh->mNormals != NULL);
-		newMesh.m_hasTextureCoords = (pMesh->mTextureCoords != NULL);
-		newMesh.m_hasColors = (pMesh->mColors != NULL);
+		newMesh.m_hasUVCoordinates = pMesh->HasTextureCoords(0);
+		newMesh.m_hasColors = pMesh->HasVertexColors(0);
 
-		// Sizes
-		const int vertexBufferSize = sizeof(float) * pMesh->mNumVertices * 3;
-		const int colorBufferSize = sizeof(float) * pMesh->mNumVertices * 3;
-		const int vertexBufferTotalSize = vertexBufferSize + colorBufferSize;
+		// Determine the size of a single attribute
+		newMesh.m_numPositionComponents = 3;
+		newMesh.m_numNormalComponents =  3;
+		newMesh.m_numUVComponents = pMesh->mNumUVComponents[0];  // Various
+		newMesh.m_numColorComponents = 4;    // 4 elements
 
-		// Offsets
-		newMesh.m_vertexOffset = 0;
-		newMesh.m_colorOffset = vertexBufferSize;
+		// Compute sizes for all attributes
+		const int positionBufferSize = newMesh.m_numPositionComponents * pMesh->mNumVertices * sizeof(float);
+		const int normalBufferSize = newMesh.m_numNormalComponents * pMesh->mNumVertices * sizeof(float);
+		const int uvBufferSize = newMesh.m_numUVComponents * pMesh->mNumVertices * sizeof(float);
+		const int colorBufferSize = newMesh.m_numColorComponents * pMesh->mNumVertices * sizeof(float);
+
+		// Compute the offsets of features in the overall vertex buffer
+		//   1. Positions (required)
+		//   2. Normals (optional)
+		//   3. UV Coordinates (optional)
+		//   4. Colors (optional)
+		int currentOffset = 0;
+		if (true) {
+			newMesh.m_positionOffset = currentOffset;
+			currentOffset += positionBufferSize;
+		}
+		if (newMesh.m_hasNormals) {
+			newMesh.m_normalOffset = currentOffset;
+			currentOffset += normalBufferSize;
+		}
+		if (newMesh.m_hasUVCoordinates) {
+			newMesh.m_uvOffset = currentOffset;
+			currentOffset += uvBufferSize;
+		}
+		if (newMesh.m_hasColors) {
+			newMesh.m_colorOffset = currentOffset;
+			currentOffset += colorBufferSize;
+		}
+		const int vertexBufferTotalSize = currentOffset;
+
+		// Allocate the vertex buffer all at once to save time
+		newMesh.m_vertexBuffer.allocate(vertexBufferTotalSize);
 
 		// Positions
-		newMesh.m_vertexBuffer.allocate(vertexBufferTotalSize);
-		newMesh.m_vertexBuffer.write(0, pMesh->mVertices, vertexBufferSize);
+		newMesh.m_vertexBuffer.write(newMesh.m_positionOffset, pMesh->mVertices, positionBufferSize);
 
-		// Colors
-		std::vector<float> colorBuffer;
-
-		for (int j = 0; j < pMesh->mNumVertices; ++j) {
-			// Color = grey
-			colorBuffer.push_back(0.6f);
-			colorBuffer.push_back(0.6f);
-			colorBuffer.push_back(0.6f);
+		// Normals
+		if (newMesh.m_hasNormals) {
+			newMesh.m_vertexBuffer.write(newMesh.m_normalOffset, pMesh->mNormals, normalBufferSize);
 		}
 
-		newMesh.m_vertexBuffer.write(newMesh.m_colorOffset, colorBuffer.data(), colorBufferSize);
+		// UV Coordinates
+		if (newMesh.m_hasUVCoordinates) {
+			newMesh.m_vertexBuffer.write(newMesh.m_uvOffset, pMesh->mTextureCoords[0], uvBufferSize);
+		}
 
-		// Load all colors
-		/*if (newMesh.m_hasColors)
+		// Colors
+		if (newMesh.m_hasColors)
 		{
-			const int colorBufferSize = sizeof(float) * pMesh->mNumVertices * 4;
-			newMesh.m_colorBuffer.allocate(colorBufferSize);
-			newMesh.m_colorBuffer.write(0, pMesh->mColors, colorBufferSize);
-		}*/
+			newMesh.m_vertexBuffer.write(newMesh.m_colorOffset, pMesh->mColors[0], colorBufferSize);
+		}
+
 
 		// Load indices
 		newMesh.m_indexCount = pMesh->mNumFaces * 3;
@@ -120,7 +150,7 @@ Model ModelLoader::ProcessModel(aiScene const* pObject)
 		indices.reserve(newMesh.m_indexCount);
 
 		// Loop through all faces
-		// Potentially use OpenMP to multithread this if slow
+		// Potentially use OpenMP to multithread this if it is slow
 		for (int j = 0; j < pMesh->mNumFaces; ++j) {
 			aiFace const& face = pMesh->mFaces[j];
 			indices.push_back(face.mIndices[0]);
