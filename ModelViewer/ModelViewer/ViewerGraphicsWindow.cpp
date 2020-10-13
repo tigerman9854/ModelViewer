@@ -7,6 +7,8 @@
 #include <QOpenGLShaderProgram>
 #include <QScreen>
 #include <QtMath>
+#include <QDir>
+#include <QFileDialog>
 
 // Define default shaders
 static const char* vertexShaderSource =
@@ -41,9 +43,13 @@ void ViewerGraphicsWindow::loadModel() {
         return;
     }
 
-    // TODO: Implement native windows dialog
+    const QString& filepath = QFileDialog::getOpenFileName(nullptr, "Load Model", "../Data/Models/", "");
+    if (filepath.isEmpty()) {
+        return;
+    }
+
     ModelLoader m;
-    m_currentModel = m.LoadModel("../Data/Models/cube.obj");
+    m_currentModel = m.LoadModel(filepath);
 }
 
 void ViewerGraphicsWindow::initialize()
@@ -59,7 +65,7 @@ void ViewerGraphicsWindow::initialize()
     m_matrixUniform = m_program->uniformLocation("matrix");
     Q_ASSERT(m_matrixUniform != -1);
 
-    // TODO: Find attribute locations for m_normAttr and m_uvAttr
+    // TODO: Set attribute locations for m_normAttr and m_uvAttr once our shader supports these
 
     initialized = true;
 }
@@ -128,7 +134,7 @@ void ViewerGraphicsWindow::render()
     }
     else
     {
-        // Default shape
+        // Default triangle
         static const GLfloat vertices[] = {
              0.0f,  0.707f,
             -0.5f, -0.5f,
