@@ -7,7 +7,6 @@
 #include <QOpenGLShaderProgram>
 #include <QScreen>
 #include <QtMath>
-#include <QDir>
 #include <QFileDialog>
 
 // Define default shaders
@@ -45,7 +44,7 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
 
     // If no filepath was provided, open a file dialog for the user to choose a model
     if (filepath.isEmpty()) {
-        const QString& filepath = QFileDialog::getOpenFileName(nullptr, "Load Model", "../Data/Models/", "");
+        filepath = QFileDialog::getOpenFileName(nullptr, "Load Model", "../Data/Models/", "");
         if (filepath.isEmpty()) {
             return false;
         }
@@ -101,24 +100,24 @@ void ViewerGraphicsWindow::render()
             mesh.m_indexBuffer.bind();
 
             // Positions
-            glVertexAttribPointer(m_posAttr, mesh.m_numPositionComponents, GL_FLOAT, GL_FALSE, 0, (int*)mesh.m_positionOffset);
+            glVertexAttribPointer(m_posAttr, mesh.m_numPositionComponents, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_positionOffset);
             glEnableVertexAttribArray(m_posAttr);
 
             // Normals
             if (mesh.m_hasNormals) {
-                glVertexAttribPointer(m_normAttr, mesh.m_numNormalComponents, GL_FLOAT, GL_FALSE, 0, (int*)mesh.m_normalOffset);
+                glVertexAttribPointer(m_normAttr, mesh.m_numNormalComponents, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_normalOffset);
                 glEnableVertexAttribArray(m_normAttr);
             }
 
             // UV Coords
             if (mesh.m_hasUVCoordinates) {
-                glVertexAttribPointer(m_uvAttr, mesh.m_numUVComponents, GL_FLOAT, GL_FALSE, 0, (int*)mesh.m_uvOffset);
+                glVertexAttribPointer(m_uvAttr, mesh.m_numUVComponents, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_uvOffset);
                 glEnableVertexAttribArray(m_uvAttr);
             }
 
             // Colors
             if (mesh.m_hasColors) {
-                glVertexAttribPointer(m_colAttr, mesh.m_numColorComponents, GL_FLOAT, GL_FALSE, 0, (int*)mesh.m_colorOffset);
+                glVertexAttribPointer(m_colAttr, mesh.m_numColorComponents, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_colorOffset);
                 glEnableVertexAttribArray(m_colAttr);
             }
 

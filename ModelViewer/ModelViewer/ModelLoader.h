@@ -9,10 +9,10 @@ struct aiScene;
 struct Mesh {
 	// Stores vertex attribute data
 	QOpenGLBuffer m_vertexBuffer;
-	int m_positionOffset;
-	int m_normalOffset;
-	int m_uvOffset;
-	int m_colorOffset;
+	size_t m_positionOffset;
+	size_t m_normalOffset;
+	size_t m_uvOffset;
+	size_t m_colorOffset;
 
 	// Allows for different sized positions, colors, normals, and texture coords
 	int m_numPositionComponents;

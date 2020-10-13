@@ -86,7 +86,7 @@ Model ModelLoader::ProcessModel(aiScene const* pObject)
 		newMesh.m_numPositionComponents = 3;
 		newMesh.m_numNormalComponents =  3;
 		newMesh.m_numUVComponents = pMesh->mNumUVComponents[0];  // Various
-		newMesh.m_numColorComponents = 4;    // 4 elements
+		newMesh.m_numColorComponents = 4;
 
 		// Compute sizes for all attributes
 		const int positionBufferSize = newMesh.m_numPositionComponents * pMesh->mNumVertices * sizeof(float);

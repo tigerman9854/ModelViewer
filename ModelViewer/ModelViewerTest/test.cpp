@@ -16,7 +16,7 @@ private slots:
 	void displayModel();
 
 private:
-	ModelViewer* m_pWindow;
+	ModelViewer* m_pWindow = nullptr;
 };
 
 
