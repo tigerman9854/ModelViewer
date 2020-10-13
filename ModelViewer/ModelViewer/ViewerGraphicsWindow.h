@@ -14,7 +14,7 @@ public:
     void initialize() override;
     void render() override;
 
-    void loadModel();
+    bool loadModel(QString filepath = QString());
 
 private:
     bool initialized = false;

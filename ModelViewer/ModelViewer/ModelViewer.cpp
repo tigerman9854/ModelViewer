@@ -22,3 +22,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
 };
+
+ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
+    return m_pGraphicsWindow;
+}

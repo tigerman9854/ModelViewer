@@ -38,18 +38,23 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     setAnimating(true);
 }
 
-void ViewerGraphicsWindow::loadModel() {
+bool ViewerGraphicsWindow::loadModel(QString filepath) {
     if (!initialized) {
-        return;
+        return false;
     }
 
-    const QString& filepath = QFileDialog::getOpenFileName(nullptr, "Load Model", "../Data/Models/", "");
+    // If no filepath was provided, open a file dialog for the user to choose a model
     if (filepath.isEmpty()) {
-        return;
+        const QString& filepath = QFileDialog::getOpenFileName(nullptr, "Load Model", "../Data/Models/", "");
+        if (filepath.isEmpty()) {
+            return false;
+        }
     }
 
+    // Load the model
     ModelLoader m;
     m_currentModel = m.LoadModel(filepath);
+    return m_currentModel.m_isValid;
 }
 
 void ViewerGraphicsWindow::initialize()
