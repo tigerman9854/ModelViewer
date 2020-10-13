@@ -75,7 +75,7 @@ void ViewerGraphicsWindow::render()
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_program->bind();
 
@@ -86,6 +86,7 @@ void ViewerGraphicsWindow::render()
 
     m_program->setUniformValue(m_matrixUniform, matrix);
 
+    glEnable(GL_DEPTH_TEST);
 
     if (m_currentModel.m_isValid)
     {
