@@ -7,9 +7,14 @@
 struct aiScene;
 
 struct Mesh {
-	// Seperate vertex and index buffers for drawing
+	// Contains vertex attribute data
 	QOpenGLBuffer m_vertexBuffer;
+	int m_vertexOffset;
+	int m_colorOffset;
+
+	// Contains indices
 	QOpenGLBuffer m_indexBuffer;
+	int m_indexCount;
 
 	// Define material properties
 	GLfloat m_ambient[4];
@@ -18,6 +23,7 @@ struct Mesh {
 	GLfloat m_shininess;
 
 	bool m_hasNormals;
+	bool m_hasColors;
 	bool m_hasTextureCoords;
 };
 

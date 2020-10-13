@@ -1,5 +1,6 @@
 #pragma once
 #include "OpenGLWindow.h"
+#include "ModelLoader.h"
 
 #include <QOpenGLShaderProgram>
 
@@ -24,4 +25,6 @@ private:
 
     QOpenGLShaderProgram* m_program = nullptr;
     int m_frame = 0;
+
+    Model m_currentModel;
 };
