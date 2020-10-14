@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QLayout>
+#include <QMenuBar>
+#include <QMenu>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -14,4 +16,13 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     // Change the size to something usable
     resize(640, 480);
+
+    // Build menu
+    QMenu* pFileMenu = menuBar()->addMenu("File");
+    QMenu* pLoadMenu = pFileMenu->addMenu("Load");
+    pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
 };
+
+ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
+    return m_pGraphicsWindow;
+}

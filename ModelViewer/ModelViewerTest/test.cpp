@@ -1,6 +1,7 @@
 #include <QtTest/QtTest>
 #include "ModelViewer.h"
 #include "ModelLoader.h"
+#include "ViewerGraphicsWindow.h"
 
 class ModelViewerTest : public QObject {
 	Q_OBJECT
@@ -12,9 +13,10 @@ private slots:
 	// Add tests here
 	void testShow();
 	void loadModel();
+	void displayModel();
 
 private:
-	ModelViewer* m_pWindow;
+	ModelViewer* m_pWindow = nullptr;
 };
 
 
@@ -43,8 +45,22 @@ void ModelViewerTest::testShow()
 void ModelViewerTest::loadModel()
 {
 	ModelLoader m;
-	const bool success = m.LoadModel("../Data/Models/cube.obj");
+	Model loaded = m.LoadModel("../Data/Models/cube.obj");
+	QVERIFY(loaded.m_isValid);
+}
+
+void ModelViewerTest::displayModel()
+{
+	m_pWindow->show();
+	bool success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cube.obj");
 	QVERIFY(success);
+	success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cube2.obj");
+	QVERIFY(success);
+	success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cubeColor.ply");
+	QVERIFY(success);
+	QTest::qWait(1000);
+	QVERIFY(success);
+	m_pWindow->hide();
 }
 
 

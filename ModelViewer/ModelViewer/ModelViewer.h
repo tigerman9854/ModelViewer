@@ -11,6 +11,8 @@ class Q_DECL_EXPORT ModelViewer : public QMainWindow
 public:
     ModelViewer(QWidget *parent = Q_NULLPTR);
 
+    ViewerGraphicsWindow* GetGraphicsWindow();
+
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow;
 };
