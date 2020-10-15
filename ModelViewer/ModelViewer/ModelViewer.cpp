@@ -36,9 +36,9 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     pEditMenu->addAction("Current Shader", [=] { /* TODO: m_pGraphicsWindow->editCurrentShader(); */ });
     // -> View menu
-    QMenu* pVieweMenu = menuBar()->addMenu("View");
+    QMenu* pViewMenu = menuBar()->addMenu("View");
 
-    pVieweMenu->addAction("Reset", [=] { /* TODO: m_pGraphicsWindow->resetView(); */ });
+    pViewMenu->addAction("Reset", [=] { /* TODO: m_pGraphicsWindow->resetView(); */ });
     // -> Help menu
     menuBar()->addAction("Help", [=] { /* TODO: m_pGraphicsWindow->displayHelpDoc(); */ }); 
 };
