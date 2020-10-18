@@ -29,4 +29,14 @@ private:
     int m_frame = 0;
 
     Model m_currentModel;
+
+    // Mouse vars & functions
+    void mousePressEvent(QMouseEvent*);
+    void mouseMoveEvent(QMouseEvent*);
+    void mouseReleaseEvent(QMouseEvent*);
+    QMatrix4x4 mouseMatrix;
+    int lastX;
+    int lastY;
+    bool leftMousePressed;
+    bool rightMousePressed;
 };

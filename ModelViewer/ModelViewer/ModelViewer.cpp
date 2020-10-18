@@ -5,6 +5,7 @@
 #include <QLayout>
 #include <QMenuBar>
 #include <QMenu>
+#include <QMatrix4x4>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -46,3 +47,5 @@ ModelViewer::ModelViewer(QWidget *parent)
 ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
 }
+
+

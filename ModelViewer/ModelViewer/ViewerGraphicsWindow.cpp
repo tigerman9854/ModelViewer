@@ -8,6 +8,7 @@
 #include <QScreen>
 #include <QtMath>
 #include <QFileDialog>
+#include <QMouseEvent>
 
 // Define default shaders
 static const char* vertexShaderSource =
@@ -56,6 +57,52 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
+void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
+{
+    // Set class vars
+    if (event->buttons() & Qt::LeftButton) {
+        leftMousePressed = true;
+    }
+
+    if (event->buttons() & Qt::LeftButton) {
+        rightMousePressed = true;
+    }
+
+    // Make sure that these are set before the mouseMoveEvent triggers
+    lastX = event->x();
+    lastY = event->y();
+}
+
+void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
+{
+    // Set class vars
+    if (event->buttons() & Qt::LeftButton) {
+        leftMousePressed = false;
+    }
+
+    if (event->buttons() & Qt::LeftButton) {
+        rightMousePressed = false;
+    }
+}
+
+void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
+{
+    // Rotate off of x y movement
+    if (event->buttons() & Qt::RightButton) {
+        // TODO: This could be better. If we keep track of the normal of the model
+        // we could make sure that translateing in x & y won't pitch the object.
+        mouseMatrix.rotate(-(lastX - event->x()), 0, 1, 0);
+        mouseMatrix.rotate(-(lastY - event->y()), 1, 0, 0);
+        lastX = event->x();
+        lastY = event->y();
+    }
+
+    // Pan off of x y movement
+    if (event->buttons() & Qt::LeftButton) {
+        mouseMatrix.perspective(2.0f, 1.0f, 1.0f, 1.0f);
+    }
+}
+
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
@@ -68,6 +115,10 @@ void ViewerGraphicsWindow::initialize()
     Q_ASSERT(m_colAttr != -1);
     m_matrixUniform = m_program->uniformLocation("matrix");
     Q_ASSERT(m_matrixUniform != -1);
+
+    // Set up the default view TODO: We might want to do some magic to make sure that the model is in view
+    mouseMatrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+    mouseMatrix.translate(0, 0, -4);
 
     // TODO: Set attribute locations for m_normAttr and m_uvAttr once our shader supports these
 
@@ -83,12 +134,7 @@ void ViewerGraphicsWindow::render()
 
     m_program->bind();
 
-    QMatrix4x4 matrix;
-    matrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-    matrix.translate(0, 0, -4);
-    matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
-
-    m_program->setUniformValue(m_matrixUniform, matrix);
+    m_program->setUniformValue(m_matrixUniform, this->mouseMatrix);
 
     glEnable(GL_DEPTH_TEST);
 

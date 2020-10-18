@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QMatrix4x4>
 
 class ViewerGraphicsWindow;
 
@@ -12,6 +13,7 @@ public:
     ModelViewer(QWidget *parent = Q_NULLPTR);
 
     ViewerGraphicsWindow* GetGraphicsWindow();
+    
 
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow;
