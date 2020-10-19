@@ -12,20 +12,20 @@
 
 // Define default shaders
 static const char* vertexShaderSource =
-    "attribute highp vec4 posAttr;\n"
-    "attribute lowp vec4 colAttr;\n"
-    "varying lowp vec4 col;\n"
-    "uniform highp mat4 matrix;\n"
-    "void main() {\n"
-    "   col = colAttr;\n"
-    "   gl_Position = matrix * posAttr;\n"
-    "}\n";
+"attribute highp vec4 posAttr;\n"
+"attribute lowp vec4 colAttr;\n"
+"varying lowp vec4 col;\n"
+"uniform highp mat4 matrix;\n"
+"void main() {\n"
+"   col = colAttr;\n"
+"   gl_Position = matrix * posAttr;\n"
+"}\n";
 
 static const char* fragmentShaderSource =
-    "varying lowp vec4 col;\n"
-    "void main() {\n"
-    "   gl_FragColor = col;\n"
-    "}\n";
+"varying lowp vec4 col;\n"
+"void main() {\n"
+"   gl_FragColor = col;\n"
+"}\n";
 
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
@@ -34,7 +34,7 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     QSurfaceFormat format;
     format.setSamples(16);
     setFormat(format);
-    
+
     setAnimating(true);
 }
 
@@ -87,19 +87,54 @@ void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
 
 void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
 {
-    // Rotate off of x y movement
+    float deltaX = lastX - event->x();
+    float deltaY = lastY - event->y();
+
+    // RMB: Rotate off of x y movement
     if (event->buttons() & Qt::RightButton) {
         // TODO: This could be better. If we keep track of the normal of the model
         // we could make sure that translateing in x & y won't pitch the object.
-        mouseMatrix.rotate(-(lastX - event->x()), 0, 1, 0);
-        mouseMatrix.rotate(-(lastY - event->y()), 1, 0, 0);
-        lastX = event->x();
-        lastY = event->y();
+        sceneMatrix->rotate(-deltaX * xRotateSensitivity, 0, 1, 0);
+        sceneMatrix->rotate(-deltaY * yRotateSensitivity, 1, 0, 0);
     }
 
-    // Pan off of x y movement
+    // MMB: Pan off of x y movement
+    if (event->buttons() & Qt::MiddleButton) {
+        viewportX += -deltaX * viewportXSensitivity;
+        viewportY += deltaY * viewportYSensitivity;
+    }
+
+    // LMB: FIXME: All of the below.
     if (event->buttons() & Qt::LeftButton) {
-        mouseMatrix.perspective(2.0f, 1.0f, 1.0f, 1.0f);
+        // X
+        if (deltaX > 0){
+            sceneMatrix->translate(-deltaX * panXSensitivity, 0);
+        }
+        else if (deltaX < 0) {
+            sceneMatrix->translate(-deltaX * panXSensitivity, 0);
+        }
+
+        // Y
+        if (deltaY > 0) {
+            sceneMatrix->translate(0, deltaY * panYSensitivity, 0);
+        }
+        else {
+            sceneMatrix->translate(0, deltaY * panYSensitivity, 0);
+        }
+    }
+
+    // After moving update the lastX/Y
+    lastX = event->x();
+    lastY = event->y();
+}
+
+void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
+{
+    if ((event->angleDelta().y() / 120) > 0) {
+        sceneMatrix->scale(.5 * zoomSensitivity);
+    }
+    else {
+        sceneMatrix->scale(2 * zoomSensitivity);
     }
 }
 
@@ -116,9 +151,8 @@ void ViewerGraphicsWindow::initialize()
     m_matrixUniform = m_program->uniformLocation("matrix");
     Q_ASSERT(m_matrixUniform != -1);
 
-    // Set up the default view TODO: We might want to do some magic to make sure that the model is in view
-    mouseMatrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-    mouseMatrix.translate(0, 0, -4);
+    // Set up the default view
+    resetView();
 
     // TODO: Set attribute locations for m_normAttr and m_uvAttr once our shader supports these
 
@@ -128,13 +162,13 @@ void ViewerGraphicsWindow::initialize()
 void ViewerGraphicsWindow::render()
 {
     const qreal retinaScale = devicePixelRatio();
-    glViewport(0, 0, width() * retinaScale, height() * retinaScale);
+    glViewport(viewportX, viewportY, width() * retinaScale, height() * retinaScale);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_program->bind();
 
-    m_program->setUniformValue(m_matrixUniform, this->mouseMatrix);
+    m_program->setUniformValue(m_matrixUniform, *sceneMatrix);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -213,4 +247,19 @@ void ViewerGraphicsWindow::render()
     m_program->release();
 
     ++m_frame;
+}
+
+void ViewerGraphicsWindow::resetView()
+{
+    // Reset the sceneMatrix
+    QMatrix4x4* newMaxrix = new QMatrix4x4;
+    newMaxrix->perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+    newMaxrix->translate(0, 0, -4);
+    //FIXME: Every bone in my body says this is a memory leak...
+    //delete sceneMatrix; 
+    sceneMatrix = newMaxrix;
+
+    // Rest the mouse variables
+    viewportX = 0;
+    viewportY = 0;
 }

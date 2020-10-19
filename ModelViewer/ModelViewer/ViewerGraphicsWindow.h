@@ -13,6 +13,7 @@ public:
 
     void initialize() override;
     void render() override;
+    void resetView();
 
     bool loadModel(QString filepath = QString());
 
@@ -30,13 +31,29 @@ private:
 
     Model m_currentModel;
 
-    // Mouse vars & functions
+    // Mouse functions
     void mousePressEvent(QMouseEvent*);
     void mouseMoveEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
-    QMatrix4x4 mouseMatrix;
+    void wheelEvent(QWheelEvent*);
+
+    // Mouse variables
+    QMatrix4x4* sceneMatrix;
     int lastX;
     int lastY;
+    float viewportX = 0;
+    float viewportY = 0;
+
+    // Mouse state
     bool leftMousePressed;
     bool rightMousePressed;
+
+    // Mouse settings | % adjustment
+    float viewportXSensitivity = 1;
+    float viewportYSensitivity = 1;
+    float panXSensitivity = .01;
+    float panYSensitivity = .01;
+    float xRotateSensitivity = 1;
+    float yRotateSensitivity = 1;
+    float zoomSensitivity = 1;
 };
