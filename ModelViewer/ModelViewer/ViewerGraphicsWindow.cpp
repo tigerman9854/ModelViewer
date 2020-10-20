@@ -56,11 +56,46 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
+bool ViewerGraphicsWindow::loadShader(QString vertfilepath, QString fragfilepath)
+{
+    if (!initialized)
+    {
+        return false;
+    }
+    if (vertfilepath.isEmpty()) {
+        vertfilepath = QFileDialog::getOpenFileName(nullptr, "Load Vertex Shader", "../Data/Shaders/", "");
+        if (vertfilepath.isEmpty()) {
+            return false;
+        }
+    }
+
+    if (fragfilepath.isEmpty()) {
+        fragfilepath = QFileDialog::getOpenFileName(nullptr, "Load Fragment Shader", "../Data/Shaders/", "");
+        if (fragfilepath.isEmpty()) {
+            return false;
+        }
+    }
+
+    m_program->removeAllShaders();
+
+    //ShaderLoader s;
+    //Shader* s_currentModel = s.openShaderFile(filepath);
+    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertfilepath);
+    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragfilepath);
+    if (!m_program->link())
+    {
+        QString error = m_program->log();
+        qDebug() << error << endl;
+        return false;
+    }
+    return true;
+}
+
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, "../Data/Shaders/Basic.vert");
+    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, "../Data/Shaders/Basic.frag");
     m_program->link();
     m_posAttr = m_program->attributeLocation("posAttr");
     Q_ASSERT(m_posAttr != -1);

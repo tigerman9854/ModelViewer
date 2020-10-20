@@ -23,7 +23,7 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
-    pLoadMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->loadShader(); */ });
+    pLoadMenu->addAction("Shader", [=] { m_pGraphicsWindow->loadShader();});
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });

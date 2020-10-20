@@ -15,6 +15,7 @@ public:
     void render() override;
 
     bool loadModel(QString filepath = QString());
+    bool loadShader(QString vertfilepath = QString(), QString fragfilepath = QString());
 
 private:
     bool initialized = false;
