@@ -4,6 +4,7 @@ CS 561 Software Engineering Methods Project
 Download here: https://github.com/tigerman9854/ModelViewer/releases
 
 Model Viewer is a Desktop 3D Model Viewing application which allows users to quickly open and view 3D models from over 50 file formats. It is designed for game developers and graphics programmers who download free models off the internet and want to view or pre-process the model before implementing it into their game or animation.
+
 Model Viewer competes with Microsoft’s 3D Viewer and Google’s web-based model viewer. Our project is innovative because it outperforms the other applications in a few ways.  First, our application supports more filetypes since Microsoft only supports 7 and Google only supports a single proprietary filetype.  Second, our project is open source, unlike Microsoft.  Third, our application supports custom GLSL shaders written by the user so various aspects of the model, such as material qualities and texturing, can be tested before using the model elsewhere.  Fourth, our viewer is lightweight and small, striving for maximum performance with minimal CPU/GPU usage, and a small installation size.
 
 
