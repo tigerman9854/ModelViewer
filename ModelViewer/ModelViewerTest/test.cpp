@@ -1,4 +1,6 @@
 #include <QtTest/QtTest>
+#include <QMenu>
+
 #include "ModelViewer.h"
 #include "ModelLoader.h"
 #include "ViewerGraphicsWindow.h"
@@ -9,11 +11,14 @@ class ModelViewerTest : public QObject {
 private slots:
 	void initTestCase();
 	void cleanupTestCase();
+	void init();
+	void cleanup();
 
 	// Add tests here
 	void testShow();
 	void loadModel();
 	void displayModel();
+	void integration();
 
 private:
 	ModelViewer* m_pWindow = nullptr;
@@ -23,11 +28,23 @@ private:
 
 void ModelViewerTest::initTestCase() 
 {
-	m_pWindow = new ModelViewer();
+	// Called once before all test cases
 }
 
 void ModelViewerTest::cleanupTestCase()
 {
+	// Called once after all test casese
+}
+
+void ModelViewerTest::init()
+{
+	// Called before each test case
+	m_pWindow = new ModelViewer();
+}
+
+void ModelViewerTest::cleanup()
+{
+	// Called after each test case
 	delete m_pWindow;
 }
 
@@ -63,6 +80,18 @@ void ModelViewerTest::displayModel()
 	m_pWindow->hide();
 }
 
+void ModelViewerTest::integration()
+{
+	// Show the window, make sure it appeared
+	QVERIFY(m_pWindow->isHidden());
+	m_pWindow->show();
+	QTest::qWait(100);
+	QVERIFY(m_pWindow->isHidden() == false);
+
+	QMenu* pFileMenu = m_pWindow->findChild<QMenu*>("FileMenu");
+	//auto pFileMenuActions = m_p
+
+}
 
 
 QTEST_MAIN(ModelViewerTest)
