@@ -64,13 +64,15 @@ void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
         leftMousePressed = true;
     }
 
-    if (event->buttons() & Qt::LeftButton) {
+    if (event->buttons() & Qt::RightButton) {
         rightMousePressed = true;
     }
 
     // Make sure that these are set before the mouseMoveEvent triggers
     lastX = event->x();
     lastY = event->y();
+    // Call the partent class 
+    QWindow::mouseReleaseEvent(event);
 }
 
 void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
@@ -80,9 +82,11 @@ void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
         leftMousePressed = false;
     }
 
-    if (event->buttons() & Qt::LeftButton) {
+    if (event->buttons() & Qt::RightButton) {
         rightMousePressed = false;
     }
+    // Call the partent class
+    QWindow::mouseReleaseEvent(event);
 }
 
 void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
@@ -94,47 +98,30 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     if (event->buttons() & Qt::RightButton) {
         // TODO: This could be better. If we keep track of the normal of the model
         // we could make sure that translateing in x & y won't pitch the object.
-        sceneMatrix->rotate(-deltaX * xRotateSensitivity, 0, 1, 0);
-        sceneMatrix->rotate(-deltaY * yRotateSensitivity, 1, 0, 0);
+        sceneMatrix.rotate(-deltaX * xRotateSensitivity, 0, 1, 0);
+        sceneMatrix.rotate(-deltaY * yRotateSensitivity, 1, 0, 0);
     }
 
     // MMB: Pan off of x y movement
-    if (event->buttons() & Qt::MiddleButton) {
+    if (event->buttons() & Qt::LeftButton) {
         viewportX += -deltaX * viewportXSensitivity;
         viewportY += deltaY * viewportYSensitivity;
-    }
-
-    // LMB: FIXME: All of the below.
-    if (event->buttons() & Qt::LeftButton) {
-        // X
-        if (deltaX > 0){
-            sceneMatrix->translate(-deltaX * panXSensitivity, 0);
-        }
-        else if (deltaX < 0) {
-            sceneMatrix->translate(-deltaX * panXSensitivity, 0);
-        }
-
-        // Y
-        if (deltaY > 0) {
-            sceneMatrix->translate(0, deltaY * panYSensitivity, 0);
-        }
-        else {
-            sceneMatrix->translate(0, deltaY * panYSensitivity, 0);
-        }
     }
 
     // After moving update the lastX/Y
     lastX = event->x();
     lastY = event->y();
+    // Call the partent class 
+    QWindow::mouseMoveEvent(event);
 }
 
 void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
 {
     if ((event->angleDelta().y() / 120) > 0) {
-        sceneMatrix->scale(.5 * zoomSensitivity);
+        sceneMatrix.scale(.5 * zoomSensitivity);
     }
     else {
-        sceneMatrix->scale(2 * zoomSensitivity);
+        sceneMatrix.scale(2 * zoomSensitivity);
     }
 }
 
@@ -168,7 +155,7 @@ void ViewerGraphicsWindow::render()
 
     m_program->bind();
 
-    m_program->setUniformValue(m_matrixUniform, *sceneMatrix);
+    m_program->setUniformValue(m_matrixUniform, sceneMatrix);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -252,12 +239,9 @@ void ViewerGraphicsWindow::render()
 void ViewerGraphicsWindow::resetView()
 {
     // Reset the sceneMatrix
-    QMatrix4x4* newMaxrix = new QMatrix4x4;
-    newMaxrix->perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-    newMaxrix->translate(0, 0, -4);
-    //FIXME: Every bone in my body says this is a memory leak...
-    //delete sceneMatrix; 
-    sceneMatrix = newMaxrix;
+    sceneMatrix.setToIdentity();
+    sceneMatrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+    sceneMatrix.translate(0, 0, -4);
 
     // Rest the mouse variables
     viewportX = 0;

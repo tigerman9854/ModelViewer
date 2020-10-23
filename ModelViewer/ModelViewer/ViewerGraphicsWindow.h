@@ -17,6 +17,24 @@ public:
 
     bool loadModel(QString filepath = QString());
 
+    // Mouse variables
+    QMatrix4x4 sceneMatrix;
+    float viewportX = 0;
+    float viewportY = 0;
+
+    // Mouse state
+    bool leftMousePressed = false;
+    bool rightMousePressed = false;
+
+    // Mouse settings | % adjustment
+    float viewportXSensitivity = 1;
+    float viewportYSensitivity = 1;
+    float panXSensitivity = .01;
+    float panYSensitivity = .01;
+    float xRotateSensitivity = 1;
+    float yRotateSensitivity = 1;
+    float zoomSensitivity = 1;
+
 private:
     bool initialized = false;
 
@@ -32,28 +50,12 @@ private:
     Model m_currentModel;
 
     // Mouse functions
-    void mousePressEvent(QMouseEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void wheelEvent(QWheelEvent*);
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
+    void wheelEvent(QWheelEvent*) override;
 
-    // Mouse variables
-    QMatrix4x4* sceneMatrix;
+    // Mouse vars
     int lastX;
     int lastY;
-    float viewportX = 0;
-    float viewportY = 0;
-
-    // Mouse state
-    bool leftMousePressed;
-    bool rightMousePressed;
-
-    // Mouse settings | % adjustment
-    float viewportXSensitivity = 1;
-    float viewportYSensitivity = 1;
-    float panXSensitivity = .01;
-    float panYSensitivity = .01;
-    float xRotateSensitivity = 1;
-    float yRotateSensitivity = 1;
-    float zoomSensitivity = 1;
 };
