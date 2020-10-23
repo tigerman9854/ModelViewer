@@ -97,7 +97,7 @@ void ModelViewerTest::rotateWithMouse()
 
 	// Test rotating
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
-	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(10, 10));
+	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->sceneMatrix != resetMatrix);

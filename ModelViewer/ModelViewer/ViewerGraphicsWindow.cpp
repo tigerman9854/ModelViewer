@@ -60,11 +60,11 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
 void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
 {
     // Set class vars
-    if (event->buttons() & Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton) {
         leftMousePressed = true;
     }
 
-    if (event->buttons() & Qt::RightButton) {
+    if (event->button() == Qt::RightButton) {
         rightMousePressed = true;
     }
 
@@ -78,11 +78,11 @@ void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
 void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
 {
     // Set class vars
-    if (event->buttons() & Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton) {
         leftMousePressed = false;
     }
 
-    if (event->buttons() & Qt::RightButton) {
+    if (event->button() == Qt::RightButton) {
         rightMousePressed = false;
     }
     // Call the partent class
@@ -117,8 +117,8 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
 
 void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
 {
-    if ((event->angleDelta().y() / 120) > 0) {
-        sceneMatrix.scale(.5 * zoomSensitivity);
+    if ((event->angleDelta().y()) > 0) {
+        sceneMatrix.scale(0.5f * zoomSensitivity);
     }
     else {
         sceneMatrix.scale(2 * zoomSensitivity);

@@ -49,13 +49,14 @@ private:
 
     Model m_currentModel;
 
+    // Mouse vars
+    int lastX;
+    int lastY;
+
+protected:
     // Mouse functions
     void mousePressEvent(QMouseEvent*) override;
     void mouseMoveEvent(QMouseEvent*) override;
     void mouseReleaseEvent(QMouseEvent*) override;
     void wheelEvent(QWheelEvent*) override;
-
-    // Mouse vars
-    int lastX;
-    int lastY;
 };
