@@ -17,8 +17,10 @@ ModelViewer::ModelViewer(QWidget *parent)
     // Change the size to something usable
     resize(640, 480);
 
-    // Build menu
+    // Menu bar
+    // -> File menu
     QMenu* pFileMenu = menuBar()->addMenu("File");
+
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
 
@@ -34,6 +36,25 @@ ModelViewer::ModelViewer(QWidget *parent)
     pPrimetiveMenu->addAction("Octahedron", [=] {m_pGraphicsWindow->addPrimitive("Octahedron"); });
     pPrimetiveMenu->addAction("Icosahedron", [=] {m_pGraphicsWindow->addPrimitive("Icosahedron"); });
     pPrimetiveMenu->addAction("Dodecahedron", [=] {m_pGraphicsWindow->addPrimitive("Dodecahedron"); });
+
+    pLoadMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->loadShader(); */ });
+
+    QMenu* pSaveMenu = pFileMenu->addMenu("Save");
+    pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
+    pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
+
+    pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
+    pFileMenu->addAction("Quit", [=] { /* TODO: m_pGraphicsWindow->exitGracefully(); */ });
+    // -> Edit menu
+    QMenu* pEditMenu = menuBar()->addMenu("Edit");
+
+    pEditMenu->addAction("Current Shader", [=] { /* TODO: m_pGraphicsWindow->editCurrentShader(); */ });
+    // -> View menu
+    QMenu* pViewMenu = menuBar()->addMenu("View");
+
+    pViewMenu->addAction("Reset", [=] { /* TODO: m_pGraphicsWindow->resetView(); */ });
+    // -> Help menu
+    menuBar()->addAction("Help", [=] { /* TODO: m_pGraphicsWindow->displayHelpDoc(); */ }); 
 };
 
 ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
