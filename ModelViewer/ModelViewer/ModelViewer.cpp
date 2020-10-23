@@ -5,6 +5,7 @@
 #include <QLayout>
 #include <QMenuBar>
 #include <QMenu>
+#include <QMatrix4x4>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -51,7 +52,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     // -> View menu
     QMenu* pViewMenu = menuBar()->addMenu("View");
 
-    pViewMenu->addAction("Reset", [=] { /* TODO: m_pGraphicsWindow->resetView(); */ });
+    pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); });
     // -> Help menu
     menuBar()->addAction("Help", [=] { /* TODO: m_pGraphicsWindow->displayHelpDoc(); */ }); 
 };
@@ -59,3 +60,5 @@ ModelViewer::ModelViewer(QWidget *parent)
 ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
 }
+
+
