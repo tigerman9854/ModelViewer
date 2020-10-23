@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QMatrix4x4>
 
 class ViewerGraphicsWindow;
 

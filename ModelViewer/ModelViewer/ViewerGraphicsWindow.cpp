@@ -71,7 +71,7 @@ void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
     // Make sure that these are set before the mouseMoveEvent triggers
     lastX = event->x();
     lastY = event->y();
-    // Call the partent class 
+    // Call the parent class 
     QWindow::mouseReleaseEvent(event);
 }
 
@@ -85,7 +85,7 @@ void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
     if (event->button() == Qt::RightButton) {
         rightMousePressed = false;
     }
-    // Call the partent class
+    // Call the parent class
     QWindow::mouseReleaseEvent(event);
 }
 
@@ -111,7 +111,7 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     // After moving update the lastX/Y
     lastX = event->x();
     lastY = event->y();
-    // Call the partent class 
+    // Call the parent class 
     QWindow::mouseMoveEvent(event);
 }
 
