@@ -16,6 +16,7 @@ public:
     void resetView();
 
     bool loadModel(QString filepath = QString());
+    bool addPrimitive(QString filepath);
 
     // Mouse variables
     QMatrix4x4 sceneMatrix;

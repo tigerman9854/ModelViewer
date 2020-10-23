@@ -247,3 +247,9 @@ void ViewerGraphicsWindow::resetView()
     viewportX = 0;
     viewportY = 0;
 }
+
+bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
+    // Load  model
+    QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
+    return loadModel(filepath);
+}
