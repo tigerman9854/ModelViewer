@@ -24,18 +24,17 @@ ModelViewer::ModelViewer(QWidget *parent)
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
 
-    // add
-    QMenu* pAddMenu = menuBar()->addMenu("Add");
-    QMenu* pPrimetiveMenu = pAddMenu->addMenu("Primetive");
-    pPrimetiveMenu->addAction("Sphere", [=]{m_pGraphicsWindow->addPrimitive("Sphere"); });
-    pPrimetiveMenu->addAction("Cube", [=] {m_pGraphicsWindow->addPrimitive("Cube"); });
-    pPrimetiveMenu->addAction("Torus", [=]{m_pGraphicsWindow->addPrimitive("Torus"); });
-    pPrimetiveMenu->addAction("Cylinder", [=] {m_pGraphicsWindow->addPrimitive("Cylinder"); });
-    pPrimetiveMenu->addAction("diamond", [=] {m_pGraphicsWindow->addPrimitive("diamond"); });
-    pPrimetiveMenu->addAction("Tetrahedron", [=] {m_pGraphicsWindow->addPrimitive("Tetrahedron"); });
-    pPrimetiveMenu->addAction("Octahedron", [=] {m_pGraphicsWindow->addPrimitive("Octahedron"); });
-    pPrimetiveMenu->addAction("Icosahedron", [=] {m_pGraphicsWindow->addPrimitive("Icosahedron"); });
-    pPrimetiveMenu->addAction("Dodecahedron", [=] {m_pGraphicsWindow->addPrimitive("Dodecahedron"); });
+    // Primitive
+    QMenu* pPrimitiveMenu = pLoadMenu->addMenu("Primitive");
+    pPrimitiveMenu->addAction("Sphere", [=]{m_pGraphicsWindow->addPrimitive("Sphere.obj"); });
+    pPrimitiveMenu->addAction("Cube", [=] {m_pGraphicsWindow->addPrimitive("Cube.obj"); });
+    pPrimitiveMenu->addAction("Torus", [=]{m_pGraphicsWindow->addPrimitive("Torus.obj"); });
+    pPrimitiveMenu->addAction("Cylinder", [=] {m_pGraphicsWindow->addPrimitive("Cylinder.obj"); });
+    pPrimitiveMenu->addAction("Diamond", [=] {m_pGraphicsWindow->addPrimitive("diamond.obj"); });
+    pPrimitiveMenu->addAction("Tetrahedron", [=] {m_pGraphicsWindow->addPrimitive("Tetrahedron.obj"); });
+    pPrimitiveMenu->addAction("Octahedron", [=] {m_pGraphicsWindow->addPrimitive("Octahedron.stl"); });
+    pPrimitiveMenu->addAction("Icosahedron", [=] {m_pGraphicsWindow->addPrimitive("Icosahedron.stl"); });
+    pPrimitiveMenu->addAction("Dodecahedron", [=] {m_pGraphicsWindow->addPrimitive("Dodecahedron.stl"); });
 
     pLoadMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->loadShader(); */ });
 

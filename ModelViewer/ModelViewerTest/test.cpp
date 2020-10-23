@@ -45,20 +45,22 @@ void ModelViewerTest::testShow()
 void ModelViewerTest::loadModel()
 {
 	ModelLoader m;
-	Model loaded = m.LoadModel("../Data/Models/cube.obj");
+	Model loaded = m.LoadModel("../Data/Primitives/cube.obj");
 	QVERIFY(loaded.m_isValid);
 }
 
 void ModelViewerTest::displayModel()
 {
 	m_pWindow->show();
-	bool success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cube.obj");
-	QVERIFY(success);
-	success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cube2.obj");
+	bool success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Primitives/cube.obj");
 	QVERIFY(success);
 	success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cubeColor.ply");
 	QVERIFY(success);
-	QTest::qWait(1000);
+	success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Primitives/Dodecahedron.stl");
+	QVERIFY(success);
+	success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Primitives/Icosahedron.stl");
+	QVERIFY(success);
+	QTest::qWait(100);
 	QVERIFY(success);
 	m_pWindow->hide();
 }

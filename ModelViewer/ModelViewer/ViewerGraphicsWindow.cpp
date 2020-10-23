@@ -173,26 +173,21 @@ bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
     // Load  model
     ModelLoader model;
 
-    QString  filepath = QString("../Data/Primitives/%1.obj").arg(primitiveName);
+    QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     m_currentModel = model.LoadModel(filepath);
 
+    // If the Primitive missing
     if (!m_currentModel.m_isValid) {
-        QString  filepath = QString("../Data/Primitives/%1.stl").arg(primitiveName);
-        m_currentModel = model.LoadModel(filepath);
-    }
+        // TODO: Feedback to user that file is missing
 
-    //If the Primitive missing
-    if (!m_currentModel.m_isValid) {
-        QString  filepath = QString("../Data/Primitives/%1.stl").arg(primitiveName);
-        //TO DO: 
-        //Some feedback to users
-
-        //open a dialog let the user to choose a primitive
-        primitiveName = QFileDialog::getOpenFileName( nullptr,
+        // Open a dialog let the user to choose a primitive
+        QString primitivePath = QFileDialog::getOpenFileName( nullptr,
                                                 tr("Load Model"), 
                                                 "../Data", 
                                                 "" );
+        m_currentModel = model.LoadModel(primitivePath);
         m_currentModel.m_isValid = !m_currentModel.m_isValid;
     }
+
     return m_currentModel.m_isValid;
 }
