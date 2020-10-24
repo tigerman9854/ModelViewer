@@ -13,10 +13,34 @@ public:
 
     void initialize() override;
     void render() override;
+    void resetView();
 
     bool loadModel(QString filepath = QString());
+
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
+
+    bool addPrimitive(QString filepath);
+
+    // Mouse variables
+    QMatrix4x4 sceneMatrix;
+    float viewportX = 0;
+    float viewportY = 0;
+
+    QMatrix4x4 modelview;
+
+    // Mouse state
+    bool leftMousePressed = false;
+    bool rightMousePressed = false;
+
+    // Mouse settings | % adjustment
+    float viewportXSensitivity = 1;
+    float viewportYSensitivity = 1;
+    float panXSensitivity = .01;
+    float panYSensitivity = .01;
+    float xRotateSensitivity = 1;
+    float yRotateSensitivity = 1;
+    float zoomSensitivity = 1;
 
 private:
     bool initialized = false;
@@ -44,4 +68,15 @@ private:
 
     QString currentVertFile;
     QString currentFragFile;
+
+    // Mouse vars
+    int lastX;
+    int lastY;
+
+protected:
+    // Mouse functions
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
+    void wheelEvent(QWheelEvent*) override;
 };

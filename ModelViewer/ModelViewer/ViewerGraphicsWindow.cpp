@@ -8,6 +8,7 @@
 #include <QScreen>
 #include <QtMath>
 #include <QFileDialog>
+#include <QMouseEvent>
 
 // Define default shaders
 static const char* vertexShaderSource =
@@ -33,7 +34,7 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     QSurfaceFormat format;
     format.setSamples(16);
     setFormat(format);
-    
+
     setAnimating(true);
 }
 
@@ -186,6 +187,76 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     return true;
 }
 
+void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
+{
+    // Set class vars
+    if (event->button() == Qt::LeftButton) {
+        leftMousePressed = true;
+    }
+
+    if (event->button() == Qt::RightButton) {
+        rightMousePressed = true;
+    }
+
+    // Make sure that these are set before the mouseMoveEvent triggers
+    lastX = event->x();
+    lastY = event->y();
+    // Call the parent class 
+    QWindow::mouseReleaseEvent(event);
+}
+
+void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
+{
+    // Set class vars
+    if (event->button() == Qt::LeftButton) {
+        leftMousePressed = false;
+    }
+
+    if (event->button() == Qt::RightButton) {
+        rightMousePressed = false;
+    }
+    // Call the parent class
+    QWindow::mouseReleaseEvent(event);
+}
+
+void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
+{
+    float deltaX = lastX - event->x();
+    float deltaY = lastY - event->y();
+
+    // RMB: Rotate off of x y movement
+    if (event->buttons() & Qt::RightButton) {
+        // TODO: This could be better. If we keep track of the normal of the model
+        // we could make sure that translateing in x & y won't pitch the object.
+        sceneMatrix.rotate(-deltaX * xRotateSensitivity, 0, 1, 0);
+        sceneMatrix.rotate(-deltaY * yRotateSensitivity, 1, 0, 0);
+        modelview.rotate(-deltaX * xRotateSensitivity, 0, 1, 0);
+        modelview.rotate(-deltaY * yRotateSensitivity, 1, 0, 0);
+    }
+
+    // MMB: Pan off of x y movement
+    if (event->buttons() & Qt::LeftButton) {
+        viewportX += -deltaX * viewportXSensitivity;
+        viewportY += deltaY * viewportYSensitivity;
+    }
+
+    // After moving update the lastX/Y
+    lastX = event->x();
+    lastY = event->y();
+    // Call the parent class 
+    QWindow::mouseMoveEvent(event);
+}
+
+void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
+{
+    if ((event->angleDelta().y()) > 0) {
+        sceneMatrix.scale(0.5f * zoomSensitivity);
+    }
+    else {
+        sceneMatrix.scale(2 * zoomSensitivity);
+    }
+}
+
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
@@ -200,6 +271,9 @@ void ViewerGraphicsWindow::initialize()
     Q_ASSERT(m_colAttr != -1);
     m_matrixUniform = m_program->uniformLocation("matrix");
     Q_ASSERT(m_matrixUniform != -1);
+
+    // Set up the default view
+    resetView();
 
     // TODO: Set attribute locations for m_normAttr and m_uvAttr once our shader supports these
 
@@ -225,21 +299,14 @@ void ViewerGraphicsWindow::initialize()
 void ViewerGraphicsWindow::render()
 {
     const qreal retinaScale = devicePixelRatio();
-    glViewport(0, 0, width() * retinaScale, height() * retinaScale);
+    glViewport(viewportX, viewportY, width() * retinaScale, height() * retinaScale);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_program->bind();
 
-    QMatrix4x4 matrix;
-    matrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-    matrix.translate(0, 0, -4);
-    matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
-    m_program->setUniformValue(m_matrixUniform, matrix);
+    m_program->setUniformValue(m_matrixUniform, sceneMatrix);
 
-    QMatrix4x4 modelview;
-    modelview.translate(0, 0, -4);
-    modelview.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
     m_program->setUniformValue(m_modelviewUniform, modelview);
 
     QMatrix3x3 normal = modelview.normalMatrix();
@@ -248,7 +315,7 @@ void ViewerGraphicsWindow::render()
     QVector3D lightPos = QVector3D(1., 1., -1.);
     m_program->setUniformValue(m_lightPosUniform, lightPos);
 
-    float uKa = 0.25;
+    float uKa = 0.35;
     m_program->setUniformValue(m_uKa, uKa);
     float uKd = 0.45;
     m_program->setUniformValue(m_uKd, uKd);
@@ -341,4 +408,25 @@ void ViewerGraphicsWindow::render()
     m_program->release();
 
     ++m_frame;
+}
+
+void ViewerGraphicsWindow::resetView()
+{
+    // Reset the sceneMatrix
+    sceneMatrix.setToIdentity();
+    sceneMatrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+    sceneMatrix.translate(0, 0, -4);
+
+    modelview.setToIdentity();
+    modelview.translate(0, 0, -4);
+
+    // Rest the mouse variables
+    viewportX = 0;
+    viewportY = 0;
+}
+
+bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
+    // Load  model
+    QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
+    return loadModel(filepath);
 }

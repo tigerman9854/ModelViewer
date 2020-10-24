@@ -5,6 +5,7 @@
 #include <QLayout>
 #include <QMenuBar>
 #include <QMenu>
+#include <QMatrix4x4>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -23,11 +24,22 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
-    //pLoadMenu->addAction("Shader", [=] { m_pGraphicsWindow->loadVertexShader();});
 
     QMenu* pShaderMenu = pLoadMenu->addMenu("Shader");
     pShaderMenu->addAction("Vertex", [=]{m_pGraphicsWindow->loadVertexShader(); });
     pShaderMenu->addAction("Fragment", [=]{m_pGraphicsWindow->loadFragmentShader(); });
+
+    // Primitive
+    QMenu* pPrimitiveMenu = pLoadMenu->addMenu("Primitive");
+    pPrimitiveMenu->addAction("Sphere", [=]{m_pGraphicsWindow->addPrimitive("Sphere.obj"); });
+    pPrimitiveMenu->addAction("Cube", [=] {m_pGraphicsWindow->addPrimitive("Cube.obj"); });
+    pPrimitiveMenu->addAction("Torus", [=]{m_pGraphicsWindow->addPrimitive("Torus.obj"); });
+    pPrimitiveMenu->addAction("Cylinder", [=] {m_pGraphicsWindow->addPrimitive("Cylinder.obj"); });
+    pPrimitiveMenu->addAction("Diamond", [=] {m_pGraphicsWindow->addPrimitive("diamond.obj"); });
+    pPrimitiveMenu->addAction("Tetrahedron", [=] {m_pGraphicsWindow->addPrimitive("Tetrahedron.obj"); });
+    pPrimitiveMenu->addAction("Octahedron", [=] {m_pGraphicsWindow->addPrimitive("Octahedron.stl"); });
+    pPrimitiveMenu->addAction("Icosahedron", [=] {m_pGraphicsWindow->addPrimitive("Icosahedron.stl"); });
+    pPrimitiveMenu->addAction("Dodecahedron", [=] {m_pGraphicsWindow->addPrimitive("Dodecahedron.stl"); });
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
@@ -42,7 +54,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     // -> View menu
     QMenu* pViewMenu = menuBar()->addMenu("View");
 
-    pViewMenu->addAction("Reset", [=] { /* TODO: m_pGraphicsWindow->resetView(); */ });
+    pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); });
     // -> Help menu
     menuBar()->addAction("Help", [=] { /* TODO: m_pGraphicsWindow->displayHelpDoc(); */ }); 
 };
@@ -50,3 +62,5 @@ ModelViewer::ModelViewer(QWidget *parent)
 ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
 }
+
+
