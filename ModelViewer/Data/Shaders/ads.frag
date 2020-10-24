@@ -1,5 +1,6 @@
-varying lowp vec4 col;
+#version 130
 
+varying lowp vec4 col;
 
 in lowp vec3 vNs;
 in lowp vec3 vLs;

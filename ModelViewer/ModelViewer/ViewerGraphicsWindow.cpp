@@ -70,19 +70,19 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
         }
     }
 
-    //QOpenGLShaderProgram *newProgram = new QOpenGLShaderProgram(this);
     m_program->removeAllShaders();
 
-    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertfilepath);
+    if (!m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertfilepath)) 
+    {
+        m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
+        vertfilepath = currentVertFile;
+    }
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     if (!m_program->link())
     {
         QString error = m_program->log();
         qDebug() << error << endl;
         currentVertFile = vertfilepath;
-        //m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
-        //m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
-        //m_program->link();
         return false;
     }
 
@@ -106,17 +106,7 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     m_uKs = m_program->uniformLocation("uKs");
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
-    /*
-    m_posAttr = newProgram->attributeLocation("posAttr");
-    Q_ASSERT(m_posAttr != -1);
-    m_colAttr = newProgram->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
-    m_matrixUniform = newProgram->uniformLocation("matrix");
-    Q_ASSERT(m_matrixUniform != -1);
     
-    free(m_program);
-    m_program = newProgram;
-    */
     return true;
 }
 
@@ -134,23 +124,21 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
         }
     }
 
-    //QOpenGLShaderProgram* newProgram = new QOpenGLShaderProgram(this);
-
     m_program->removeAllShaders();
 
     m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
-    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragfilepath);
+    if (!m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragfilepath)) 
+    {
+        m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
+        fragfilepath = currentFragFile;
+    }
     if (!m_program->link())
     {
         QString error = m_program->log();
         qDebug() << error << endl;
 
         currentFragFile = fragfilepath;
-        /*
-        m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
-        m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
-        m_program->link();
-        */
+
         return false;
     }
     
@@ -174,16 +162,7 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     m_uKs = m_program->uniformLocation("uKs");
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
-    /*
-    free(m_program);
-    m_program = newProgram;
-    m_posAttr = m_program->attributeLocation("posAttr");
-    Q_ASSERT(m_posAttr != -1);
-    m_colAttr = m_program->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
-    m_matrixUniform = m_program->uniformLocation("matrix");
-    Q_ASSERT(m_matrixUniform != -1);
-    */
+
     return true;
 }
 
