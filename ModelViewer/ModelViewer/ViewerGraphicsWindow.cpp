@@ -56,7 +56,7 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
-bool ViewerGraphicsWindow::loadShader(QString vertfilepath, QString fragfilepath)
+bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
 {
     if (!initialized)
     {
@@ -69,6 +69,63 @@ bool ViewerGraphicsWindow::loadShader(QString vertfilepath, QString fragfilepath
         }
     }
 
+    //QOpenGLShaderProgram *newProgram = new QOpenGLShaderProgram(this);
+    m_program->removeAllShaders();
+
+    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertfilepath);
+    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
+    if (!m_program->link())
+    {
+        QString error = m_program->log();
+        qDebug() << error << endl;
+        currentVertFile = vertfilepath;
+        //m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
+        //m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
+        //m_program->link();
+        return false;
+    }
+
+    currentVertFile = vertfilepath;
+    m_posAttr = m_program->attributeLocation("posAttr");
+    Q_ASSERT(m_posAttr != -1);
+    m_colAttr = m_program->attributeLocation("colAttr");
+    Q_ASSERT(m_colAttr != -1);
+    m_matrixUniform = m_program->uniformLocation("matrix");
+    Q_ASSERT(m_matrixUniform != -1);
+
+    m_normAttr = m_program->attributeLocation("normAttr");
+    m_uvAttr = m_program->attributeLocation("uvAttr");
+
+    m_modelviewUniform = m_program->uniformLocation("modelview");
+    m_normalUniform = m_program->uniformLocation("normalMat");
+
+    m_lightPosUniform = m_program->uniformLocation("uLightPos");
+    m_uKa = m_program->uniformLocation("uKa");
+    m_uKd = m_program->uniformLocation("uKd");
+    m_uKs = m_program->uniformLocation("uKs");
+    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
+    m_uShininess = m_program->uniformLocation("uShininess");
+    /*
+    m_posAttr = newProgram->attributeLocation("posAttr");
+    Q_ASSERT(m_posAttr != -1);
+    m_colAttr = newProgram->attributeLocation("colAttr");
+    Q_ASSERT(m_colAttr != -1);
+    m_matrixUniform = newProgram->uniformLocation("matrix");
+    Q_ASSERT(m_matrixUniform != -1);
+    
+    free(m_program);
+    m_program = newProgram;
+    */
+    return true;
+}
+
+bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
+{
+    if (!initialized)
+    {
+        return false;
+    }
+    
     if (fragfilepath.isEmpty()) {
         fragfilepath = QFileDialog::getOpenFileName(nullptr, "Load Fragment Shader", "../Data/Shaders/", "");
         if (fragfilepath.isEmpty()) {
@@ -76,26 +133,66 @@ bool ViewerGraphicsWindow::loadShader(QString vertfilepath, QString fragfilepath
         }
     }
 
+    //QOpenGLShaderProgram* newProgram = new QOpenGLShaderProgram(this);
+
     m_program->removeAllShaders();
 
-    //ShaderLoader s;
-    //Shader* s_currentModel = s.openShaderFile(filepath);
-    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertfilepath);
+    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragfilepath);
     if (!m_program->link())
     {
         QString error = m_program->log();
         qDebug() << error << endl;
+
+        currentFragFile = fragfilepath;
+        /*
+        m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
+        m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
+        m_program->link();
+        */
         return false;
     }
+    
+    currentFragFile = fragfilepath;
+    m_posAttr = m_program->attributeLocation("posAttr");
+    Q_ASSERT(m_posAttr != -1);
+    m_colAttr = m_program->attributeLocation("colAttr");
+    Q_ASSERT(m_colAttr != -1);
+    m_matrixUniform = m_program->uniformLocation("matrix");
+    Q_ASSERT(m_matrixUniform != -1);
+
+    m_normAttr = m_program->attributeLocation("normAttr");
+    m_uvAttr = m_program->attributeLocation("uvAttr");
+
+    m_modelviewUniform = m_program->uniformLocation("modelview");
+    m_normalUniform = m_program->uniformLocation("normalMat");
+
+    m_lightPosUniform = m_program->uniformLocation("uLightPos");
+    m_uKa = m_program->uniformLocation("uKa");
+    m_uKd = m_program->uniformLocation("uKd");
+    m_uKs = m_program->uniformLocation("uKs");
+    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
+    m_uShininess = m_program->uniformLocation("uShininess");
+    /*
+    free(m_program);
+    m_program = newProgram;
+    m_posAttr = m_program->attributeLocation("posAttr");
+    Q_ASSERT(m_posAttr != -1);
+    m_colAttr = m_program->attributeLocation("colAttr");
+    Q_ASSERT(m_colAttr != -1);
+    m_matrixUniform = m_program->uniformLocation("matrix");
+    Q_ASSERT(m_matrixUniform != -1);
+    */
     return true;
 }
 
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
-    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, "../Data/Shaders/Basic.vert");
-    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, "../Data/Shaders/Basic.frag");
+    currentVertFile = "../Data/Shaders/basic.vert";
+    currentFragFile = "../Data/Shaders/basic.frag";
+    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
+    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     m_program->link();
     m_posAttr = m_program->attributeLocation("posAttr");
     Q_ASSERT(m_posAttr != -1);
@@ -105,6 +202,22 @@ void ViewerGraphicsWindow::initialize()
     Q_ASSERT(m_matrixUniform != -1);
 
     // TODO: Set attribute locations for m_normAttr and m_uvAttr once our shader supports these
+
+    m_normAttr = m_program->attributeLocation("normAttr");
+    m_uvAttr = m_program->attributeLocation("uvAttr");
+
+    m_modelviewUniform = m_program->uniformLocation("modelview");
+    m_normalUniform = m_program->uniformLocation("normalMat");
+
+    m_lightPosUniform = m_program->uniformLocation("uLightPos");
+    m_uKa = m_program->uniformLocation("uKa");
+    m_uKd = m_program->uniformLocation("uKd");
+    m_uKs = m_program->uniformLocation("uKs");
+    //m_uADColor = m_program->uniformLocation("uADColor");
+    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
+    m_uShininess = m_program->uniformLocation("uShininess");
+
+    //m_program->bind();
 
     initialized = true;
 }
@@ -122,8 +235,34 @@ void ViewerGraphicsWindow::render()
     matrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
     matrix.translate(0, 0, -4);
     matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
-
     m_program->setUniformValue(m_matrixUniform, matrix);
+
+    QMatrix4x4 modelview;
+    modelview.translate(0, 0, -4);
+    modelview.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
+    m_program->setUniformValue(m_modelviewUniform, modelview);
+
+    QMatrix3x3 normal = modelview.normalMatrix();
+    m_program->setUniformValue(m_normalUniform, normal);
+
+    QVector3D lightPos = QVector3D(1., 1., -1.);
+    m_program->setUniformValue(m_lightPosUniform, lightPos);
+
+    float uKa = 0.25;
+    m_program->setUniformValue(m_uKa, uKa);
+    float uKd = 0.45;
+    m_program->setUniformValue(m_uKd, uKd);
+    float uKs = 0.15;
+    m_program->setUniformValue(m_uKs, uKs);
+
+    //QVector4D uADColor = QVector4D(1., 1., 1., 1.);
+    //m_program->setUniformValue(m_uADColor, uADColor);
+
+    QVector4D uSpecularColor = QVector4D(1., 1., 1., 1.);
+    m_program->setUniformValue(m_uSpecularColor, uSpecularColor);
+
+    GLfloat uShininess = 0.3;
+    m_program->setUniformValue(m_uShininess, uShininess);
 
     glEnable(GL_DEPTH_TEST);
 

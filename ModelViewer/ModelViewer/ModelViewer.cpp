@@ -23,7 +23,11 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
-    pLoadMenu->addAction("Shader", [=] { m_pGraphicsWindow->loadShader();});
+    //pLoadMenu->addAction("Shader", [=] { m_pGraphicsWindow->loadVertexShader();});
+
+    QMenu* pShaderMenu = pLoadMenu->addMenu("Shader");
+    pShaderMenu->addAction("Vertex", [=]{m_pGraphicsWindow->loadVertexShader(); });
+    pShaderMenu->addAction("Fragment", [=]{m_pGraphicsWindow->loadFragmentShader(); });
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
