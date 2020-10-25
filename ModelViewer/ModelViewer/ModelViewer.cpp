@@ -29,6 +29,7 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     // Primitive
     QMenu* pPrimitiveMenu = pLoadMenu->addMenu("Primitive");
+    pPrimitiveMenu->setObjectName("PrimitiveMenu");
     pPrimitiveMenu->addAction("Sphere", [=]{m_pGraphicsWindow->addPrimitive("Sphere.obj"); });
     pPrimitiveMenu->addAction("Cube", [=] {m_pGraphicsWindow->addPrimitive("Cube.obj"); });
     pPrimitiveMenu->addAction("Torus", [=]{m_pGraphicsWindow->addPrimitive("Torus.obj"); });
