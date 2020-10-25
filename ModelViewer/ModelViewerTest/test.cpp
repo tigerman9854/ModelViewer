@@ -35,6 +35,7 @@ private:
 void ModelViewerTest::initTestCase() 
 {
 	// Called once before all test cases
+	m_pWindow = new ModelViewer();
 	resetMatrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
 	resetMatrix.translate(0, 0, -4);
 }
@@ -42,18 +43,18 @@ void ModelViewerTest::initTestCase()
 void ModelViewerTest::cleanupTestCase()
 {
 	// Called once after all test casese
+	delete m_pWindow;
 }
 
 void ModelViewerTest::init()
 {
 	// Called before each test case
-	m_pWindow = new ModelViewer();
+	m_pWindow->hide();
 }
 
 void ModelViewerTest::cleanup()
 {
 	// Called after each test case
-	delete m_pWindow;
 }
 
 
@@ -145,7 +146,10 @@ void ModelViewerTest::panWithMouse()// FIXME: The mouse inputs are not working..
 	// Test Pan
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(10, 10));
-	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(10,10));
+
+	// Wait for new frame
+	QTest::qWait(100);
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportX != 0);
 	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportY != 0);
