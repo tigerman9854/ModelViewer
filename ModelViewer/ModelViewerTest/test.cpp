@@ -1,4 +1,7 @@
 #include <QtTest/QtTest>
+#include <QMenu>
+#include <QMenuBar>
+
 #include "ModelViewer.h"
 #include "ModelLoader.h"
 #include "ViewerGraphicsWindow.h"
@@ -9,8 +12,11 @@ class ModelViewerTest : public QObject {
 private slots:
 	void initTestCase();
 	void cleanupTestCase();
+	void init();
+	void cleanup();
 
 	// Add tests here
+	void integration();
 	void testShow();
 	void loadModel();
 	void displayModel();
@@ -29,6 +35,7 @@ private:
 
 void ModelViewerTest::initTestCase() 
 {
+	// Called once before all test cases
 	m_pWindow = new ModelViewer();
 	resetMatrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
 	resetMatrix.translate(0, 0, -4);
@@ -36,16 +43,80 @@ void ModelViewerTest::initTestCase()
 
 void ModelViewerTest::cleanupTestCase()
 {
+	// Called once after all test casese
 	delete m_pWindow;
 }
 
+void ModelViewerTest::init()
+{
+	// Called before each test case
+	m_pWindow->hide();
+}
 
+void ModelViewerTest::cleanup()
+{
+	// Called after each test case
+}
+
+
+
+void ModelViewerTest::integration()
+{
+	// Show the window, make sure it appeared
+	QVERIFY(m_pWindow->isHidden());
+	m_pWindow->show();
+	QTest::qWait(100);
+	QVERIFY(m_pWindow->isHidden() == false);
+
+	// Load a primitive through the file menu
+	QMenu* pFileMenu = m_pWindow->findChild<QMenu*>("FileMenu");
+	QVERIFY(pFileMenu);
+	QMenu* pLoadMenu = m_pWindow->findChild<QMenu*>("LoadMenu");
+	QVERIFY(pLoadMenu);
+	QMenu* pPrimitiveMenu = m_pWindow->findChild<QMenu*>("PrimitiveMenu");
+	QVERIFY(pPrimitiveMenu);
+	QMenuBar* pMenuBar = m_pWindow->menuBar();
+	QVERIFY(pMenuBar);
+	pFileMenu->popup(m_pWindow->mapToGlobal(pMenuBar->pos()));
+	pFileMenu->setFocus();
+	QTest::qWait(20);
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
+	QTest::keyClick(pLoadMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pLoadMenu, Qt::Key_Enter, Qt::NoModifier, 20);
+	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pPrimitiveMenu, Qt::Key_Enter, Qt::NoModifier, 20);
+
+	// Rotate the camera
+	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
+	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
+
+	QVERIFY(m_pWindow->GetGraphicsWindow()->sceneMatrix != resetMatrix);
+	QTest::qWait(100);
+
+
+	// Pan the camera
+	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(0, 0));
+	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(150, 150));
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(150, 150));
+
+	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportX != 0);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportY != 0);
+	QTest::qWait(100);
+
+	m_pWindow->hide();
+	QVERIFY(m_pWindow->isHidden());
+}
 
 void ModelViewerTest::testShow()
 {
 	QVERIFY(m_pWindow->isHidden());
 	m_pWindow->show();
-	QTest::qWait(1000);
+	QTest::qWait(100);
 	QVERIFY(m_pWindow->isHidden() == false);
 	m_pWindow->hide();
 }
@@ -106,7 +177,8 @@ void ModelViewerTest::rotateWithMouse()
 	m_pWindow->hide();
 }
 
-void ModelViewerTest::panWithMouse()// FIXME: The mouse inputs are not working...
+
+void ModelViewerTest::panWithMouse()
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
@@ -114,7 +186,10 @@ void ModelViewerTest::panWithMouse()// FIXME: The mouse inputs are not working..
 	// Test Pan
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(10, 10));
-	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(10, 10)); // Release the mouse at (10, 10)
+
+	// Wait for new frame to be drawn
+	QTest::qWait(100);
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportX != 0);
 	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportY != 0);
@@ -150,7 +225,6 @@ void ModelViewerTest::zoomWithMouse()
 	test->sceneMatrix.scale(.5 * test->zoomSensitivity);
 	QVERIFY(test->sceneMatrix != resetMatrix);
 }
-
 
 
 QTEST_MAIN(ModelViewerTest)
