@@ -18,23 +18,19 @@ public:
     bool loadModel(QString filepath = QString());
     bool addPrimitive(QString filepath);
 
-    // Mouse variables
-    QMatrix4x4 sceneMatrix;
-    float viewportX = 0;
-    float viewportY = 0;
-
     // Mouse state
     bool leftMousePressed = false;
     bool rightMousePressed = false;
 
     // Mouse settings | % adjustment
-    float viewportXSensitivity = 1;
-    float viewportYSensitivity = 1;
-    float panXSensitivity = .01;
-    float panYSensitivity = .01;
-    float xRotateSensitivity = 1;
-    float yRotateSensitivity = 1;
-    float zoomSensitivity = 1;
+    float panXSensitivity = .01f;
+    float panYSensitivity = .01f;
+    float xRotateSensitivity = 0.6f;
+    float yRotateSensitivity = 0.6f;
+    float zoomSensitivity = 0.001f;
+    float fieldOfView = 60.f;
+    float nearPlane = 0.1f;
+    float farPlane = 100.f;
 
 private:
     bool initialized = false;
@@ -53,6 +49,12 @@ private:
     // Mouse vars
     int lastX;
     int lastY;
+    
+    QVector3D rotationVector;
+
+    QMatrix4x4 scaleMatrix;
+    QMatrix4x4 rotMatrix;
+    QMatrix4x4 transMatrix;
 
 protected:
     // Mouse functions
