@@ -27,6 +27,10 @@ ModelViewer::ModelViewer(QWidget *parent)
     pLoadMenu->setObjectName("LoadMenu");
     pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
 
+    QMenu* pShaderMenu = pLoadMenu->addMenu("Shader");
+    pShaderMenu->addAction("Vertex", [=]{m_pGraphicsWindow->loadVertexShader(); });
+    pShaderMenu->addAction("Fragment", [=]{m_pGraphicsWindow->loadFragmentShader(); });
+
     // Primitive
     QMenu* pPrimitiveMenu = pLoadMenu->addMenu("Primitive");
     pPrimitiveMenu->setObjectName("PrimitiveMenu");
@@ -39,8 +43,6 @@ ModelViewer::ModelViewer(QWidget *parent)
     pPrimitiveMenu->addAction("Octahedron", [=] {m_pGraphicsWindow->addPrimitive("Octahedron.stl"); });
     pPrimitiveMenu->addAction("Icosahedron", [=] {m_pGraphicsWindow->addPrimitive("Icosahedron.stl"); });
     pPrimitiveMenu->addAction("Dodecahedron", [=] {m_pGraphicsWindow->addPrimitive("Dodecahedron.stl"); });
-
-    pLoadMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->loadShader(); */ });
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
     pSaveMenu->setObjectName("SaveMenu");
