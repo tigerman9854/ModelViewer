@@ -21,8 +21,10 @@ ModelViewer::ModelViewer(QWidget *parent)
     // Menu bar
     // -> File menu
     QMenu* pFileMenu = menuBar()->addMenu("File");
+    pFileMenu->setObjectName("FileMenu");
 
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
+    pLoadMenu->setObjectName("LoadMenu");
     pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
 
     QMenu* pShaderMenu = pLoadMenu->addMenu("Shader");
@@ -31,6 +33,7 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     // Primitive
     QMenu* pPrimitiveMenu = pLoadMenu->addMenu("Primitive");
+    pPrimitiveMenu->setObjectName("PrimitiveMenu");
     pPrimitiveMenu->addAction("Sphere", [=]{m_pGraphicsWindow->addPrimitive("Sphere.obj"); });
     pPrimitiveMenu->addAction("Cube", [=] {m_pGraphicsWindow->addPrimitive("Cube.obj"); });
     pPrimitiveMenu->addAction("Torus", [=]{m_pGraphicsWindow->addPrimitive("Torus.obj"); });
@@ -42,19 +45,23 @@ ModelViewer::ModelViewer(QWidget *parent)
     pPrimitiveMenu->addAction("Dodecahedron", [=] {m_pGraphicsWindow->addPrimitive("Dodecahedron.stl"); });
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
+    pSaveMenu->setObjectName("SaveMenu");
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
     pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
 
     pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
     pFileMenu->addAction("Quit", [=] { /* TODO: m_pGraphicsWindow->exitGracefully(); */ });
+
     // -> Edit menu
     QMenu* pEditMenu = menuBar()->addMenu("Edit");
-
+    pEditMenu->setObjectName("EditMenu");
     pEditMenu->addAction("Current Shader", [=] { /* TODO: m_pGraphicsWindow->editCurrentShader(); */ });
+
     // -> View menu
     QMenu* pViewMenu = menuBar()->addMenu("View");
-
+    pViewMenu->setObjectName("ViewMenu");
     pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); });
+
     // -> Help menu
     menuBar()->addAction("Help", [=] { /* TODO: m_pGraphicsWindow->displayHelpDoc(); */ }); 
 };
