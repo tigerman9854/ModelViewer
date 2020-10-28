@@ -13,6 +13,7 @@ private slots:
 	// Add tests here
 	void testShow();
 	void loadModel();
+	void loadShader();
 	void displayModel();
 	void resetView();
 	void rotateWithMouse();
@@ -55,6 +56,14 @@ void ModelViewerTest::loadModel()
 	ModelLoader m;
 	Model loaded = m.LoadModel("../Data/Primitives/cube.obj");
 	QVERIFY(loaded.m_isValid);
+}
+
+void ModelViewerTest::loadShader()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->loadVertexShader("../Data/Shaders/ads.vert");
+	QVERIFY(success);
+	success = m_pWindow->GetGraphicsWindow()->loadFragmentShader("../Data/Shaders/ads.frag");
+	QVERIFY(success);
 }
 
 void ModelViewerTest::displayModel()

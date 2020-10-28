@@ -239,8 +239,8 @@ void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
-    currentVertFile = "../Data/Shaders/basic.vert";
-    currentFragFile = "../Data/Shaders/basic.frag";
+    currentVertFile = "../Data/Shaders/ads.vert";
+    currentFragFile = "../Data/Shaders/ads.frag";
     m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     m_program->link();
@@ -253,8 +253,6 @@ void ViewerGraphicsWindow::initialize()
 
     // Set up the default view
     resetView();
-
-    // TODO: Set attribute locations for m_normAttr and m_uvAttr once our shader supports these
 
     m_normAttr = m_program->attributeLocation("normAttr");
     m_uvAttr = m_program->attributeLocation("uvAttr");
@@ -269,8 +267,6 @@ void ViewerGraphicsWindow::initialize()
     //m_uADColor = m_program->uniformLocation("uADColor");
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
-
-    //m_program->bind();
 
     initialized = true;
 }
