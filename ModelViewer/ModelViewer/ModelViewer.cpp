@@ -50,6 +50,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
     pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
 
+    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); });
     pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
     pFileMenu->addAction("Quit", [=] { /* TODO: m_pGraphicsWindow->exitGracefully(); */ });
 
@@ -71,4 +72,6 @@ ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
 }
 
-
+GraphicsWindowDelegate* ModelViewer::GetGraphicsDelegate() {
+    return m_pGraphicsWindowDelegate;
+}

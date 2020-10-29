@@ -49,7 +49,7 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	pErrorLayout->setAlignment(Qt::AlignCenter);
 	m_pErrorText = new QLabel("Error");
 	pErrorLayout->addWidget(m_pErrorText);
-	m_pEmptyWidget->setLayout(pErrorLayout);
+	m_pErrorWidget->setLayout(pErrorLayout);
 
 	// Loading screen, shown during synchronous model loading
 	m_pLoadingWidget = new QWidget();
@@ -57,7 +57,7 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	pLoadingLayout->setAlignment(Qt::AlignCenter);
 	m_pLoadingText = new QLabel("Loading");
 	pLoadingLayout->addWidget(m_pLoadingText);
-	m_pEmptyWidget->setLayout(pLoadingLayout);
+	m_pLoadingWidget->setLayout(pLoadingLayout);
 
 	// Setup the style for placeholder widgets
 	styleWidget(m_pEmptyWidget);
@@ -80,12 +80,18 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::Initialized, this, &GraphicsWindowDelegate::OnViewerInitialized);
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::BeginModelLoading, this, &GraphicsWindowDelegate::OnBeginModelLoading);
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::EndModelLoading, this, &GraphicsWindowDelegate::OnEndModelLoading);
+	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::Error, this, &GraphicsWindowDelegate::OnError);
+	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::ModelUnloaded, this, &GraphicsWindowDelegate::OnModelUnloaded);
 }
 
 void GraphicsWindowDelegate::SetStatus(Status s)
 {
 	m_status = s;
 	DoOnStatusChanged();
+}
+
+GraphicsWindowDelegate::Status GraphicsWindowDelegate::GetStatus() {
+	return m_status;
 }
 
 void GraphicsWindowDelegate::DoOnStatusChanged() {
@@ -144,11 +150,20 @@ void GraphicsWindowDelegate::OnEndModelLoading(bool success, QString filepath)
 		SetStatus(Status::k_model);
 	}
 	else {
-		// Change the error text
 		QFileInfo fileInfo(filepath);
 		QString text = QString("Failed to load %1.").arg(fileInfo.fileName());
-		m_pErrorText->setText(text);
-
-		SetStatus(Status::k_error);
+		OnError(text);
 	}
+}
+
+void GraphicsWindowDelegate::OnError(QString message)
+{
+	// Change the error text
+	m_pErrorText->setText("Error: " + message);
+	SetStatus(Status::k_error);
+}
+
+void GraphicsWindowDelegate::OnModelUnloaded()
+{
+	SetStatus(Status::k_empty);
 }

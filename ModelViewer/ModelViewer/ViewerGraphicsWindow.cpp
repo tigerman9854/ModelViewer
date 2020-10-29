@@ -49,6 +49,14 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
+bool ViewerGraphicsWindow::unloadModel()
+{
+    m_currentModel = Model();
+    emit ModelUnloaded();
+
+    return true;
+}
+
 bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
 {
     if (!initialized)
@@ -72,8 +80,8 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     if (!m_program->link())
     {
-        QString error = m_program->log();
-        qDebug() << error << endl;
+        emit Error("Failed to link shader program.");
+
         currentVertFile = vertfilepath;
         return false;
     }
@@ -130,6 +138,8 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
         qDebug() << error << endl;
 
         currentFragFile = fragfilepath;
+
+        emit Error("Failed to link shader program.");
 
         return false;
     }

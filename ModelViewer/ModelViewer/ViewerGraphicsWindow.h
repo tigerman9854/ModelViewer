@@ -18,6 +18,7 @@ public:
     void resetView();
 
     bool loadModel(QString filepath = QString());
+    bool unloadModel();
 
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
@@ -43,9 +44,11 @@ public:
     float farPlane = 100.f;
 
 signals:
+    void Error(QString message);
     void Initialized();
     void BeginModelLoading(QString filepath);
     void EndModelLoading(bool success, QString filepath);
+    void ModelUnloaded();
 
 protected:
     // Mouse functions

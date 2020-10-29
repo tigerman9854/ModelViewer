@@ -13,6 +13,7 @@ public:
     ModelViewer(QWidget *parent = Q_NULLPTR);
 
     ViewerGraphicsWindow* GetGraphicsWindow();
+    GraphicsWindowDelegate* GetGraphicsDelegate();
     
 
 private:

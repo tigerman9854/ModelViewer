@@ -22,11 +22,14 @@ public:
 	};
 
 	void SetStatus(Status s);
+	Status GetStatus();
 
 private slots:
 	void OnViewerInitialized();
 	void OnBeginModelLoading(QString filepath);
 	void OnEndModelLoading(bool success, QString filepath);
+	void OnError(QString message);
+	void OnModelUnloaded();
 
 private:
 	void DoOnStatusChanged();
