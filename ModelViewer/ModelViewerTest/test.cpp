@@ -37,8 +37,7 @@ void ModelViewerTest::initTestCase()
 {
 	// Called once before all test cases
 	m_pWindow = new ModelViewer();
-	resetMatrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-	resetMatrix.translate(0, 0, -4);
+	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
 }
 
 void ModelViewerTest::cleanupTestCase()
@@ -95,17 +94,18 @@ void ModelViewerTest::integration()
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
 
-	QVERIFY(m_pWindow->GetGraphicsWindow()->sceneMatrix != resetMatrix);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	QTest::qWait(100);
 
 
 	// Pan the camera
+	m_pWindow->GetGraphicsWindow()->resetView();
+
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(0, 0));
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(150, 150));
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(150, 150));
 
-	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportX != 0);
-	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportY != 0);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	QTest::qWait(100);
 
 	m_pWindow->hide();
@@ -150,16 +150,17 @@ void ModelViewerTest::resetView()
 
 	// Check that we start w/ an idenity matrix
 	m_pWindow->GetGraphicsWindow()->resetView();
-	QVERIFY(m_pWindow->GetGraphicsWindow()->sceneMatrix == resetMatrix);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
 
 	// Check that after altering it we end w/ an idenity matrix
-	m_pWindow->GetGraphicsWindow()->viewportX = 10;
-	m_pWindow->GetGraphicsWindow()->viewportY = 10;
-	m_pWindow->GetGraphicsWindow()->sceneMatrix.translate(5, 2, 7);
+	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
+	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(3, 3));
+
+	// Reset the view
 	m_pWindow->GetGraphicsWindow()->resetView();
-	QVERIFY(m_pWindow->GetGraphicsWindow()->sceneMatrix == resetMatrix);
-	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportX == 0);
-	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportY == 0);
+
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
 	m_pWindow->hide();
 }
 
@@ -167,13 +168,14 @@ void ModelViewerTest::rotateWithMouse()
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
 
 	// Test rotating
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
-	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(3, 3));
 
-	QVERIFY(m_pWindow->GetGraphicsWindow()->sceneMatrix != resetMatrix);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	m_pWindow->hide();
 }
 
@@ -182,6 +184,7 @@ void ModelViewerTest::panWithMouse()
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
 
 	// Test Pan
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
@@ -191,8 +194,7 @@ void ModelViewerTest::panWithMouse()
 	// Wait for new frame to be drawn
 	QTest::qWait(100);
 
-	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportX != 0);
-	QVERIFY(m_pWindow->GetGraphicsWindow()->viewportY != 0);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	m_pWindow->hide();
 }
 
@@ -200,18 +202,19 @@ void ModelViewerTest::checkMousePressAndRelease()// FIXME: The mouse inputs are 
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
 
 	// Test right click
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
-	QVERIFY(m_pWindow->GetGraphicsWindow()->rightMousePressed);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetRightMousePressed());
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
-	QVERIFY(!m_pWindow->GetGraphicsWindow()->rightMousePressed);
+	QVERIFY(!m_pWindow->GetGraphicsWindow()->GetRightMousePressed());
 
 	// Test left click
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
-	QVERIFY(m_pWindow->GetGraphicsWindow()->leftMousePressed);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetLeftMousePressed());
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
-	QVERIFY(!m_pWindow->GetGraphicsWindow()->leftMousePressed);
+	QVERIFY(!m_pWindow->GetGraphicsWindow()->GetLeftMousePressed());
 	m_pWindow->hide();
 }
 
@@ -219,11 +222,12 @@ void ModelViewerTest::zoomWithMouse()
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
+	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
 
 	//https://stackoverflow.com/questions/50996997/how-to-simulate-mouse-wheel-events-using-qtestlib-qt5
 	ViewerGraphicsWindow* test = m_pWindow->GetGraphicsWindow();
-	test->sceneMatrix.scale(.5 * test->zoomSensitivity);
-	QVERIFY(test->sceneMatrix != resetMatrix);
+	test->SetScale(.5 * test->zoomSensitivity);
+	QVERIFY(test->GetModelMatrix() != resetMatrix);
 }
 
 

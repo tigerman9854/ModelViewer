@@ -35,6 +35,8 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     format.setSamples(16);
     setFormat(format);
 
+    resetView();
+
     setAnimating(true);
 }
 
@@ -170,16 +172,17 @@ void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
 {
     // Set class vars
     if (event->button() == Qt::LeftButton) {
-        leftMousePressed = true;
+        m_leftMousePressed = true;
     }
 
     if (event->button() == Qt::RightButton) {
-        rightMousePressed = true;
+        m_rightMousePressed = true;
     }
 
     // Make sure that these are set before the mouseMoveEvent triggers
     lastX = event->x();
     lastY = event->y();
+
     // Call the parent class 
     QWindow::mouseReleaseEvent(event);
 }
@@ -188,12 +191,13 @@ void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
 {
     // Set class vars
     if (event->button() == Qt::LeftButton) {
-        leftMousePressed = false;
+        m_leftMousePressed = false;
     }
 
     if (event->button() == Qt::RightButton) {
-        rightMousePressed = false;
+        m_rightMousePressed = false;
     }
+
     // Call the parent class
     QWindow::mouseReleaseEvent(event);
 }
@@ -204,36 +208,39 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     float deltaY = lastY - event->y();
 
     // RMB: Rotate off of x y movement
-    if (event->buttons() & Qt::RightButton) {
-        // TODO: This could be better. If we keep track of the normal of the model
-        // we could make sure that translateing in x & y won't pitch the object.
-        sceneMatrix.rotate(-deltaX * xRotateSensitivity, 0, 1, 0);
-        sceneMatrix.rotate(-deltaY * yRotateSensitivity, 1, 0, 0);
-        modelview.rotate(-deltaX * xRotateSensitivity, 0, 1, 0);
-        modelview.rotate(-deltaY * yRotateSensitivity, 1, 0, 0);
+    if (event->buttons() & Qt::LeftButton && m_leftMousePressed) {
+        QVector3D xAxis(1, 0, 0);
+        QVector3D yAxis(0, 1, 0);
+        
+        QMatrix4x4 newRot;
+        newRot.rotate(-deltaX * xRotateSensitivity, yAxis);
+        newRot.rotate(-deltaY * yRotateSensitivity, xAxis);
+
+        // Perform the new rotation AFTER the previous rotations
+        m_rotMatrix = newRot * m_rotMatrix;
     }
 
     // MMB: Pan off of x y movement
-    if (event->buttons() & Qt::LeftButton) {
-        viewportX += -deltaX * viewportXSensitivity;
-        viewportY += deltaY * viewportYSensitivity;
+    if (event->buttons() & Qt::RightButton && m_rightMousePressed) {
+        // Adjust pan sensitivity based on the size of the window
+        const float panAdj = 480.f / (float)height();
+
+        m_transMatrix.translate(-deltaX * panXSensitivity * panAdj, 0, 0);
+        m_transMatrix.translate(0, deltaY * panYSensitivity * panAdj, 0);
     }
 
     // After moving update the lastX/Y
     lastX = event->x();
     lastY = event->y();
+
     // Call the parent class 
     QWindow::mouseMoveEvent(event);
 }
 
 void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
 {
-    if ((event->angleDelta().y()) > 0) {
-        sceneMatrix.scale(0.5f * zoomSensitivity);
-    }
-    else {
-        sceneMatrix.scale(2 * zoomSensitivity);
-    }
+    const float zoomAmount = zoomSensitivity * event->angleDelta().y();
+    m_scaleMatrix.scale(1.f + zoomAmount);
 }
 
 void ViewerGraphicsWindow::initialize()
@@ -278,17 +285,25 @@ void ViewerGraphicsWindow::initialize()
 void ViewerGraphicsWindow::render()
 {
     const qreal retinaScale = devicePixelRatio();
-    glViewport(viewportX, viewportY, width() * retinaScale, height() * retinaScale);
+    glViewport(0, 0, width() * retinaScale, height() * retinaScale);
+
+    QMatrix4x4 viewMatrix;
+    viewMatrix.perspective(fieldOfView, float(width() * retinaScale) / float(height() * retinaScale), nearPlane, farPlane);
+
+    QMatrix4x4 modelMatrix = GetModelMatrix();
+
+    QMatrix4x4 modelViewProjectionMatrix;
+    modelViewProjectionMatrix = viewMatrix * modelMatrix;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_program->bind();
 
-    m_program->setUniformValue(m_matrixUniform, sceneMatrix);
+    m_program->setUniformValue(m_matrixUniform, modelViewProjectionMatrix);
 
-    m_program->setUniformValue(m_modelviewUniform, modelview);
+    m_program->setUniformValue(m_modelviewUniform, modelMatrix);
 
-    QMatrix3x3 normal = modelview.normalMatrix();
+    QMatrix3x3 normal = modelMatrix.normalMatrix();
     m_program->setUniformValue(m_normalUniform, normal);
 
     QVector3D lightPos = QVector3D(1., 1., -1.);
@@ -391,21 +406,51 @@ void ViewerGraphicsWindow::render()
 
 void ViewerGraphicsWindow::resetView()
 {
-    // Reset the sceneMatrix
-    sceneMatrix.setToIdentity();
-    sceneMatrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-    sceneMatrix.translate(0, 0, -4);
-
-    modelview.setToIdentity();
-    modelview.translate(0, 0, -4);
-
-    // Rest the mouse variables
-    viewportX = 0;
-    viewportY = 0;
+    // Reset matrices to default values
+    m_scaleMatrix = QMatrix4x4();
+    m_rotMatrix = QMatrix4x4();
+    m_transMatrix = QMatrix4x4();
+    m_transMatrix.translate(0, 0, -4);
 }
 
 bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
     // Load  model
     QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     return loadModel(filepath);
+}
+
+
+// ***************************************************
+// Getters & Setters
+// ***************************************************
+
+bool ViewerGraphicsWindow::GetLeftMousePressed()
+{
+    return m_leftMousePressed;
+}
+bool ViewerGraphicsWindow::GetRightMousePressed()
+{
+    return m_rightMousePressed;
+}
+QMatrix4x4 ViewerGraphicsWindow::GetScaleMatrix()
+{
+    return m_scaleMatrix;
+}
+void ViewerGraphicsWindow::SetScale(float scale)
+{
+    QMatrix4x4 newMat;
+    newMat.scale(scale);
+    m_scaleMatrix = newMat;
+}
+QMatrix4x4 ViewerGraphicsWindow::GetRotationMatrix()
+{
+    return m_rotMatrix;
+}
+QMatrix4x4 ViewerGraphicsWindow::GetTranslationMatrix()
+{
+    return m_transMatrix;
+}
+QMatrix4x4 ViewerGraphicsWindow::GetModelMatrix()
+{
+    return m_transMatrix * m_rotMatrix * m_scaleMatrix;
 }
