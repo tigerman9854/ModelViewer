@@ -22,6 +22,10 @@ public:
 
     bool addPrimitive(QString filepath);
 
+    void editCurrentShaders();
+    void reloadCurrentShaders();
+    void openShaderFile(QString filepath = QString());
+
     // Mouse variables
     QMatrix4x4 sceneMatrix;
     float viewportX = 0;

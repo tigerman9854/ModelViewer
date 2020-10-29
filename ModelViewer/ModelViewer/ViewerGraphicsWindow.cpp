@@ -10,6 +10,9 @@
 #include <QFileDialog>
 #include <QMouseEvent>
 
+#include <QdesktopServices>
+#include <QUrl>
+
 // Define default shaders
 static const char* vertexShaderSource =
     "attribute highp vec4 posAttr;\n"
@@ -164,6 +167,43 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     m_uShininess = m_program->uniformLocation("uShininess");
 
     return true;
+}
+
+void ViewerGraphicsWindow::editCurrentShaders()
+{
+    QDesktopServices desk;
+    QDir dir;
+    QString currentPath = dir.currentPath();
+    //qDebug() << currentPath << endl;
+
+    QString fullVertPath = "//" + currentPath + "/" + currentVertFile;
+    QString fullFragPath = "//" + currentPath + "/" + currentFragFile;
+    //qDebug() << fullVertPath << endl;
+    
+    desk.openUrl(QUrl::fromLocalFile(fullVertPath));
+    desk.openUrl(QUrl::fromLocalFile(fullFragPath));
+}
+
+void ViewerGraphicsWindow::reloadCurrentShaders()
+{
+    loadVertexShader(currentVertFile);
+    loadFragmentShader(currentFragFile);
+}
+
+void ViewerGraphicsWindow::openShaderFile(QString filepath)
+{
+    if (filepath.isEmpty()) {
+        filepath = QFileDialog::getOpenFileName(nullptr, "Open Shader File", "../Data/Shaders/", "");
+        if (filepath.isEmpty()) {
+            return;
+        }
+    }
+
+    QDesktopServices desk;
+    QDir dir;
+    QString currentPath = dir.currentPath();
+    QString fullPath = "//" + currentPath + "/" + filepath;
+    desk.openUrl(QUrl::fromLocalFile(filepath));
 }
 
 void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)

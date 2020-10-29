@@ -30,6 +30,8 @@ ModelViewer::ModelViewer(QWidget *parent)
     QMenu* pShaderMenu = pLoadMenu->addMenu("Shader");
     pShaderMenu->addAction("Vertex", [=]{m_pGraphicsWindow->loadVertexShader(); });
     pShaderMenu->addAction("Fragment", [=]{m_pGraphicsWindow->loadFragmentShader(); });
+    pShaderMenu->addAction("Reload Current Shaders", [=]{m_pGraphicsWindow->reloadCurrentShaders(); });
+
 
     // Primitive
     QMenu* pPrimitiveMenu = pLoadMenu->addMenu("Primitive");
@@ -55,7 +57,9 @@ ModelViewer::ModelViewer(QWidget *parent)
     // -> Edit menu
     QMenu* pEditMenu = menuBar()->addMenu("Edit");
     pEditMenu->setObjectName("EditMenu");
-    pEditMenu->addAction("Current Shader", [=] { /* TODO: m_pGraphicsWindow->editCurrentShader(); */ });
+
+    pEditMenu->addAction("Shader File", [=] { m_pGraphicsWindow->openShaderFile(); });
+    pEditMenu->addAction("Current Shaders", [=] { m_pGraphicsWindow->editCurrentShaders(); });
 
     // -> View menu
     QMenu* pViewMenu = menuBar()->addMenu("View");
