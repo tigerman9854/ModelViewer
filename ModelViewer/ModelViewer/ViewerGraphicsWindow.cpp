@@ -208,7 +208,7 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     float deltaY = lastY - event->y();
 
     // RMB: Rotate off of x y movement
-    if (event->buttons() & Qt::RightButton) {
+    if (event->buttons() & Qt::LeftButton && m_leftMousePressed) {
         QVector3D xAxis(1, 0, 0);
         QVector3D yAxis(0, 1, 0);
         
@@ -221,7 +221,7 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     }
 
     // MMB: Pan off of x y movement
-    if (event->buttons() & Qt::LeftButton) {
+    if (event->buttons() & Qt::RightButton && m_rightMousePressed) {
         // Adjust pan sensitivity based on the size of the window
         const float panAdj = 480.f / (float)height();
 
