@@ -90,9 +90,9 @@ void ModelViewerTest::integration()
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 
 	// Rotate the camera
-	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
+	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
-	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(3, 3));
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	QTest::qWait(100);
@@ -101,9 +101,9 @@ void ModelViewerTest::integration()
 	// Pan the camera
 	m_pWindow->GetGraphicsWindow()->resetView();
 
-	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(0, 0));
+	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(0, 0));
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(150, 150));
-	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(150, 150));
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(150, 150));
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	QTest::qWait(100);
@@ -171,9 +171,9 @@ void ModelViewerTest::rotateWithMouse()
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
 
 	// Test rotating
-	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
+	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
-	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(3, 3));
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(3, 3));
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	m_pWindow->hide();
@@ -187,9 +187,9 @@ void ModelViewerTest::panWithMouse()
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
 
 	// Test Pan
-	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
+	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(10, 10));
-	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(10, 10)); // Release the mouse at (10, 10)
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(10, 10)); // Release the mouse at (10, 10)
 
 	// Wait for new frame to be drawn
 	QTest::qWait(100);
