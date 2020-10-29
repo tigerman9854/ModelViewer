@@ -33,9 +33,14 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	QGridLayout* pEmptyLayout = new QGridLayout(m_pEmptyWidget);
 	pEmptyLayout->setAlignment(Qt::AlignCenter);
 	m_pEmptyText = new QLabel("Welcome to Model Viewer!");
-	pEmptyLayout->addWidget(m_pEmptyText);
-	QPushButton* pLoadButton = new QPushButton("Load Model", pEmptyLayout);
-	pLoadButton->
+	QPushButton* pLoadButton = new QPushButton("Load Model", m_pEmptyWidget);
+	connect(pLoadButton, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(); });
+
+	pEmptyLayout->setRowStretch(0, 5);
+	pEmptyLayout->addWidget(m_pEmptyText, 1, 0, 1, 3);
+	pEmptyLayout->setRowStretch(2, 1);
+	pEmptyLayout->addWidget(pLoadButton, 3, 1, 1, 1);
+	pEmptyLayout->setRowStretch(4, 5);
 	m_pEmptyWidget->setLayout(pEmptyLayout);
 
 	// Error screen, shown when there is an issue loading
