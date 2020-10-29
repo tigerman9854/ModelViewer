@@ -3,6 +3,7 @@
 #include <QMainWindow>
 
 class ViewerGraphicsWindow;
+class GraphicsWindowDelegate;
 
 class Q_DECL_EXPORT ModelViewer : public QMainWindow
 {
@@ -16,4 +17,5 @@ public:
 
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow;
+    GraphicsWindowDelegate* m_pGraphicsWindowDelegate;
 };

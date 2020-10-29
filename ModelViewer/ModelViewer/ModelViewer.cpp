@@ -1,5 +1,6 @@
 #include "ModelViewer.h"
 #include "ViewerGraphicsWindow.h"
+#include "GraphicsWindowDelegate.h"
 
 #include <QWidget>
 #include <QLayout>
@@ -12,8 +13,8 @@ ModelViewer::ModelViewer(QWidget *parent)
 {
     // Create a new graphics window, and set it as the central widget
     m_pGraphicsWindow = new ViewerGraphicsWindow();
-    QWidget* pContainer = QWidget::createWindowContainer(m_pGraphicsWindow);
-    setCentralWidget(pContainer);
+    m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
+    setCentralWidget(m_pGraphicsWindowDelegate);
 
     // Change the size to something usable
     resize(640, 480);
