@@ -10,23 +10,6 @@
 #include <QFileDialog>
 #include <QMouseEvent>
 
-// Define default shaders
-static const char* vertexShaderSource =
-    "attribute highp vec4 posAttr;\n"
-    "attribute lowp vec4 colAttr;\n"
-    "varying lowp vec4 col;\n"
-    "uniform highp mat4 matrix;\n"
-    "void main() {\n"
-    "   col = colAttr;\n"
-    "   gl_Position = matrix * posAttr;\n"
-    "}\n";
-
-static const char* fragmentShaderSource =
-    "varying lowp vec4 col;\n"
-    "void main() {\n"
-    "   gl_FragColor = col;\n"
-    "}\n";
-
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     : OpenGLWindow(parent)
@@ -53,10 +36,25 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
         }
     }
 
+    // Let other widgets know that we are beginning a load operation (may take some time)
+    emit BeginModelLoading(filepath);
+
     // Load the model
     ModelLoader m;
     m_currentModel = m.LoadModel(filepath);
+    
+    // Let other widgets know that a model has been loaded
+    emit EndModelLoading(m_currentModel.m_isValid, filepath);
+
     return m_currentModel.m_isValid;
+}
+
+bool ViewerGraphicsWindow::unloadModel()
+{
+    m_currentModel = Model();
+    emit ModelUnloaded();
+
+    return true;
 }
 
 bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
@@ -82,8 +80,8 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     if (!m_program->link())
     {
-        QString error = m_program->log();
-        qDebug() << error << endl;
+        emit Error("Failed to link shader program.");
+
         currentVertFile = vertfilepath;
         return false;
     }
@@ -140,6 +138,8 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
         qDebug() << error << endl;
 
         currentFragFile = fragfilepath;
+
+        emit Error("Failed to link shader program.");
 
         return false;
     }
@@ -222,8 +222,8 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
 
     // MMB: Pan off of x y movement
     if (event->buttons() & Qt::RightButton && m_rightMousePressed) {
-        // Adjust pan sensitivity based on the size of the window
-        const float panAdj = 480.f / (float)height();
+        // Adjust pan sensitivity based on the size of the window and FOV
+        const float panAdj = (480.f / (float)height()) * (fieldOfView / 60.f);
 
         m_transMatrix.translate(-deltaX * panXSensitivity * panAdj, 0, 0);
         m_transMatrix.translate(0, deltaY * panYSensitivity * panAdj, 0);
@@ -278,7 +278,7 @@ void ViewerGraphicsWindow::initialize()
     m_uShininess = m_program->uniformLocation("uShininess");
 
     //m_program->bind();
-
+    emit Initialized();
     initialized = true;
 }
 
@@ -371,32 +371,6 @@ void ViewerGraphicsWindow::render()
 
             glDisableVertexAttribArray(m_posAttr);
         }
-    }
-    else
-    {
-        // Default triangle
-        static const GLfloat vertices[] = {
-             0.0f,  0.707f,
-            -0.5f, -0.5f,
-             0.5f, -0.5f
-        };
-
-        static const GLfloat colors[] = {
-            1.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 1.0f
-        };
-
-        glVertexAttribPointer(m_posAttr, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-        glVertexAttribPointer(m_colAttr, 3, GL_FLOAT, GL_FALSE, 0, colors);
-
-        glEnableVertexAttribArray(m_posAttr);
-        glEnableVertexAttribArray(m_colAttr);
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        glDisableVertexAttribArray(m_colAttr);
-        glDisableVertexAttribArray(m_posAttr);
     }
 
     m_program->release();

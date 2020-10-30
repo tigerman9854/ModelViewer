@@ -1,10 +1,12 @@
 #include <QtTest/QtTest>
 #include <QMenu>
 #include <QMenuBar>
+#include <QSignalSpy>
 
 #include "ModelViewer.h"
 #include "ModelLoader.h"
 #include "ViewerGraphicsWindow.h"
+#include "GraphicsWindowDelegate.h"
 
 class ModelViewerTest : public QObject {
 	Q_OBJECT
@@ -17,6 +19,11 @@ private slots:
 
 	// Add tests here
 	void integration();
+
+	void invalidFile();
+	void loadingPage();
+	void unloadModel();
+
 	void testShow();
 	void loadModel();
 	void displayModel();
@@ -89,6 +96,10 @@ void ModelViewerTest::integration()
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 
+	// Check that the shape was loaded
+	GraphicsWindowDelegate* pGraphicsDelegate = m_pWindow->GetGraphicsDelegate();
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_model);
+
 	// Rotate the camera
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
 	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
@@ -108,8 +119,87 @@ void ModelViewerTest::integration()
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	QTest::qWait(100);
 
+	// Unload the shape
+	pFileMenu->popup(m_pWindow->mapToGlobal(pMenuBar->pos()));
+	pFileMenu->setFocus();
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
+
+	// Check that the status is updated
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_empty);
+
+	QTest::qWait(100);
+
 	m_pWindow->hide();
 	QVERIFY(m_pWindow->isHidden());
+}
+
+void ModelViewerTest::invalidFile()
+{
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+	GraphicsWindowDelegate* pGraphicsDelegate = m_pWindow->GetGraphicsDelegate();
+
+	QSignalSpy beginLoadSignalSpy(pGraphicsWindow, SIGNAL(BeginModelLoading(QString)));
+	QSignalSpy endLoadSignalSpy(pGraphicsWindow, SIGNAL(EndModelLoading(bool, QString)));
+
+	QString path("../Data/Models/Avent.mtl");
+	m_pWindow->GetGraphicsWindow()->loadModel(path);
+
+	// Ensure the correct signals were sent
+	QCOMPARE(beginLoadSignalSpy.count(), 1);
+	QCOMPARE(endLoadSignalSpy.count(), 1);
+
+	auto arguments = endLoadSignalSpy.takeFirst();
+	QVERIFY(arguments.at(0).toBool() == false);
+
+	// Check that the status is updated
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_error);
+}
+
+void ModelViewerTest::loadingPage()
+{
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+	GraphicsWindowDelegate* pGraphicsDelegate = m_pWindow->GetGraphicsDelegate();
+
+	pGraphicsWindow->unloadModel();
+
+	// Check the status before
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_empty);
+
+	QSignalSpy beginLoadSignalSpy(pGraphicsWindow, SIGNAL(BeginModelLoading(QString)));
+	QSignalSpy endLoadSignalSpy(pGraphicsWindow, SIGNAL(EndModelLoading(bool, QString)));
+
+	QString path("../Data/Models/cubeColor.ply");
+	m_pWindow->GetGraphicsWindow()->loadModel(path);
+
+	// Ensure the correct signals were sent
+	QCOMPARE(beginLoadSignalSpy.count(), 1);
+	QCOMPARE(endLoadSignalSpy.count(), 1);
+
+	auto arguments = endLoadSignalSpy.takeFirst();
+	QVERIFY(arguments.at(0).toBool() == true);
+	
+	// Check that the status is updated
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_model);
+}
+
+void ModelViewerTest::unloadModel()
+{
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+	GraphicsWindowDelegate* pGraphicsDelegate = m_pWindow->GetGraphicsDelegate();
+
+	// Load model
+	QString path("../Data/Models/cubeColor.ply");
+	m_pWindow->GetGraphicsWindow()->loadModel(path);
+
+	// Check the status after
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_model);
+
+	pGraphicsWindow->unloadModel();
+
+	// Check the status after
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_empty);
 }
 
 void ModelViewerTest::testShow()

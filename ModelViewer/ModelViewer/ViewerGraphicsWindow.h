@@ -6,6 +6,8 @@
 
 class ViewerGraphicsWindow : public OpenGLWindow
 {
+    Q_OBJECT
+
 public:
     using OpenGLWindow::OpenGLWindow;
 
@@ -16,6 +18,7 @@ public:
     void resetView();
 
     bool loadModel(QString filepath = QString());
+    bool unloadModel();
 
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
@@ -36,9 +39,16 @@ public:
     float xRotateSensitivity = 0.6f;
     float yRotateSensitivity = 0.6f;
     float zoomSensitivity = 0.001f;
-    float fieldOfView = 60.f;
+    float fieldOfView = 45.f;
     float nearPlane = 0.1f;
     float farPlane = 100.f;
+
+signals:
+    void Error(QString message);
+    void Initialized();
+    void BeginModelLoading(QString filepath);
+    void EndModelLoading(bool success, QString filepath);
+    void ModelUnloaded();
 
 protected:
     // Mouse functions

@@ -1,5 +1,6 @@
 #include "ModelViewer.h"
 #include "ViewerGraphicsWindow.h"
+#include "GraphicsWindowDelegate.h"
 
 #include <QWidget>
 #include <QLayout>
@@ -12,8 +13,8 @@ ModelViewer::ModelViewer(QWidget *parent)
 {
     // Create a new graphics window, and set it as the central widget
     m_pGraphicsWindow = new ViewerGraphicsWindow();
-    QWidget* pContainer = QWidget::createWindowContainer(m_pGraphicsWindow);
-    setCentralWidget(pContainer);
+    m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
+    setCentralWidget(m_pGraphicsWindowDelegate);
 
     // Change the size to something usable
     resize(640, 480);
@@ -49,6 +50,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
     pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
 
+    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); });
     pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
     pFileMenu->addAction("Quit", [=] { /* TODO: m_pGraphicsWindow->exitGracefully(); */ });
 
@@ -70,4 +72,6 @@ ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
 }
 
-
+GraphicsWindowDelegate* ModelViewer::GetGraphicsDelegate() {
+    return m_pGraphicsWindowDelegate;
+}
