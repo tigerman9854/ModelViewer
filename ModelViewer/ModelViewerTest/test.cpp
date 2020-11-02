@@ -32,6 +32,7 @@ private slots:
 	void panWithMouse();
 	void checkMousePressAndRelease();
 	void zoomWithMouse();
+	void defaultZoom();
 
 private:
 	ModelViewer* m_pWindow = nullptr;
@@ -240,7 +241,7 @@ void ModelViewerTest::resetView()
 
 	// Check that we start w/ an idenity matrix
 	m_pWindow->GetGraphicsWindow()->resetView();
-	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
+	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
 
 	// Check that after altering it we end w/ an idenity matrix
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
@@ -258,7 +259,7 @@ void ModelViewerTest::rotateWithMouse()
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
-	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
+	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
 
 	// Test rotating
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
@@ -274,7 +275,7 @@ void ModelViewerTest::panWithMouse()
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
-	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
+	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
 
 	// Test Pan
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
@@ -292,7 +293,7 @@ void ModelViewerTest::checkMousePressAndRelease()// FIXME: The mouse inputs are 
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
-	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
+	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
 
 	// Test right click
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
@@ -312,13 +313,29 @@ void ModelViewerTest::zoomWithMouse()
 {
 	m_pWindow->show();
 	m_pWindow->GetGraphicsWindow()->resetView();
-	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() == resetMatrix);
+	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
 
 	//https://stackoverflow.com/questions/50996997/how-to-simulate-mouse-wheel-events-using-qtestlib-qt5
 	ViewerGraphicsWindow* test = m_pWindow->GetGraphicsWindow();
 	test->SetScale(.5 * test->zoomSensitivity);
 	QVERIFY(test->GetModelMatrix() != resetMatrix);
 }
+
+void ModelViewerTest::defaultZoom()
+{
+	m_pWindow->show();
+	m_pWindow->GetGraphicsWindow()->resetView();
+	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
+
+	// Load a different model
+	bool success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cubeColor.ply");
+	QVERIFY(success);
+	
+	// Check that the scene was resized to show this model
+	ViewerGraphicsWindow* test = m_pWindow->GetGraphicsWindow();
+	QVERIFY(test->GetModelMatrix() != resetMatrix);
+}
+
 
 
 QTEST_MAIN(ModelViewerTest)
