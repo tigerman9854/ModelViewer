@@ -16,6 +16,7 @@ public:
     GraphicsWindowDelegate* GetGraphicsDelegate();
     
     void GetHelp();
+
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow;
     GraphicsWindowDelegate* m_pGraphicsWindowDelegate;
