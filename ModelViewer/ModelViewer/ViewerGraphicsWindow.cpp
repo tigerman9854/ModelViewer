@@ -169,7 +169,7 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     return true;
 }
 
-void ViewerGraphicsWindow::editCurrentShaders()
+bool ViewerGraphicsWindow::editCurrentShaders()
 {
     QDesktopServices desk;
     QDir dir;
@@ -180,22 +180,31 @@ void ViewerGraphicsWindow::editCurrentShaders()
     QString fullFragPath = "//" + currentPath + "/" + currentFragFile;
     //qDebug() << fullVertPath << endl;
     
-    desk.openUrl(QUrl::fromLocalFile(fullVertPath));
-    desk.openUrl(QUrl::fromLocalFile(fullFragPath));
+    if (!desk.openUrl(QUrl::fromLocalFile(fullVertPath)))
+    {
+        return false;
+    }
+    if(!desk.openUrl(QUrl::fromLocalFile(fullFragPath)))
+    {
+        return false;
+    }
+    return true;
 }
 
-void ViewerGraphicsWindow::reloadCurrentShaders()
+bool ViewerGraphicsWindow::reloadCurrentShaders()
 {
-    loadVertexShader(currentVertFile);
-    loadFragmentShader(currentFragFile);
+    if (loadVertexShader(currentVertFile) &&
+        loadFragmentShader(currentFragFile)) {
+        return true;
+    }
 }
 
-void ViewerGraphicsWindow::openShaderFile(QString filepath)
+bool ViewerGraphicsWindow::openShaderFile(QString filepath)
 {
     if (filepath.isEmpty()) {
         filepath = QFileDialog::getOpenFileName(nullptr, "Open Shader File", "../Data/Shaders/", "");
         if (filepath.isEmpty()) {
-            return;
+            return false;
         }
     }
 
@@ -203,7 +212,11 @@ void ViewerGraphicsWindow::openShaderFile(QString filepath)
     QDir dir;
     QString currentPath = dir.currentPath();
     QString fullPath = "//" + currentPath + "/" + filepath;
-    desk.openUrl(QUrl::fromLocalFile(filepath));
+    if (!desk.openUrl(QUrl::fromLocalFile(filepath)))
+    {
+        return false;
+    }
+    return true;
 }
 
 void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)

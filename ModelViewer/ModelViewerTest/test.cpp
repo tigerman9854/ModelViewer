@@ -20,6 +20,9 @@ private slots:
 	void testShow();
 	void loadModel();
 	void loadShader();
+	void loadCurrentShaders();
+	void editCurrentShaders();
+	void openShaderFile();
 	void displayModel();
 	void resetView();
 	void rotateWithMouse();
@@ -134,6 +137,24 @@ void ModelViewerTest::loadShader()
 	bool success = m_pWindow->GetGraphicsWindow()->loadVertexShader("../Data/Shaders/ads.vert");
 	QVERIFY(success);
 	success = m_pWindow->GetGraphicsWindow()->loadFragmentShader("../Data/Shaders/ads.frag");
+	QVERIFY(success);
+}
+
+void ModelViewerTest::loadCurrentShaders()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->reloadCurrentShaders();
+	QVERIFY(success);
+}
+
+void ModelViewerTest::editCurrentShaders()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->editCurrentShaders();
+	QVERIFY(success);
+}
+
+void ModelViewerTest::openShaderFile()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->openShaderFile("../Data/Shaders/basic.frag");
 	QVERIFY(success);
 }
 
