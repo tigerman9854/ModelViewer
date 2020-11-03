@@ -6,6 +6,8 @@
 
 class ViewerGraphicsWindow : public OpenGLWindow
 {
+    Q_OBJECT
+
 public:
     using OpenGLWindow::OpenGLWindow;
 
@@ -16,6 +18,7 @@ public:
     void resetView();
 
     bool loadModel(QString filepath = QString());
+    bool unloadModel();
 
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
@@ -37,14 +40,37 @@ public:
     bool leftMousePressed = false;
     bool rightMousePressed = false;
 
+    bool GetLeftMousePressed();
+    bool GetRightMousePressed();
+    QMatrix4x4 GetScaleMatrix();
+    void SetScale(float scale);
+    QMatrix4x4 GetRotationMatrix();
+    QMatrix4x4 GetTranslationMatrix();
+    QMatrix4x4 GetModelMatrix();
+
     // Mouse settings | % adjustment
-    float viewportXSensitivity = 1;
-    float viewportYSensitivity = 1;
-    float panXSensitivity = .01;
-    float panYSensitivity = .01;
-    float xRotateSensitivity = 1;
-    float yRotateSensitivity = 1;
-    float zoomSensitivity = 1;
+    float panXSensitivity = .01f;
+    float panYSensitivity = .01f;
+    float xRotateSensitivity = 0.6f;
+    float yRotateSensitivity = 0.6f;
+    float zoomSensitivity = 0.001f;
+    float fieldOfView = 45.f;
+    float nearPlane = 0.1f;
+    float farPlane = 100.f;
+
+signals:
+    void Error(QString message);
+    void Initialized();
+    void BeginModelLoading(QString filepath);
+    void EndModelLoading(bool success, QString filepath);
+    void ModelUnloaded();
+
+protected:
+    // Mouse functions
+    virtual void mousePressEvent(QMouseEvent*) override;
+    virtual void mouseMoveEvent(QMouseEvent*) override;
+    virtual void mouseReleaseEvent(QMouseEvent*) override;
+    virtual void wheelEvent(QWheelEvent*) override;
 
 private:
     bool initialized = false;
@@ -76,11 +102,10 @@ private:
     // Mouse vars
     int lastX;
     int lastY;
+    bool m_leftMousePressed = false;
+    bool m_rightMousePressed = false;
 
-protected:
-    // Mouse functions
-    void mousePressEvent(QMouseEvent*) override;
-    void mouseMoveEvent(QMouseEvent*) override;
-    void mouseReleaseEvent(QMouseEvent*) override;
-    void wheelEvent(QWheelEvent*) override;
+    QMatrix4x4 m_scaleMatrix;
+    QMatrix4x4 m_rotMatrix;
+    QMatrix4x4 m_transMatrix;
 };

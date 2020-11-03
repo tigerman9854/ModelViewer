@@ -1,19 +1,23 @@
 #include "ModelViewer.h"
 #include "ViewerGraphicsWindow.h"
+#include "GraphicsWindowDelegate.h"
 
 #include <QWidget>
 #include <QLayout>
 #include <QMenuBar>
 #include <QMenu>
 #include <QMatrix4x4>
+#include <QLabel>
+#include <QUrl>
+#include <QDesktopServices>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
 {
     // Create a new graphics window, and set it as the central widget
     m_pGraphicsWindow = new ViewerGraphicsWindow();
-    QWidget* pContainer = QWidget::createWindowContainer(m_pGraphicsWindow);
-    setCentralWidget(pContainer);
+    m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
+    setCentralWidget(m_pGraphicsWindowDelegate);
 
     // Change the size to something usable
     resize(640, 480);
@@ -51,6 +55,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
     pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
 
+    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); });
     pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
     pFileMenu->addAction("Quit", [=] { /* TODO: m_pGraphicsWindow->exitGracefully(); */ });
 
@@ -67,11 +72,27 @@ ModelViewer::ModelViewer(QWidget *parent)
     pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); });
 
     // -> Help menu
-    menuBar()->addAction("Help", [=] { /* TODO: m_pGraphicsWindow->displayHelpDoc(); */ }); 
-};
+
+    // if user click help menu, it will let user go to github page to read the Wiki
+    // try
+    QMenu* pHelpMenu = menuBar()->addMenu("Help");
+    pHelpMenu->setObjectName("HelpMenu");
+    pHelpMenu->addAction("Help", [=] {GetHelp(); });
+}
+
 
 ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
 }
 
+GraphicsWindowDelegate* ModelViewer::GetGraphicsDelegate() {
+    return m_pGraphicsWindowDelegate;
+}
+
+
+void ModelViewer::GetHelp() {
+    
+    QString link = "https://github.com/tigerman9854/ModelViewer/wiki";
+    QDesktopServices::openUrl(QUrl(link));
+}
 

@@ -114,6 +114,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ModelLoader.cpp" />
+    <ClCompile Include="GraphicsWindowDelegate.cpp" />
     <ClCompile Include="OpenGLWindow.cpp" />
     <ClCompile Include="ViewerGraphicsWindow.cpp" />
     <QtMoc Include="ModelViewer.h" />
@@ -124,7 +125,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ModelLoader.h" />
-    <ClInclude Include="ViewerGraphicsWindow.h" />
+    <QtMoc Include="GraphicsWindowDelegate.h" />
+    <QtMoc Include="ViewerGraphicsWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
