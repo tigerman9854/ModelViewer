@@ -13,6 +13,8 @@ public:
 
     ViewerGraphicsWindow* GetGraphicsWindow();
     
+    void GetHelp();
+    
 
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow;

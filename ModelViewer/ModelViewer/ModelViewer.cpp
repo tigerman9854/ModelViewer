@@ -6,6 +6,9 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QMatrix4x4>
+#include <QLabel>
+#include <QUrl>
+#include <QDesktopServices>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -61,11 +64,22 @@ ModelViewer::ModelViewer(QWidget *parent)
     pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); });
 
     // -> Help menu
-    menuBar()->addAction("Help", [=] { /* TODO: m_pGraphicsWindow->displayHelpDoc(); */ }); 
-};
+    // if user click help menu, it will let user go to github page to read the Wiki
+    // try
+    QMenu* pHelpMenu = menuBar()->addMenu("Help");
+    pHelpMenu->setObjectName("HelpMenu");
+    pHelpMenu->addAction("Help", [=] {GetHelp(); });
+}
 
 ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
 }
 
 
+
+
+void ModelViewer::GetHelp() {
+    
+    QString link = "https://github.com/tigerman9854/ModelViewer/wiki";
+    QDesktopServices::openUrl(QUrl(link));
+}
