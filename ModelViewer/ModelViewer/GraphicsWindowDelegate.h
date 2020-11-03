@@ -29,6 +29,7 @@ private slots:
 	void OnBeginModelLoading(QString filepath);
 	void OnEndModelLoading(bool success, QString filepath);
 	void OnError(QString message);
+	void OnClearError();
 	void OnModelUnloaded();
 
 private:
@@ -47,7 +48,8 @@ private:
 	QLabel* m_pErrorText = nullptr;
 	QLabel* m_pLoadingText = nullptr;
 
-	Status m_status;
+	Status m_status = Status::k_empty;
+	Status m_lastStatus = Status::k_empty;
 
 	ViewerGraphicsWindow* m_pGraphicsWindow = nullptr;
 };

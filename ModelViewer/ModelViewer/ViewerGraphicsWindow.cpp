@@ -111,6 +111,7 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
     
+    emit ClearError();
     return true;
 }
 
@@ -169,6 +170,7 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
 
+    emit ClearError();
     return true;
 }
 
@@ -446,4 +448,8 @@ QMatrix4x4 ViewerGraphicsWindow::GetTranslationMatrix()
 QMatrix4x4 ViewerGraphicsWindow::GetModelMatrix()
 {
     return m_transMatrix * m_rotMatrix * m_scaleMatrix;
+}
+bool ViewerGraphicsWindow::IsModelValid() 
+{
+    return m_currentModel.m_isValid;
 }
