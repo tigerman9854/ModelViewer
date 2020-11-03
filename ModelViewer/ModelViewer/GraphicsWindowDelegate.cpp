@@ -87,6 +87,10 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 
 void GraphicsWindowDelegate::SetStatus(Status s)
 {
+	if (m_status == s) {
+		return;
+	}
+
 	m_lastStatus = m_status;
 	m_status = s;
 	DoOnStatusChanged();
