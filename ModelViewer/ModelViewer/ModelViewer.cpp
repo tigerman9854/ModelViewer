@@ -55,7 +55,9 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); });
     pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
-    pFileMenu->addAction("Quit", [=] { /* TODO: m_pGraphicsWindow->exitGracefully(); */ });
+
+    // quit button
+    pFileMenu->addAction("Quit", [=] { GetQuit();/* TODO: m_pGraphicsWindow->exitGracefully(); */ });
 
     // -> Edit menu
     QMenu* pEditMenu = menuBar()->addMenu("Edit");
@@ -74,6 +76,9 @@ ModelViewer::ModelViewer(QWidget *parent)
     QMenu* pHelpMenu = menuBar()->addMenu("Help");
     pHelpMenu->setObjectName("HelpMenu");
     pHelpMenu->addAction("Help", [=] {GetHelp(); });
+
+
+    // -
 }
 
 
@@ -90,5 +95,10 @@ void ModelViewer::GetHelp() {
     
     QString link = "https://github.com/tigerman9854/ModelViewer/wiki";
     QDesktopServices::openUrl(QUrl(link));
+}
+
+
+void ModelViewer::GetQuit() {
+    close();
 }
 

@@ -17,6 +17,9 @@ public:
     
     void GetHelp();
 
+    void GetQuit();
+    
+
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow;
     GraphicsWindowDelegate* m_pGraphicsWindowDelegate;
