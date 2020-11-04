@@ -11,6 +11,8 @@
 #include <QMouseEvent>
 #include <QdesktopServices>
 #include <QUrl>
+#include <QtMath>
+
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     : OpenGLWindow(parent)
@@ -46,6 +48,9 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     
     // Let other widgets know that a model has been loaded
     emit EndModelLoading(m_currentModel.m_isValid, filepath);
+
+    // Reset the view to size properly for the new model
+    resetView();
 
     return m_currentModel.m_isValid;
 }
@@ -108,6 +113,7 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
     
+    emit ClearError();
     return true;
 }
 
@@ -166,6 +172,7 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
 
+    emit ClearError();
     return true;
 }
 
@@ -435,6 +442,21 @@ void ViewerGraphicsWindow::resetView()
     m_rotMatrix = QMatrix4x4();
     m_transMatrix = QMatrix4x4();
     m_transMatrix.translate(0, 0, -4);
+
+    // Scale the scene so the entire model can be viewed
+    if (m_currentModel.m_isValid)
+    {
+        // Adjust the effective field of view if the window is taller than it is wide
+        const float effectiveFOV = std::min(fieldOfView, fieldOfView * float(width()) / float(height()));
+
+        // Compute optimal viewing distance as modelSize / atan(fov)
+        const float modelSize = std::max(m_currentModel.m_AABBMax.length(), m_currentModel.m_AABBMin.length());
+        const float optimalViewingDistance = modelSize / qAtan(qDegreesToRadians(effectiveFOV)) * 1.6f;
+        
+        // Scale the world so 4 looks like optimalViewingDistance
+        const float scale = 4.f / optimalViewingDistance;
+        m_scaleMatrix.scale(scale);
+    }
 }
 
 bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
@@ -477,4 +499,8 @@ QMatrix4x4 ViewerGraphicsWindow::GetTranslationMatrix()
 QMatrix4x4 ViewerGraphicsWindow::GetModelMatrix()
 {
     return m_transMatrix * m_rotMatrix * m_scaleMatrix;
+}
+bool ViewerGraphicsWindow::IsModelValid() 
+{
+    return m_currentModel.m_isValid;
 }

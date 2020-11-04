@@ -81,11 +81,17 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::BeginModelLoading, this, &GraphicsWindowDelegate::OnBeginModelLoading);
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::EndModelLoading, this, &GraphicsWindowDelegate::OnEndModelLoading);
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::Error, this, &GraphicsWindowDelegate::OnError);
+	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::ClearError, this, &GraphicsWindowDelegate::OnClearError);
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::ModelUnloaded, this, &GraphicsWindowDelegate::OnModelUnloaded);
 }
 
 void GraphicsWindowDelegate::SetStatus(Status s)
 {
+	if (m_status == s) {
+		return;
+	}
+
+	m_lastStatus = m_status;
 	m_status = s;
 	DoOnStatusChanged();
 }
@@ -161,6 +167,14 @@ void GraphicsWindowDelegate::OnError(QString message)
 	// Change the error text
 	m_pErrorText->setText("Error: " + message);
 	SetStatus(Status::k_error);
+}
+
+void GraphicsWindowDelegate::OnClearError()
+{
+	if (m_status == Status::k_error)
+	{
+		SetStatus(m_lastStatus);
+	}
 }
 
 void GraphicsWindowDelegate::OnModelUnloaded()

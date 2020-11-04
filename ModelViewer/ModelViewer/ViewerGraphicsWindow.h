@@ -24,6 +24,7 @@ public:
     bool loadFragmentShader(QString fragfilepath = QString());
 
     bool addPrimitive(QString filepath);
+    bool IsModelValid();
 
     bool editCurrentShaders();
     bool reloadCurrentShaders();
@@ -60,6 +61,7 @@ public:
 
 signals:
     void Error(QString message);
+    void ClearError();
     void Initialized();
     void BeginModelLoading(QString filepath);
     void EndModelLoading(bool success, QString filepath);
