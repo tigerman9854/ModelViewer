@@ -14,6 +14,7 @@ public:
     ViewerGraphicsWindow* GetGraphicsWindow();
     
     void GetHelp();
+    void GetQuit();
     
 
 private:
