@@ -2,6 +2,7 @@
 
 #include "ModelLoader.h"
 
+
 #include <QGuiApplication>
 #include <QMatrix4x4>
 #include <QOpenGLShaderProgram>
@@ -9,6 +10,9 @@
 #include <QtMath>
 #include <QFileDialog>
 #include <QMouseEvent>
+#include <QKeyEvent>
+#include <QImage>
+
 
 // Define default shaders
 static const char* vertexShaderSource =
@@ -26,6 +30,9 @@ static const char* fragmentShaderSource =
     "void main() {\n"
     "   gl_FragColor = col;\n"
     "}\n";
+
+//
+QSet<int> keys;
 
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
@@ -124,6 +131,41 @@ void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
         sceneMatrix.scale(2 * zoomSensitivity);
     }
 }
+
+void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        keys += ((QKeyEvent*)event)->key();
+    }
+
+    QWindow::keyPressEvent(event);
+}
+
+void ViewerGraphicsWindow::keyReleaseEvent(QKeyEvent* event)
+{
+    if (event->type() == QEvent::KeyRelease) {
+        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_S))
+        {
+            ViewerGraphicsWindow::saveDialog("TO DO ...");
+        }
+
+        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_R))
+        {
+            ViewerGraphicsWindow::resetView();
+        }
+
+        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_O))
+        {
+            ViewerGraphicsWindow::loadModel();
+        }
+        //TO DO: more hotkeys
+    }
+
+    keys.clear();
+    QWindow::keyReleaseEvent(event);
+}
+
+
 
 void ViewerGraphicsWindow::initialize()
 {
@@ -248,8 +290,62 @@ void ViewerGraphicsWindow::resetView()
     viewportY = 0;
 }
 
+bool ViewerGraphicsWindow::screenshotDialog(const char* format) {
+    if (!initialized) {
+        return false;
+    }
+
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save screenshot"),
+        QString(),
+        tr("Images (*)"));
+
+    if (!filepath.isEmpty())
+    {
+        ViewerGraphicsWindow::expertFrame(filepath, format);
+    }
+}
+
+bool ViewerGraphicsWindow::saveDialog(QString filePath) {
+    if (!initialized) {
+        return false;
+    }
+
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save"),
+        QString(),
+        tr("all (*)"));
+
+    if (!filepath.isEmpty())
+    {
+        // TO DO...
+    }
+}
+
+void ViewerGraphicsWindow::expertFrame(QString name, const char* format) {
+    //Initial the image
+    QImage image(width(), height(), QImage::Format_ARGB32);
+    QString filePath = QString("%1.%2").arg(name, format);
+    
+    GLubyte* pixels = (GLubyte*) malloc( 5 * width() * height());
+    if (pixels) {
+        //Read the data from the frame buffer
+        glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+    }
+
+    //Save
+    //To fix: I don't know the reason why the image generated from the framebuffer has a flip,
+    //I add a transform, this transform will be removed after I figure out.
+    QImage frameCapture(pixels, width(), height(), QImage::Format_ARGB32);
+    QTransform flipTransform;
+    flipTransform.rotate(180);
+    frameCapture = frameCapture.transformed(flipTransform);
+    frameCapture.save(filePath, format, -1);
+}
+
 bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
     // Load  model
     QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     return loadModel(filepath);
 }
+

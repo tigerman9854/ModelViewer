@@ -17,6 +17,9 @@ public:
 
     bool loadModel(QString filepath = QString());
     bool addPrimitive(QString filepath);
+    bool screenshotDialog(const char* format);
+    bool saveDialog(QString filePath);
+    void expertFrame(QString name, const char* format);
 
     // Mouse variables
     QMatrix4x4 sceneMatrix;
@@ -60,4 +63,6 @@ protected:
     void mouseMoveEvent(QMouseEvent*) override;
     void mouseReleaseEvent(QMouseEvent*) override;
     void wheelEvent(QWheelEvent*) override;
+    void keyPressEvent(QKeyEvent*) override;
+    void keyReleaseEvent(QKeyEvent*) override;
 };
