@@ -14,7 +14,7 @@ Model ModelLoader::LoadModel(const QString& file)
 	// And have it read the given file with some example postprocessing
 	// Usually - if speed is not the most important aspect for you - you'll
 	// probably to request more postprocessing than we do in this example.
-	const aiScene* pScene = importer.ReadFile(file.toStdString(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+	const aiScene* pScene = importer.ReadFile(file.toStdString(), aiProcessPreset_TargetRealtime_Quality ^ aiProcess_GenSmoothNormals | aiProcess_GenNormals | aiProcess_GenBoundingBoxes);
 	
 	// If the import failed, report it
 	if (!pScene) {
@@ -161,10 +161,19 @@ Model ModelLoader::ProcessModel(aiScene const* pObject)
 		newMesh.m_indexBuffer.write(0, indices.data(), indexBufferSize);
 
 
+		// Load axis aligned bounding box (AABB)
+		newMesh.m_AABBMin.setX(pMesh->mAABB.mMin.x);
+		newMesh.m_AABBMin.setY(pMesh->mAABB.mMin.y);
+		newMesh.m_AABBMin.setZ(pMesh->mAABB.mMin.z);
+		newMesh.m_AABBMax.setX(pMesh->mAABB.mMax.x);
+		newMesh.m_AABBMax.setY(pMesh->mAABB.mMax.y);
+		newMesh.m_AABBMax.setZ(pMesh->mAABB.mMax.z);
+
+
 		// Append this mesh to the list
 		ret.m_meshes.push_back(newMesh);
 	}
 
-	ret.m_isValid = true;
+	ret.Finalize();
 	return ret;
 }
