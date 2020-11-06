@@ -473,7 +473,7 @@ bool ViewerGraphicsWindow::screenshotDialog(const char* format) {
 
     if (!filepath.isEmpty())
     {
-        ViewerGraphicsWindow::expertFrame(filepath, format);
+        ViewerGraphicsWindow::exportFrame(filepath, format);
     }
 }
 
@@ -493,7 +493,7 @@ bool ViewerGraphicsWindow::saveDialog(QString filePath) {
     }
 }
 
-void ViewerGraphicsWindow::expertFrame(QString name, const char* format) {
+void ViewerGraphicsWindow::exportFrame(QString name, const char* format) {
     //Initial the image
     QImage image(width(), height(), QImage::Format_ARGB32);
     QString filePath = QString("%1.%2").arg(name, format);
