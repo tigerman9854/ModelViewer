@@ -48,7 +48,6 @@ private:
 };
 
 
-
 void ModelViewerTest::initTestCase() 
 {
 	// Called once before all test cases
@@ -248,7 +247,7 @@ void ModelViewerTest::loadCurrentShaders()
 	bool success = m_pWindow->GetGraphicsWindow()->reloadCurrentShaders();
 	QVERIFY(success);
 }
-
+/*
 void ModelViewerTest::editCurrentShaders()
 {
 	bool success = m_pWindow->GetGraphicsWindow()->editCurrentShaders();
@@ -260,7 +259,7 @@ void ModelViewerTest::openShaderFile()
 	bool success = m_pWindow->GetGraphicsWindow()->openShaderFile("../Data/Shaders/basic.frag");
 	QVERIFY(success);
 }
-
+*/
 void ModelViewerTest::displayModel()
 {
 	m_pWindow->show();

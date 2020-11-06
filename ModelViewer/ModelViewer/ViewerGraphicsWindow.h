@@ -30,17 +30,6 @@ public:
     bool reloadCurrentShaders();
     bool openShaderFile(QString filepath = QString());
 
-    // Mouse variables
-    QMatrix4x4 sceneMatrix;
-    float viewportX = 0;
-    float viewportY = 0;
-
-    QMatrix4x4 modelview;
-
-    // Mouse state
-    bool leftMousePressed = false;
-    bool rightMousePressed = false;
-
     bool GetLeftMousePressed();
     bool GetRightMousePressed();
     QMatrix4x4 GetScaleMatrix();
