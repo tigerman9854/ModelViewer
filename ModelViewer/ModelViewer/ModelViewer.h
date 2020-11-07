@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QMenu>
 
 class ViewerGraphicsWindow;
 class GraphicsWindowDelegate;
@@ -18,9 +19,18 @@ public:
     void GetHelp();
 
     void GetQuit();
-    
 
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow;
     GraphicsWindowDelegate* m_pGraphicsWindowDelegate;
+};
+
+
+// Warning: Slightly hacky solution
+// Special case of QMenu that returns focus to the graphics window when closed
+class FocusMenu : public QMenu {
+    Q_OBJECT
+
+public:
+    FocusMenu(ViewerGraphicsWindow* pGraphicsWindow, const QString& title, QWidget* parent = nullptr);
 };

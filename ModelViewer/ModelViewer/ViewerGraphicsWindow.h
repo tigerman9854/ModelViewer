@@ -3,6 +3,7 @@
 #include "ModelLoader.h"
 
 #include <QOpenGLShaderProgram>
+#include <QElapsedTimer>
 
 class ViewerGraphicsWindow : public OpenGLWindow
 {
@@ -38,11 +39,14 @@ public:
     QMatrix4x4 GetTranslationMatrix();
     QMatrix4x4 GetModelMatrix();
 
+    void ClearKeyboard();
+
     // Mouse settings | % adjustment
     float panXSensitivity = .01f;
     float panYSensitivity = .01f;
     float xRotateSensitivity = 0.6f;
     float yRotateSensitivity = 0.6f;
+    float movementSensitivity = 4.f;
     float zoomSensitivity = 0.001f;
     float fieldOfView = 45.f;
     float nearPlane = 0.1f;
@@ -62,8 +66,15 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent*) override;
     virtual void mouseReleaseEvent(QMouseEvent*) override;
     virtual void wheelEvent(QWheelEvent*) override;
+    virtual void keyPressEvent(QKeyEvent*) override;
+    virtual void keyReleaseEvent(QKeyEvent*) override;
+    virtual void focusOutEvent(QFocusEvent*) override;
 
 private:
+    // Modifies the matrices based on how much time has passed
+    void Update(float sec);
+    QElapsedTimer m_updateTimer;
+
     bool initialized = false;
 
     GLint m_posAttr = 0;
@@ -95,6 +106,7 @@ private:
     int lastY;
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
+    QSet<int> m_pressedKeys;
 
     QMatrix4x4 m_scaleMatrix;
     QMatrix4x4 m_rotMatrix;

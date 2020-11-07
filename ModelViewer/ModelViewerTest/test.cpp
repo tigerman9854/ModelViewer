@@ -37,6 +37,7 @@ private slots:
 	void checkMousePressAndRelease();
 	void zoomWithMouse();
 	void defaultZoom();
+	void testKeyboard();
 
 private:
 	// Helpers
@@ -376,6 +377,51 @@ void ModelViewerTest::defaultZoom()
 	// Check that the scene was resized to show this model
 	ViewerGraphicsWindow* test = m_pWindow->GetGraphicsWindow();
 	QVERIFY(test->GetModelMatrix() != resetMatrix);
+}
+
+void ModelViewerTest::testKeyboard() 
+{
+	ResetViewAndShow();
+
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+
+	// Load a model
+	bool success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cubeColor.ply");
+	QVERIFY(success);
+
+	// Click on the graphics window to set focus
+	QTest::mouseClick(pGraphicsWindow, Qt::LeftButton);
+
+	auto testKey = [=](int key) {
+		ResetViewAndShow();
+
+		QTest::keyPress(pGraphicsWindow, key);
+		QTest::qWait(100);
+		QTest::keyRelease(pGraphicsWindow, key);
+
+		pGraphicsWindow->requestUpdate();
+		QVERIFY(pGraphicsWindow->GetModelMatrix() != resetMatrix);
+	};
+
+	testKey(Qt::Key_W);
+	testKey(Qt::Key_A);
+	testKey(Qt::Key_S);
+	testKey(Qt::Key_D);
+	testKey(Qt::Key_Q);
+	testKey(Qt::Key_E);
+	testKey(Qt::Key_Up);
+	testKey(Qt::Key_Down);
+
+	QTest::keyPress(pGraphicsWindow, Qt::Key_Shift);
+	testKey(Qt::Key_W);
+	testKey(Qt::Key_A);
+	testKey(Qt::Key_S);
+	testKey(Qt::Key_D);
+	testKey(Qt::Key_Q);
+	testKey(Qt::Key_E);
+	testKey(Qt::Key_Up);
+	testKey(Qt::Key_Down);
+	QTest::keyRelease(pGraphicsWindow, Qt::Key_Shift);
 }
 
 
