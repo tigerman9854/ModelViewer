@@ -26,6 +26,10 @@ public:
     bool addPrimitive(QString filepath);
     bool IsModelValid();
 
+    bool editCurrentShaders();
+    bool reloadCurrentShaders();
+    bool openShaderFile(QString filepath = QString());
+
     bool GetLeftMousePressed();
     bool GetRightMousePressed();
     QMatrix4x4 GetScaleMatrix();

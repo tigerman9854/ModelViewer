@@ -9,6 +9,8 @@
 #include <QtMath>
 #include <QFileDialog>
 #include <QMouseEvent>
+#include <QdesktopServices>
+#include <QUrl>
 #include <QtMath>
 
 
@@ -174,6 +176,56 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     return true;
 }
 
+bool ViewerGraphicsWindow::editCurrentShaders()
+{
+    QDesktopServices desk;
+    QDir dir;
+    QString currentPath = dir.currentPath();
+    //qDebug() << currentPath << endl;
+
+    QString fullVertPath = "//" + currentPath + "/" + currentVertFile;
+    QString fullFragPath = "//" + currentPath + "/" + currentFragFile;
+    //qDebug() << fullVertPath << endl;
+    
+    if (!desk.openUrl(QUrl::fromLocalFile(fullVertPath)))
+    {
+        return false;
+    }
+    if(!desk.openUrl(QUrl::fromLocalFile(fullFragPath)))
+    {
+        return false;
+    }
+    return true;
+}
+
+bool ViewerGraphicsWindow::reloadCurrentShaders()
+{
+    if (loadVertexShader(currentVertFile) &&
+        loadFragmentShader(currentFragFile)) {
+        return true;
+    }
+}
+
+bool ViewerGraphicsWindow::openShaderFile(QString filepath)
+{
+    if (filepath.isEmpty()) {
+        filepath = QFileDialog::getOpenFileName(nullptr, "Open Shader File", "../Data/Shaders/", "");
+        if (filepath.isEmpty()) {
+            return false;
+        }
+    }
+
+    QDesktopServices desk;
+    QDir dir;
+    QString currentPath = dir.currentPath();
+    QString fullPath = "//" + currentPath + "/" + filepath;
+    if (!desk.openUrl(QUrl::fromLocalFile(filepath)))
+    {
+        return false;
+    }
+    return true;
+}
+
 void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
 {
     // Set class vars
@@ -252,8 +304,8 @@ void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
-    currentVertFile = "../Data/Shaders/basic.vert";
-    currentFragFile = "../Data/Shaders/basic.frag";
+    currentVertFile = "../Data/Shaders/ads.vert";
+    currentFragFile = "../Data/Shaders/ads.frag";
     m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     m_program->link();
@@ -266,8 +318,6 @@ void ViewerGraphicsWindow::initialize()
 
     // Set up the default view
     resetView();
-
-    // TODO: Set attribute locations for m_normAttr and m_uvAttr once our shader supports these
 
     m_normAttr = m_program->attributeLocation("normAttr");
     m_uvAttr = m_program->attributeLocation("uvAttr");
@@ -283,8 +333,9 @@ void ViewerGraphicsWindow::initialize()
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
 
-    //m_program->bind();
+
     emit Initialized();
+
     initialized = true;
 }
 

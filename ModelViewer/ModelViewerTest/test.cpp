@@ -26,6 +26,10 @@ private slots:
 
 	void testShow();
 	void loadModel();
+	void loadShader();
+	void loadCurrentShaders();
+	void editCurrentShaders();
+	void openShaderFile();
 	void displayModel();
 	void resetView();
 	void rotateWithMouse();
@@ -42,7 +46,6 @@ private:
 	ModelViewer* m_pWindow = nullptr;
 	QMatrix4x4 resetMatrix;
 };
-
 
 
 void ModelViewerTest::initTestCase() 
@@ -231,6 +234,32 @@ void ModelViewerTest::loadModel()
 	QVERIFY(loaded.m_isValid);
 }
 
+void ModelViewerTest::loadShader()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->loadVertexShader("../Data/Shaders/ads.vert");
+	QVERIFY(success);
+	success = m_pWindow->GetGraphicsWindow()->loadFragmentShader("../Data/Shaders/ads.frag");
+	QVERIFY(success);
+}
+
+void ModelViewerTest::loadCurrentShaders()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->reloadCurrentShaders();
+	QVERIFY(success);
+}
+/*
+void ModelViewerTest::editCurrentShaders()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->editCurrentShaders();
+	QVERIFY(success);
+}
+
+void ModelViewerTest::openShaderFile()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->openShaderFile("../Data/Shaders/basic.frag");
+	QVERIFY(success);
+}
+*/
 void ModelViewerTest::displayModel()
 {
 	m_pWindow->show();
