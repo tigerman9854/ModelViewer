@@ -45,6 +45,9 @@ private:
 
 	ModelViewer* m_pWindow = nullptr;
 	QMatrix4x4 resetMatrix;
+
+	// Enable this setting to skip tests which require user input
+	bool disableAnnoyingTests = true;
 };
 
 
@@ -53,6 +56,10 @@ void ModelViewerTest::initTestCase()
 	// Called once before all test cases
 	m_pWindow = new ModelViewer();
 	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
+
+	if (disableAnnoyingTests) {
+		printf("WARNING: Annoying tests disabled.\n");
+	}
 }
 
 void ModelViewerTest::cleanupTestCase()
@@ -247,19 +254,27 @@ void ModelViewerTest::loadCurrentShaders()
 	bool success = m_pWindow->GetGraphicsWindow()->reloadCurrentShaders();
 	QVERIFY(success);
 }
-/*
+
 void ModelViewerTest::editCurrentShaders()
 {
+	if (disableAnnoyingTests) {
+		return;
+	}
+
 	bool success = m_pWindow->GetGraphicsWindow()->editCurrentShaders();
 	QVERIFY(success);
 }
 
 void ModelViewerTest::openShaderFile()
 {
+	if (disableAnnoyingTests) {
+		return;
+	}
+
 	bool success = m_pWindow->GetGraphicsWindow()->openShaderFile("../Data/Shaders/basic.frag");
 	QVERIFY(success);
 }
-*/
+
 void ModelViewerTest::displayModel()
 {
 	m_pWindow->show();
