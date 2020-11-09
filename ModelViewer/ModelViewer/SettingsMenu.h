@@ -3,6 +3,9 @@
 #include <QListWidget>
 #include <QWidget>
 #include <QLabel>
+#include <QTreeView>
+#include <QHeaderView>
+#include "TreeModel.h"
 
 // Forward Declares
 class ViewerGraphicsWindow;
@@ -13,6 +16,7 @@ class SettingsMenu : public QWidget
 public:
 	SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent = nullptr);
 	void LoadSettingsConf();
+	void SaveSettingsConf();
 	void ChangeWindow(QListWidgetItem* current, QListWidgetItem* previous);
 
 //private slots:
@@ -29,11 +33,13 @@ private:
 	QGridLayout* m_pMainLayout = nullptr;
 	QListWidget* m_pSettingsList = nullptr;
 	QWidget* m_pCurrentSettingsWidget = nullptr;
+	QStringList settingHeader = { "Key","Value" };
 
 	// Settings menus
 	void SetupMouseSettings();
-	QWidget* m_pMouseSettings = nullptr;
+	QTreeView* m_pMouseSettings = nullptr;
 	QString m_MouseTitle = QString::fromLatin1("Mouse");
+	
 
 	void SetupKeybindSettings();
 	QWidget* m_pKeybindSettings = nullptr;

@@ -1,8 +1,14 @@
 #include "SettingsMenu.h"
+#include "ViewerGraphicsWindow.h"
+#include "TreeItem.h"
 
 #include <QGridLayout>
 #include <QListWidget>
 #include <QLabel>
+#include <qstringlist.h>
+#include <QStandardItemModel>
+#include <QFile>
+
 
 SettingsMenu::SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent)
 	: m_pGraphicsWindow(graphicsWindow), QWidget(parent)
@@ -32,11 +38,16 @@ SettingsMenu::SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent
 	m_pMainLayout->addWidget(m_pCurrentSettingsWidget, 0, 1, 5, 3);
 
 	connect(m_pSettingsList, &QListWidget::currentItemChanged, this, &SettingsMenu::ChangeWindow);
+	// Todo att 
 }
 
 void SettingsMenu::LoadSettingsConf()
 {
-	// TODO: This
+	// TODO: Load up a file and set all values.
+}
+
+void SettingsMenu::SaveSettingsConf() {
+	// TODO: Grab all the current values then dump them to a file
 }
 
 void SettingsMenu::ChangeWindow(QListWidgetItem* current, QListWidgetItem* previous)
@@ -72,13 +83,33 @@ void SettingsMenu::ChangeWindow(QListWidgetItem* current, QListWidgetItem* previ
 	}
 }
 
+
+
 void SettingsMenu::SetupMouseSettings()
 {
-	m_pMouseSettings = new QWidget(this);
-	QGridLayout* pMouseLayout = new QGridLayout(m_pMouseSettings);
-	QLabel* mouseText = new QLabel(QString::fromLatin1("Mouse Placeholder (And some extra padding)"));
-	pMouseLayout->addWidget(mouseText, 0, 0);
-	m_pMouseSettings->setLayout(pMouseLayout);
+	m_pMouseSettings = new QTreeView(this);
+	TreeItem* rootItem = new TreeItem({ tr("Key"), tr("Value") });
+	TreeModel* model = new TreeModel(rootItem);
+
+	TreeItem* panXSensitivity = new TreeItem({ tr("Horizontal Pan Sensitivity"), m_pGraphicsWindow->panXSensitivity }, rootItem);
+	TreeItem* panYSensitivity = new TreeItem({ tr("Vertical Pan Sensitivity"), m_pGraphicsWindow->panYSensitivity }, rootItem);
+	TreeItem* xRotateSensitivity = new TreeItem({ tr("Horizontal Rotation Sensitivity"), m_pGraphicsWindow->xRotateSensitivity }, rootItem);
+	TreeItem* yRotateSensitivity = new TreeItem({ tr("Vertical Rotation Sensitivity"), m_pGraphicsWindow->yRotateSensitivity }, rootItem);
+	TreeItem* zoomSensitivity = new TreeItem({ tr("Zoom Sensitivity"), m_pGraphicsWindow->zoomSensitivity }, rootItem);
+	TreeItem* fieldOfView = new TreeItem({ tr("nearPlane"), m_pGraphicsWindow->fieldOfView }, rootItem);
+	TreeItem* nearPlane = new TreeItem({ tr("Near Plane"), m_pGraphicsWindow->nearPlane }, rootItem);
+	TreeItem* farPlane = new TreeItem({ tr("Far plane"), m_pGraphicsWindow->farPlane }, rootItem);
+	rootItem->appendChild(panXSensitivity);
+	rootItem->appendChild(panYSensitivity);
+	rootItem->appendChild(xRotateSensitivity);
+	rootItem->appendChild(yRotateSensitivity);
+	rootItem->appendChild(zoomSensitivity);
+	rootItem->appendChild(fieldOfView);
+	rootItem->appendChild(nearPlane);
+	rootItem->appendChild(farPlane);
+	
+
+	m_pMouseSettings->setModel(model);
 }
 
 void SettingsMenu::SetupKeybindSettings()
@@ -122,4 +153,73 @@ https://www.bogotobogo.com/Qt/Qt5_GridLayout.php
 https://doc.qt.io/qt-5/qlistwidget.html
 https://doc.qt.io/qt-5/qlistwidgetitem.html
 https://doc.qt.io/qt-5/qlistwidgetitem.html#data
+
+https://doc.qt.io/qt-5/qtreeview.html
+https://doc.qt.io/qt-5/qstandarditemmodel.html
+https://doc.qt.io/qt-5/qstandarditem.html
+*/
+
+/* DEAD CODE:
+* 
+* m_pMouseSettings = new QTreeWidget(this);
+	m_pMouseSettings->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	m_pMouseSettings->setColumnCount(2);
+	m_pMouseSettings->setHeaderLabels(settingHeader);
+	connect(m_pMouseSettings, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(onTreeWidgetItemDoubleClicked(QTreeWidgetItem*,int)));
+	connect(m_pMouseSettings->itemDelegate(), &QAbstractItemDelegate::commitData, this, SLOT(onTreeWidgetCommitData(QTreeWidgetItem*)));
+
+	QStringList panXSensitivity = {"Pan X Sensitivty"};
+	QStringList panYSensitivity = {"Pan Y Sensitivty"};
+	QStringList xRotateSensitivity = {"Rotate X Sensitivty"};
+	QStringList yRotateSensitivity = {"Pan Y Sensitivty"};
+	QStringList zoomSensitivity = {"Zoom Sensitivty"};
+	QStringList fieldOfView = {"Field of View"};
+	QStringList nearPlane = {"Near Plane"};
+	QStringList farPlane = {"Far Plane"};
+
+	QList<QTreeWidgetItem*> items;
+	// FIXME: The bellow will have to be populated from a loaded config not form the default values we have.
+	items.append(new QTreeWidgetItem(m_pMouseSettings,panXSensitivity));
+	items[0]->setData(1, Qt::EditRole, m_pGraphicsWindow->panXSensitivity);
+	items[0]->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	items.append(new QTreeWidgetItem(m_pMouseSettings, panYSensitivity));
+	items[1]->setData(1, Qt::EditRole, m_pGraphicsWindow->panYSensitivity);
+	items[1]->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	items.append(new QTreeWidgetItem(m_pMouseSettings, xRotateSensitivity));
+	items[2]->setData(1, Qt::EditRole, m_pGraphicsWindow->xRotateSensitivity);
+	items[2]->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	items.append(new QTreeWidgetItem(m_pMouseSettings, yRotateSensitivity));
+	items[3]->setData(1, Qt::EditRole, m_pGraphicsWindow->yRotateSensitivity);
+	items[3]->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	items.append(new QTreeWidgetItem(m_pMouseSettings, zoomSensitivity));
+	items[4]->setData(1, Qt::EditRole, m_pGraphicsWindow->zoomSensitivity);
+	items[4]->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	items.append(new QTreeWidgetItem(m_pMouseSettings, fieldOfView));
+	items[5]->setData(1, Qt::EditRole, m_pGraphicsWindow->fieldOfView);
+	items[5]->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	items.append(new QTreeWidgetItem(m_pMouseSettings, nearPlane));
+	items[6]->setData(1, Qt::EditRole, m_pGraphicsWindow->nearPlane);
+	items[6]->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	items.append(new QTreeWidgetItem(m_pMouseSettings, farPlane));
+	items[7]->setData(1, Qt::EditRole, m_pGraphicsWindow->farPlane);
+	items[7]->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	m_pMouseSettings->insertTopLevelItems(0, items);
+
+	void SettingsMenu::onTreeWidgetItemDoubleClicked(QTreeWidgetItem* item, int column)
+{
+	m_pMouseSettings->editItem(item, 1);
+}
+
+void SettingsMenu::onTreeWidgetCommitData(QTreeWidgetItem* item, int column)
+{
+	m_pGraphicsWindow->panXSensitivity = item->data(1, Qt::EditRole).toFloat();
+}
 */
