@@ -1,8 +1,0 @@
-Pan X Sensitivty                        0.01
-Pan Y Sensitivty						0.01
-Rotate X Sensitivty						0.06
-Pan Y Sensitivty						0.06
-Zoom Sensitivty							0.001
-Field of View							45.0
-Near Plane								0.1
-Far Plane								100.0

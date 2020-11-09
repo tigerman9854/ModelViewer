@@ -8,6 +8,8 @@
 #include <qstringlist.h>
 #include <QStandardItemModel>
 #include <QFile>
+#include <QFormLayout>
+#include <QLineEdit>
 
 
 SettingsMenu::SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent)
@@ -54,7 +56,7 @@ void SettingsMenu::ChangeWindow(QListWidgetItem* current, QListWidgetItem* previ
 {
 	this->setWindowTitle(QString::fromLatin1("Settings/") + current->text());
 	// Swap the current window. Might want to use something other then the text of the window...
-	auto swapCurrentWidget = [=](QTreeView* toSwap) {
+	auto swapCurrentWidget = [=](QWidget* toSwap) {
 		if (m_pCurrentSettingsWidget == toSwap) {
 			return;
 		}
@@ -83,46 +85,95 @@ void SettingsMenu::ChangeWindow(QListWidgetItem* current, QListWidgetItem* previ
 	}
 }
 
+void SettingsMenu::mouseReturnPressed()
+{
+	// FIXME: This is a tempory test function
+	m_pGraphicsWindow->panXSensitivity = panXSensitivity->text().toFloat();
+	m_pGraphicsWindow->panYSensitivity = panYSensitivity->text().toFloat();
+	m_pGraphicsWindow->xRotateSensitivity = xRotateSensitivity->text().toFloat();
+	m_pGraphicsWindow->yRotateSensitivity = yRotateSensitivity->text().toFloat();
+	m_pGraphicsWindow->zoomSensitivity = zoomSensitivity->text().toFloat();
+	m_pGraphicsWindow->fieldOfView = fieldOfView->text().toFloat();
+	m_pGraphicsWindow->nearPlane = nearPlane->text().toFloat();
+	m_pGraphicsWindow->farPlane = farPlane->text().toFloat();
+}
+
 void SettingsMenu::SetupMouseSettings()
 {
-	m_pMouseSettings = new QTreeView(this);
-	m_pMouseSettings->setEditTriggers(QAbstractItemView::DoubleClicked);
-	TreeModel* model = new TreeModel({ tr("Key"), tr("Value") });
-	TreeItem* rootItem = model->getRoot();
+	m_pMouseSettings = new QWidget(this);
+	QFormLayout* layout = new QFormLayout(m_pMouseSettings);
+	panXSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->panXSensitivity));
+	panXSensitivity->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
 
-	TreeItem* panXSensitivity = new TreeItem({ tr("Horizontal Pan Sensitivity"), m_pGraphicsWindow->panXSensitivity }, rootItem);
-	TreeItem* panYSensitivity = new TreeItem({ tr("Vertical Pan Sensitivity"), m_pGraphicsWindow->panYSensitivity }, rootItem);
-	TreeItem* xRotateSensitivity = new TreeItem({ tr("Horizontal Rotation Sensitivity"), m_pGraphicsWindow->xRotateSensitivity }, rootItem);
-	TreeItem* yRotateSensitivity = new TreeItem({ tr("Vertical Rotation Sensitivity"), m_pGraphicsWindow->yRotateSensitivity }, rootItem);
-	TreeItem* zoomSensitivity = new TreeItem({ tr("Zoom Sensitivity"), m_pGraphicsWindow->zoomSensitivity }, rootItem);
-	TreeItem* fieldOfView = new TreeItem({ tr("nearPlane"), m_pGraphicsWindow->fieldOfView }, rootItem);
-	TreeItem* nearPlane = new TreeItem({ tr("Near Plane"), m_pGraphicsWindow->nearPlane }, rootItem);
-	TreeItem* farPlane = new TreeItem({ tr("Far plane"), m_pGraphicsWindow->farPlane }, rootItem);
-	rootItem->insertChild(panXSensitivity);
-	rootItem->insertChild(panYSensitivity);
-	rootItem->insertChild(xRotateSensitivity);
-	rootItem->insertChild(yRotateSensitivity);
-	rootItem->insertChild(zoomSensitivity);
-	rootItem->insertChild(fieldOfView);
-	rootItem->insertChild(nearPlane);
-	rootItem->insertChild(farPlane);
+	panYSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->panYSensitivity));
+	panYSensitivity->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
 
-	m_pMouseSettings->setModel(model);
+	xRotateSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->xRotateSensitivity));
+	xRotateSensitivity->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
+
+	yRotateSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->yRotateSensitivity));
+	yRotateSensitivity->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
+
+	zoomSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->zoomSensitivity));
+	zoomSensitivity->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
+
+	fieldOfView = new QLineEdit(QString::number(m_pGraphicsWindow->fieldOfView));
+	fieldOfView->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
+
+	nearPlane = new QLineEdit(QString::number(m_pGraphicsWindow->nearPlane));
+	nearPlane->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
+
+	farPlane = new QLineEdit(QString::number(m_pGraphicsWindow->farPlane));
+	farPlane->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
+
+	layout->addRow(tr("Pan X Sensitivty"), panXSensitivity);
+	layout->addRow(tr("Pan Y Sensitivty"), panYSensitivity);
+	layout->addRow(tr("Rotate X Sensitivty"), xRotateSensitivity);
+	layout->addRow(tr("Rotate X Sensitivty"), yRotateSensitivity);
+	layout->addRow(tr("Zoom Sensitivty"), zoomSensitivity);
+	layout->addRow(tr("Feild of View"), fieldOfView);
+	layout->addRow(tr("Near Plane"), nearPlane);
+	layout->addRow(tr("Far Plane"), farPlane);
+
+	// FIXME: There should be a unique handler and we should be using QLineEdit TextEdited signal
+	connect(panXSensitivity, &QLineEdit::returnPressed, this, &SettingsMenu::mouseReturnPressed);
+	connect(panYSensitivity, &QLineEdit::returnPressed, this, &SettingsMenu::mouseReturnPressed);
+	connect(xRotateSensitivity, &QLineEdit::returnPressed, this, &SettingsMenu::mouseReturnPressed);
+	connect(yRotateSensitivity, &QLineEdit::returnPressed, this, &SettingsMenu::mouseReturnPressed);
+	connect(zoomSensitivity, &QLineEdit::returnPressed, this, &SettingsMenu::mouseReturnPressed);
+	connect(fieldOfView, &QLineEdit::returnPressed, this, &SettingsMenu::mouseReturnPressed);
+	connect(nearPlane, &QLineEdit::returnPressed, this, &SettingsMenu::mouseReturnPressed);
+	connect(farPlane, &QLineEdit::returnPressed, this, &SettingsMenu::mouseReturnPressed);
 }
 
 void SettingsMenu::SetupKeybindSettings()
 {
-	// TODO
+	m_pKeybindSettings = new QWidget(this);
+	QGridLayout* pKeybindLayout = new QGridLayout(m_pKeybindSettings);
+	QLabel* keyBindText = new QLabel(QString::fromLatin1("Keybind Placeholder"));
+	pKeybindLayout->addWidget(keyBindText, 0, 0);
+	m_pKeybindSettings->setLayout(pKeybindLayout);
+	m_pKeybindSettings->hide();
 }
 
 void SettingsMenu::SetupShaderSettings()
 {
-	// TODO
+	m_pShaderSettings = new QWidget(this);
+	QGridLayout* pShaderLayout = new QGridLayout(m_pShaderSettings);
+	QLabel* shaderText = new QLabel(QString::fromLatin1("Shader Placeholder"));
+	pShaderLayout->addWidget(shaderText, 0, 0);
+	m_pShaderSettings->setLayout(pShaderLayout);
+	m_pShaderSettings->hide();
 }
 
 void SettingsMenu::SetupModelSettings()
 {
-	// TODO
+	m_pModelSettings = new QWidget(this);
+	QGridLayout* pModelLayout = new QGridLayout(m_pModelSettings);
+	QLabel* modelText = new QLabel(QString::fromLatin1("Model Placeholder"));
+	pModelLayout->addWidget(modelText, 0, 0);
+	m_pModelSettings->setLayout(pModelLayout);
+	m_pModelSettings->hide();
 }
 
 

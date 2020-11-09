@@ -5,7 +5,6 @@
 #include <QLabel>
 #include <QTreeView>
 #include <QHeaderView>
-#include "TreeModel.h"
 
 // Forward Declares
 class ViewerGraphicsWindow;
@@ -19,7 +18,8 @@ public:
 	void SaveSettingsConf();
 	void ChangeWindow(QListWidgetItem* current, QListWidgetItem* previous);
 
-//private slots:
+private slots:
+	void mouseReturnPressed();
 
 private:
 	enum SETTINGSWIDGET {
@@ -37,20 +37,27 @@ private:
 
 	// Settings menus
 	void SetupMouseSettings();
-	QTreeView* m_pMouseSettings = nullptr;
+	QWidget* m_pMouseSettings = nullptr;
 	QString m_MouseTitle = QString::fromLatin1("Mouse");
-	
+	QLineEdit* panXSensitivity;
+	QLineEdit* panYSensitivity;
+	QLineEdit* xRotateSensitivity;
+	QLineEdit* yRotateSensitivity;
+	QLineEdit* zoomSensitivity;
+	QLineEdit* fieldOfView;
+	QLineEdit* nearPlane;
+	QLineEdit* farPlane;
 
 	void SetupKeybindSettings();
-	QTreeView* m_pKeybindSettings = nullptr;
+	QWidget* m_pKeybindSettings = nullptr;
 	QString m_KebindTitle = QString::fromLatin1("Keybindings");
 
 	void SetupShaderSettings();
-	QTreeView* m_pShaderSettings = nullptr;
+	QWidget* m_pShaderSettings = nullptr;
 	QString m_ShaderTitle = QString::fromLatin1("Shader");
 
 	void SetupModelSettings();
-	QTreeView* m_pModelSettings = nullptr;
+	QWidget* m_pModelSettings = nullptr;
 	QString m_ModelTitle = QString::fromLatin1("Model");
 
 	
