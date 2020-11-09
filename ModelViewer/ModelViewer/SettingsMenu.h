@@ -22,7 +22,7 @@ public:
 //private slots:
 
 private:
-	enum settingsWidget {
+	enum SETTINGSWIDGET {
 		mouse,
 		keybind,
 		shader,
@@ -42,15 +42,15 @@ private:
 	
 
 	void SetupKeybindSettings();
-	QWidget* m_pKeybindSettings = nullptr;
+	QTreeView* m_pKeybindSettings = nullptr;
 	QString m_KebindTitle = QString::fromLatin1("Keybindings");
 
 	void SetupShaderSettings();
-	QWidget* m_pShaderSettings = nullptr;
+	QTreeView* m_pShaderSettings = nullptr;
 	QString m_ShaderTitle = QString::fromLatin1("Shader");
 
 	void SetupModelSettings();
-	QWidget* m_pModelSettings = nullptr;
+	QTreeView* m_pModelSettings = nullptr;
 	QString m_ModelTitle = QString::fromLatin1("Model");
 
 	

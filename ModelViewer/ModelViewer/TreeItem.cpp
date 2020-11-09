@@ -1,54 +1,114 @@
-#include "TreeItem.h"
+#include "treeitem.h"
 
 TreeItem::TreeItem(const QVector<QVariant>& data, TreeItem* parent)
-    : m_itemData(data), m_parentItem(parent)
+    : itemData(data),
+    parentItem(parent)
 {}
 
 TreeItem::~TreeItem()
 {
-    qDeleteAll(m_childItems);
+    qDeleteAll(childItems);
 }
 
-void TreeItem::appendChild(TreeItem* item)
+TreeItem* TreeItem::child(int number)
 {
-    m_childItems.append(item);
-}
-
-TreeItem* TreeItem::child(int row)
-{
-    if (row < 0 || row >= m_childItems.size())
+    if (number < 0 || number >= childItems.size())
         return nullptr;
-    return m_childItems.at(row);
+    return childItems.at(number);
 }
 
 int TreeItem::childCount() const
 {
-    return m_childItems.count();
+    return childItems.count();
 }
 
-int TreeItem::row() const
+int TreeItem::childNumber() const
 {
-    if (m_parentItem)
-        return m_parentItem->m_childItems.indexOf(const_cast<TreeItem*>(this));
-
+    if (parentItem)
+        return parentItem->childItems.indexOf(const_cast<TreeItem*>(this));
     return 0;
 }
 
 int TreeItem::columnCount() const
 {
-    return m_itemData.count();
+    return itemData.count();
 }
 
 QVariant TreeItem::data(int column) const
 {
-    if (column < 0 || column >= m_itemData.size())
+    if (column < 0 || column >= itemData.size())
         return QVariant();
-    return m_itemData.at(column);
+    return itemData.at(column);
 }
 
-TreeItem* TreeItem::parentItem()
+void TreeItem::insertChild(TreeItem* item)
 {
-    return m_parentItem;
+    childItems.append(item);
 }
 
-// SRC: https://doc.qt.io/qt-5/qtwidgets-itemviews-simpletreemodel-example.html
+bool TreeItem::insertChildren(int position, int count, int columns)
+{
+    if (position < 0 || position > childItems.size())
+        return false;
+
+    for (int row = 0; row < count; ++row) {
+        QVector<QVariant> data(columns);
+        TreeItem* item = new TreeItem(data, this);
+        childItems.insert(position, item);
+    }
+
+    return true;
+}
+
+bool TreeItem::insertColumns(int position, int columns)
+{
+    if (position < 0 || position > itemData.size())
+        return false;
+
+    for (int column = 0; column < columns; ++column)
+        itemData.insert(position, QVariant());
+
+    for (TreeItem* child : qAsConst(childItems))
+        child->insertColumns(position, columns);
+
+    return true;
+}
+
+TreeItem* TreeItem::parent()
+{
+    return parentItem;
+}
+
+bool TreeItem::removeChildren(int position, int count)
+{
+    if (position < 0 || position + count > childItems.size())
+        return false;
+
+    for (int row = 0; row < count; ++row)
+        delete childItems.takeAt(position);
+
+    return true;
+}
+
+bool TreeItem::removeColumns(int position, int columns)
+{
+    if (position < 0 || position + columns > itemData.size())
+        return false;
+
+    for (int column = 0; column < columns; ++column)
+        itemData.remove(position);
+
+    for (TreeItem* child : qAsConst(childItems))
+        child->removeColumns(position, columns);
+
+    return true;
+}
+
+bool TreeItem::setData(int column, const QVariant& value)
+{
+    if (column < 1 || column >= itemData.size())// Column > 1 So they can't edit lables
+        return false;
+
+    itemData[column] = value;
+    return true;
+}

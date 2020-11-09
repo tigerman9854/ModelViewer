@@ -21,10 +21,10 @@ SettingsMenu::SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent
 
 	// Set up all of the settings
 	m_pSettingsList = new QListWidget(this);
-	new QListWidgetItem(m_MouseTitle, m_pSettingsList,settingsWidget::mouse);
-	new QListWidgetItem(m_KebindTitle, m_pSettingsList, settingsWidget::keybind);
-	new QListWidgetItem(m_ShaderTitle, m_pSettingsList, settingsWidget::shader);
-	new QListWidgetItem(m_ModelTitle, m_pSettingsList, settingsWidget::model);
+	new QListWidgetItem(m_MouseTitle, m_pSettingsList, SETTINGSWIDGET::mouse);
+	new QListWidgetItem(m_KebindTitle, m_pSettingsList, SETTINGSWIDGET::keybind);
+	new QListWidgetItem(m_ShaderTitle, m_pSettingsList, SETTINGSWIDGET::shader);
+	new QListWidgetItem(m_ModelTitle, m_pSettingsList, SETTINGSWIDGET::model);
 	m_pSettingsList->setMaximumWidth(100);
 
 	// Set up the indvidual setting menus
@@ -54,7 +54,7 @@ void SettingsMenu::ChangeWindow(QListWidgetItem* current, QListWidgetItem* previ
 {
 	this->setWindowTitle(QString::fromLatin1("Settings/") + current->text());
 	// Swap the current window. Might want to use something other then the text of the window...
-	auto swapCurrentWidget = [=](QWidget* toSwap) {
+	auto swapCurrentWidget = [=](QTreeView* toSwap) {
 		if (m_pCurrentSettingsWidget == toSwap) {
 			return;
 		}
@@ -68,28 +68,27 @@ void SettingsMenu::ChangeWindow(QListWidgetItem* current, QListWidgetItem* previ
 
 	switch (current->type())
 	{
-		case int(settingsWidget::mouse) :
+		case int(SETTINGSWIDGET::mouse) :
 			swapCurrentWidget(m_pMouseSettings);
 			break;
-		case int(settingsWidget::keybind) :
+		case int(SETTINGSWIDGET::keybind) :
 			swapCurrentWidget(m_pKeybindSettings);
 			break;
-		case int(settingsWidget::shader):
+		case int(SETTINGSWIDGET::shader):
 			swapCurrentWidget(m_pShaderSettings);
 			break;
-		case int(settingsWidget::model):
+		case int(SETTINGSWIDGET::model):
 			swapCurrentWidget(m_pModelSettings);
 			break;
 	}
 }
 
-
-
 void SettingsMenu::SetupMouseSettings()
 {
 	m_pMouseSettings = new QTreeView(this);
-	TreeItem* rootItem = new TreeItem({ tr("Key"), tr("Value") });
-	TreeModel* model = new TreeModel(rootItem);
+	m_pMouseSettings->setEditTriggers(QAbstractItemView::DoubleClicked);
+	TreeModel* model = new TreeModel({ tr("Key"), tr("Value") });
+	TreeItem* rootItem = model->getRoot();
 
 	TreeItem* panXSensitivity = new TreeItem({ tr("Horizontal Pan Sensitivity"), m_pGraphicsWindow->panXSensitivity }, rootItem);
 	TreeItem* panYSensitivity = new TreeItem({ tr("Vertical Pan Sensitivity"), m_pGraphicsWindow->panYSensitivity }, rootItem);
@@ -99,47 +98,31 @@ void SettingsMenu::SetupMouseSettings()
 	TreeItem* fieldOfView = new TreeItem({ tr("nearPlane"), m_pGraphicsWindow->fieldOfView }, rootItem);
 	TreeItem* nearPlane = new TreeItem({ tr("Near Plane"), m_pGraphicsWindow->nearPlane }, rootItem);
 	TreeItem* farPlane = new TreeItem({ tr("Far plane"), m_pGraphicsWindow->farPlane }, rootItem);
-	rootItem->appendChild(panXSensitivity);
-	rootItem->appendChild(panYSensitivity);
-	rootItem->appendChild(xRotateSensitivity);
-	rootItem->appendChild(yRotateSensitivity);
-	rootItem->appendChild(zoomSensitivity);
-	rootItem->appendChild(fieldOfView);
-	rootItem->appendChild(nearPlane);
-	rootItem->appendChild(farPlane);
-	
+	rootItem->insertChild(panXSensitivity);
+	rootItem->insertChild(panYSensitivity);
+	rootItem->insertChild(xRotateSensitivity);
+	rootItem->insertChild(yRotateSensitivity);
+	rootItem->insertChild(zoomSensitivity);
+	rootItem->insertChild(fieldOfView);
+	rootItem->insertChild(nearPlane);
+	rootItem->insertChild(farPlane);
 
 	m_pMouseSettings->setModel(model);
 }
 
 void SettingsMenu::SetupKeybindSettings()
 {
-	m_pKeybindSettings = new QWidget(this);
-	QGridLayout* pKeybindLayout = new QGridLayout(m_pKeybindSettings);
-	QLabel* keyBindText = new QLabel(QString::fromLatin1("Keybind Placeholder"));
-	pKeybindLayout->addWidget(keyBindText, 0, 0);
-	m_pKeybindSettings->setLayout(pKeybindLayout);
-	m_pKeybindSettings->hide();
+	// TODO
 }
 
 void SettingsMenu::SetupShaderSettings()
 {
-	m_pShaderSettings = new QWidget(this);
-	QGridLayout* pShaderLayout = new QGridLayout(m_pShaderSettings);
-	QLabel* shaderText = new QLabel(QString::fromLatin1("Shader Placeholder"));
-	pShaderLayout->addWidget(shaderText, 0, 0);
-	m_pShaderSettings->setLayout(pShaderLayout);
-	m_pShaderSettings->hide();
+	// TODO
 }
 
 void SettingsMenu::SetupModelSettings()
 {
-	m_pModelSettings = new QWidget(this);
-	QGridLayout* pModelLayout = new QGridLayout(m_pModelSettings);
-	QLabel* modelText = new QLabel(QString::fromLatin1("Model Placeholder"));
-	pModelLayout->addWidget(modelText, 0, 0);
-	m_pModelSettings->setLayout(pModelLayout);
-	m_pModelSettings->hide();
+	// TODO
 }
 
 
