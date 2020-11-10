@@ -13,29 +13,7 @@
 #include <QdesktopServices>
 #include <QUrl>
 #include <QtMath>
-#include <QKeyEvent>
 #include <QImage>
-
-
-// Define default shaders
-static const char* vertexShaderSource =
-    "attribute highp vec4 posAttr;\n"
-    "attribute lowp vec4 colAttr;\n"
-    "varying lowp vec4 col;\n"
-    "uniform highp mat4 matrix;\n"
-    "void main() {\n"
-    "   col = colAttr;\n"
-    "   gl_Position = matrix * posAttr;\n"
-    "}\n";
-
-static const char* fragmentShaderSource =
-    "varying lowp vec4 col;\n"
-    "void main() {\n"
-    "   gl_FragColor = col;\n"
-    "}\n";
-
-//
-QSet<int> keys;
 
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
@@ -324,40 +302,6 @@ void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
     const float zoomAmount = zoomSensitivity * event->angleDelta().y();
     m_scaleMatrix.scale(1.f + zoomAmount);
 }
-
-void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
-{
-    if (event->type() == QEvent::KeyPress) {
-        keys += ((QKeyEvent*)event)->key();
-    }
-
-    QWindow::keyPressEvent(event);
-}
-
-void ViewerGraphicsWindow::keyReleaseEvent(QKeyEvent* event)
-{
-    if (event->type() == QEvent::KeyRelease) {
-        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_S))
-        {
-            ViewerGraphicsWindow::saveDialog("TO DO ...");
-        }
-
-        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_R))
-        {
-            ViewerGraphicsWindow::resetView();
-        }
-
-        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_O))
-        {
-            ViewerGraphicsWindow::loadModel();
-        }
-        //TO DO: more hotkeys
-    }
-
-    keys.clear();
-    QWindow::keyReleaseEvent(event);
-}
-
 
 
 void ViewerGraphicsWindow::initialize()

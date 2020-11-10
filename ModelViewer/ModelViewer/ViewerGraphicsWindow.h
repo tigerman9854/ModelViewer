@@ -18,6 +18,7 @@ public:
     void resetView();
 
     bool loadModel(QString filepath = QString());
+    bool unloadModel();
     bool addPrimitive(QString filepath);
     bool screenshotDialog(const char* format);
     bool saveDialog(QString filePath);
@@ -25,7 +26,6 @@ public:
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
 
-    bool addPrimitive(QString filepath);
     bool IsModelValid();
 
     bool editCurrentShaders();
@@ -97,16 +97,6 @@ private:
     int lastY;
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
-
-
-protected:
-    // Mouse functions
-    void mousePressEvent(QMouseEvent*) override;
-    void mouseMoveEvent(QMouseEvent*) override;
-    void mouseReleaseEvent(QMouseEvent*) override;
-    void wheelEvent(QWheelEvent*) override;
-    void keyPressEvent(QKeyEvent*) override;
-    void keyReleaseEvent(QKeyEvent*) override;
     
     QMatrix4x4 m_scaleMatrix;
     QMatrix4x4 m_rotMatrix;
