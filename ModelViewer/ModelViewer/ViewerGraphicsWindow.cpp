@@ -8,11 +8,12 @@
 #include <QScreen>
 #include <QtMath>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMouseEvent>
-#include <QdesktopServices>
+#include <QDesktopServices>
 #include <QUrl>
 #include <QtMath>
-
+#include <QImage>
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     : OpenGLWindow(parent)
@@ -464,6 +465,62 @@ bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
     QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     return loadModel(filepath);
 }
+
+bool ViewerGraphicsWindow::screenshotDialog() {
+    if (!initialized) {
+        return false;
+    }
+
+    // Create a screenshot folder
+    QString defaultFolder("../data/Screenshots/");
+    if (!QDir(defaultFolder).exists()) {
+        QDir().mkdir(defaultFolder);
+    }
+
+    // Have the user choose a file location
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save screenshot"),
+        defaultFolder + "capture.png",
+        tr("Images (*.bmp *.jpg *.jpeg *.png *.ppm *.xbm *.xpm)"));
+
+    if (!filepath.isEmpty())
+    {
+        ViewerGraphicsWindow::exportFrame(filepath);
+    }
+}
+
+bool ViewerGraphicsWindow::saveDialog(QString filePath) {
+    if (!initialized) {
+        return false;
+    }
+
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save"),
+        QString(),
+        tr("all (*)"));
+
+    if (!filepath.isEmpty())
+    {
+        // TO DO...
+    }
+}
+
+void ViewerGraphicsWindow::exportFrame(QString filePath) {
+    // Capture the framebuffer
+    GLubyte* pixels = (GLubyte*)malloc(5 * width() * height());
+    if (pixels) {
+        //Read the data from the frame buffer
+        glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+    }
+
+    // Flip the framebuffer because OpenGL renders upsidedown
+    QImage frameCapture(pixels, width(), height(), QImage::Format_ARGB32);
+    QTransform flipTransform;
+    flipTransform.scale(1, -1);
+    frameCapture = frameCapture.transformed(flipTransform);
+    frameCapture.save(filePath);
+}
+
 
 
 // ***************************************************
