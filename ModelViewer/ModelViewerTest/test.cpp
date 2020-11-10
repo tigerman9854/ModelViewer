@@ -113,6 +113,7 @@ void ModelViewerTest::integration()
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 	QTest::keyClick(pLoadMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pLoadMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pLoadMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
@@ -146,6 +147,8 @@ void ModelViewerTest::integration()
 	// Unload the shape
 	pFileMenu->popup(m_pWindow->mapToGlobal(pMenuBar->pos()));
 	pFileMenu->setFocus();
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
