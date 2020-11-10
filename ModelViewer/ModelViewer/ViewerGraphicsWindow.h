@@ -24,6 +24,9 @@ public:
     bool loadFragmentShader(QString fragfilepath = QString());
 
     bool addPrimitive(QString filepath);
+    bool screenshotDialog(const char* format);
+    bool saveDialog(QString filePath);
+    void exportFrame(QString name, const char* format);
     bool IsModelValid();
 
     bool editCurrentShaders();
