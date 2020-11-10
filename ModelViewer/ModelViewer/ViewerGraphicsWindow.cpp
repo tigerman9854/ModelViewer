@@ -303,6 +303,7 @@ void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
     m_scaleMatrix.scale(1.f + zoomAmount);
 }
 
+
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);

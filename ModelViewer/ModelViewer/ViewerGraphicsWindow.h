@@ -98,7 +98,7 @@ private:
     int lastY;
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
-
+    
     QMatrix4x4 m_scaleMatrix;
     QMatrix4x4 m_rotMatrix;
     QMatrix4x4 m_transMatrix;
