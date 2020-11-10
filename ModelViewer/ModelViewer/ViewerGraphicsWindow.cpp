@@ -13,8 +13,8 @@
 #include <QdesktopServices>
 #include <QUrl>
 #include <QtMath>
-#include <QKeyEvent>
 #include <QImage>
+
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     : OpenGLWindow(parent)

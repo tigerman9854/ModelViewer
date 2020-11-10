@@ -20,14 +20,14 @@ public:
     bool loadModel(QString filepath = QString());
     bool unloadModel();
 
+    bool addPrimitive(QString filepath);
+    bool screenshotDialog(const char* format);
+    bool saveDialog(QString filePath);
+    void exportFrame(QString name, const char* format);
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
 
-    bool addPrimitive(QString filepath);
     bool IsModelValid();
-    bool screenshotDialog(const char* format);
-    bool saveDialog(QString filePath);
-    void expertFrame(QString name, const char* format);
 
     bool editCurrentShaders();
     bool reloadCurrentShaders();

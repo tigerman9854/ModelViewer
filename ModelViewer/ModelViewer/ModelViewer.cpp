@@ -30,7 +30,7 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->setObjectName("LoadMenu");
-    pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
+    pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); }, QKeySequence(Qt::CTRL + Qt::Key_O));
 
     QMenu* pShaderMenu = pLoadMenu->addMenu("Shader");
     pShaderMenu->addAction("Vertex", [=]{m_pGraphicsWindow->loadVertexShader(); });
@@ -66,16 +66,12 @@ ModelViewer::ModelViewer(QWidget *parent)
     pScreenshotMenu->addAction("JPEG", [=] {  m_pGraphicsWindow->screenshotDialog("JPEG"); });
     pScreenshotMenu->addAction("PPM", [=] {  m_pGraphicsWindow->screenshotDialog("PPM"); });
 
-<<<<<<< HEAD
-    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); });
-    pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
+
+    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); }, QKeySequence(Qt::CTRL + Qt::Key_W));
 
     // quit button
-    pFileMenu->addAction("Quit", [=] { GetQuit();/* TODO: m_pGraphicsWindow->exitGracefully(); */ });
-=======
-    pFileMenu->addAction("Quit", [=] { /* TODO: m_pGraphicsWindow->exitGracefully(); */ });
->>>>>>> b4a57f8... hotkey & screenshot-test
-
+    pFileMenu->addAction("Quit", [=] { GetQuit();/* TODO: m_pGraphicsWindow->exitGracefully(); */ }, QKeySequence(Qt::CTRL + Qt::Key_Q));
+      
     // -> Edit menu
     QMenu* pEditMenu = menuBar()->addMenu("Edit");
     pEditMenu->setObjectName("EditMenu");
@@ -86,7 +82,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     // -> View menu
     QMenu* pViewMenu = menuBar()->addMenu("View");
     pViewMenu->setObjectName("ViewMenu");
-    pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); });
+    pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); }, QKeySequence(Qt::CTRL + Qt::Key_R));
 
     // -> Help menu
 
@@ -94,7 +90,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     // try
     QMenu* pHelpMenu = menuBar()->addMenu("Help");
     pHelpMenu->setObjectName("HelpMenu");
-    pHelpMenu->addAction("Help", [=] {GetHelp(); });
+    pHelpMenu->addAction("Help", [=] {GetHelp(); }, QKeySequence(Qt::CTRL + Qt::Key_F1));
 
 
     // -
