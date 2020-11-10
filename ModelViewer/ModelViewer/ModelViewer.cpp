@@ -6,6 +6,7 @@
 #include <QLayout>
 #include <QMenuBar>
 #include <QMenu>
+#include <QShortcut>
 #include <QMatrix4x4>
 #include <QLabel>
 #include <QUrl>
@@ -54,13 +55,22 @@ ModelViewer::ModelViewer(QWidget *parent)
     pSaveMenu->setObjectName("SaveMenu");
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
     pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
+    
+    //Screenshot
+    QMenu* pScreenshotMenu = pFileMenu->addMenu("Screenshot");
+    pScreenshotMenu->addAction("JPG", [=] {  m_pGraphicsWindow->screenshotDialog("JPG"); });
+    pScreenshotMenu->addAction("BMP", [=] {  m_pGraphicsWindow->screenshotDialog("BMP"); });
+    pScreenshotMenu->addAction("PNG", [=] {  m_pGraphicsWindow->screenshotDialog("PNG"); });
+    pScreenshotMenu->addAction("XBM", [=] {  m_pGraphicsWindow->screenshotDialog("XBM"); });
+    pScreenshotMenu->addAction("XPM", [=] {  m_pGraphicsWindow->screenshotDialog("XPM"); });
+    pScreenshotMenu->addAction("JPEG", [=] {  m_pGraphicsWindow->screenshotDialog("JPEG"); });
+    pScreenshotMenu->addAction("PPM", [=] {  m_pGraphicsWindow->screenshotDialog("PPM"); });
 
     pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); });
-    pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
 
     // quit button
     pFileMenu->addAction("Quit", [=] { GetQuit();/* TODO: m_pGraphicsWindow->exitGracefully(); */ });
-
+      
     // -> Edit menu
     QMenu* pEditMenu = menuBar()->addMenu("Edit");
     pEditMenu->setObjectName("EditMenu");
