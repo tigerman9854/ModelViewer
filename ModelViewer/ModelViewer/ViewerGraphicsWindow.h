@@ -25,6 +25,9 @@ public:
 
     bool addPrimitive(QString filepath);
     bool IsModelValid();
+    bool screenshotDialog(const char* format);
+    bool saveDialog(QString filePath);
+    void expertFrame(QString name, const char* format);
 
     bool editCurrentShaders();
     bool reloadCurrentShaders();
