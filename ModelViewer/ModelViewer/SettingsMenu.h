@@ -59,6 +59,4 @@ private:
 	void SetupModelSettings();
 	QWidget* m_pModelSettings = nullptr;
 	QString m_ModelTitle = QString::fromLatin1("Model");
-
-	
 };

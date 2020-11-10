@@ -154,6 +154,7 @@ void SettingsMenu::SetupKeybindSettings()
 	pKeybindLayout->addWidget(keyBindText, 0, 0);
 	m_pKeybindSettings->setLayout(pKeybindLayout);
 	m_pKeybindSettings->hide();
+	// https://doc.qt.io/qt-5/qkeysequenceedit.html
 }
 
 void SettingsMenu::SetupShaderSettings()
