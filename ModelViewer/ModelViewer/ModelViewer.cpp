@@ -57,15 +57,9 @@ ModelViewer::ModelViewer(QWidget *parent)
     pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
 
     //Screenshot
-    QMenu* pScreenshotMenu = pFileMenu->addMenu("Screenshot");
-    pScreenshotMenu->addAction("JPG", [=] {  m_pGraphicsWindow->screenshotDialog("JPG"); });
-    pScreenshotMenu->addAction("BMP", [=] {  m_pGraphicsWindow->screenshotDialog("BMP"); });
-    pScreenshotMenu->addAction("PNG", [=] {  m_pGraphicsWindow->screenshotDialog("PNG"); });
-    pScreenshotMenu->addAction("XBM", [=] {  m_pGraphicsWindow->screenshotDialog("XBM"); });
-    pScreenshotMenu->addAction("XPM", [=] {  m_pGraphicsWindow->screenshotDialog("XPM"); });
-    pScreenshotMenu->addAction("JPEG", [=] {  m_pGraphicsWindow->screenshotDialog("JPEG"); });
-    pScreenshotMenu->addAction("PPM", [=] {  m_pGraphicsWindow->screenshotDialog("PPM"); });
+    pFileMenu->addAction("Screenshot", [=] {  m_pGraphicsWindow->screenshotDialog(); }, QKeySequence(Qt::CTRL + Qt::Key_P));
 
+    // Close
     pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); }, QKeySequence(Qt::CTRL + Qt::Key_W));
 
     // quit button

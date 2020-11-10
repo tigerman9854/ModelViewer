@@ -8,6 +8,7 @@
 #include <QScreen>
 #include <QtMath>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMouseEvent>
 #include <QDesktopServices>
 #include <QUrl>
@@ -465,19 +466,26 @@ bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
     return loadModel(filepath);
 }
 
-bool ViewerGraphicsWindow::screenshotDialog(const char* format) {
+bool ViewerGraphicsWindow::screenshotDialog() {
     if (!initialized) {
         return false;
     }
 
+    // Create a screenshot folder
+    QString defaultFolder("../data/Screenshots/");
+    if (!QDir(defaultFolder).exists()) {
+        QDir().mkdir(defaultFolder);
+    }
+
+    // Have the user choose a file location
     QString filepath = QFileDialog::getSaveFileName(nullptr,
         tr("Save screenshot"),
-        QString(),
-        tr("Images (*)"));
+        defaultFolder + "capture.png",
+        tr("Images (*.bmp *.jpg *.jpeg *.png *.ppm *.xbm *.xpm)"));
 
     if (!filepath.isEmpty())
     {
-        ViewerGraphicsWindow::exportFrame(filepath, format);
+        ViewerGraphicsWindow::exportFrame(filepath);
     }
 }
 
@@ -497,25 +505,20 @@ bool ViewerGraphicsWindow::saveDialog(QString filePath) {
     }
 }
 
-void ViewerGraphicsWindow::exportFrame(QString name, const char* format) {
-    //Initial the image
-    QImage image(width(), height(), QImage::Format_ARGB32);
-    QString filePath = QString("%1.%2").arg(name, format);
-
+void ViewerGraphicsWindow::exportFrame(QString filePath) {
+    // Capture the framebuffer
     GLubyte* pixels = (GLubyte*)malloc(5 * width() * height());
     if (pixels) {
         //Read the data from the frame buffer
         glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, pixels);
     }
 
-    //Save
-    //To fix: I don't know the reason why the image generated from the framebuffer has a flip,
-    //I add a transform, this transform will be removed after I figure out.
+    // Flip the framebuffer because OpenGL renders upsidedown
     QImage frameCapture(pixels, width(), height(), QImage::Format_ARGB32);
     QTransform flipTransform;
-    flipTransform.rotate(180);
+    flipTransform.scale(1, -1);
     frameCapture = frameCapture.transformed(flipTransform);
-    frameCapture.save(filePath, format, -1);
+    frameCapture.save(filePath);
 }
 
 
