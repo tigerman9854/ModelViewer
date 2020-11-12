@@ -11,7 +11,18 @@ GraphicsWindowUniform::GraphicsWindowUniform(ViewerGraphicsWindow* graphicsWindo
     //Not all types need to be used when implement the unifrom
     //They are just 4common UIs
     //template of slider and dial, example: uniform varaiable color RGB
-    createColorController();
+    createColorController32();
+    createColorController64();
+    ///Switch 2 formats color
+    colorFormatCombo = new QComboBox;
+    colorFormatCombo->addItem(tr("Using 32-bits Color"));
+    colorFormatCombo->addItem(tr("Using 64-bits Color"));
+    stackedColor = new QStackedWidget;
+    stackedColor->addWidget(colorGroup32);
+    stackedColor->addWidget(colorGroup64);
+    connect(colorFormatCombo, QOverload<int>::of(&QComboBox::activated),
+       stackedColor, &QStackedWidget::setCurrentIndex);
+
     //template of checkBox, example: lighting(On/Off), smoothing...
     createSettingController();
     //template of choice box exmaple: image effect
@@ -21,7 +32,10 @@ GraphicsWindowUniform::GraphicsWindowUniform(ViewerGraphicsWindow* graphicsWindo
 
     //Windows layout
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->addWidget(colorGroup);
+    //layout->addWidget(colorGroup32);
+    //layout->addWidget(colorGroup64);
+    layout->addWidget(stackedColor);
+    layout->addWidget(colorFormatCombo);
     layout->addWidget(settingGroup);
     layout->addWidget(effectGroup);
     layout->addWidget(lightGroup);
@@ -30,8 +44,8 @@ GraphicsWindowUniform::GraphicsWindowUniform(ViewerGraphicsWindow* graphicsWindo
     setWindowTitle(tr("Uniform"));
 }
 
-void GraphicsWindowUniform::createColorController() {
-    colorGroup = new QGroupBox("Color");
+void GraphicsWindowUniform::createColorController32() {
+    colorGroup32 = new QGroupBox("Color");
 
     //RGB color
     colorRLabel = new QLabel(tr("Red"));
@@ -68,11 +82,11 @@ void GraphicsWindowUniform::createColorController() {
     //Singal
     //Need to redo, The Qslider only emits int signal
     connect(colorRSlider, &QSlider::valueChanged, 
-        m_pGraphicsWindow, &ViewerGraphicsWindow::lightAmbient);
+        m_pGraphicsWindow, &ViewerGraphicsWindow::colorRChanged);
     connect(colorGSlider, &QSlider::valueChanged, 
-        m_pGraphicsWindow, &ViewerGraphicsWindow::lightAmbient);
+        m_pGraphicsWindow, &ViewerGraphicsWindow::colorGChanged);
     connect(colorBSlider, &QSlider::valueChanged, 
-        m_pGraphicsWindow, &ViewerGraphicsWindow::lightAmbient);
+        m_pGraphicsWindow, &ViewerGraphicsWindow::colorBChanged);
 
     //set the layout
     QGridLayout* colorLayout = new QGridLayout;
@@ -83,7 +97,53 @@ void GraphicsWindowUniform::createColorController() {
     colorLayout->addWidget(colorBLabel, 2, 0, 1, 1);
     colorLayout->addWidget(colorBSlider, 2, 1, 1, 4);
     colorLayout->addWidget(colorDial, 3, 0, 2, 5);
-    colorGroup->setLayout(colorLayout);
+    colorGroup32->setLayout(colorLayout);
+}
+
+void GraphicsWindowUniform::createColorController64()
+{
+    colorGroup64 = new QGroupBox("64-bit Color");
+
+    redLabel64 = new QLabel(tr("Red:"));
+    redSpinBox64 = new QDoubleSpinBox;
+    redSpinBox64->setRange(0, 255);
+    redSpinBox64->setValue(0);
+    redSpinBox64->setSingleStep(0.01);
+
+    greenLabel64 = new QLabel(tr("Green:"));
+    greenSpinBox64 = new QDoubleSpinBox;
+    greenSpinBox64->setRange(0, 255);
+    greenSpinBox64->setValue(0);
+    greenSpinBox64->setSingleStep(0.01);
+
+    blueLabel64 = new QLabel(tr("Blue"));
+    blueSpinBox64 = new QDoubleSpinBox;
+    blueSpinBox64->setRange(0, 255);
+    blueSpinBox64->setValue(0);
+    blueSpinBox64->setSingleStep(0.01);
+
+    //Signal 
+    connect(redSpinBox64, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+        m_pGraphicsWindow, &ViewerGraphicsWindow::colorRChanged64);
+    connect(greenSpinBox64, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+        m_pGraphicsWindow, &ViewerGraphicsWindow::colorGChanged64);
+    connect(blueSpinBox64, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+        m_pGraphicsWindow, &ViewerGraphicsWindow::colorBChanged64);
+
+    // not finish
+    colorDial64 = new QDial;
+    colorDial64->setFocusPolicy(Qt::StrongFocus);
+
+    //set the layout
+    QGridLayout* colorLayout = new QGridLayout;
+    colorLayout->addWidget(redLabel64, 0, 0, 1, 1);
+    colorLayout->addWidget(redSpinBox64, 0, 1, 1, 4);
+    colorLayout->addWidget(greenLabel64, 1, 0, 1, 1);
+    colorLayout->addWidget(greenSpinBox64, 1, 1, 1, 4);
+    colorLayout->addWidget(blueLabel64, 2, 0, 1, 1);
+    colorLayout->addWidget(blueSpinBox64, 2, 1, 1, 4);
+    colorLayout->addWidget(colorDial64, 3, 0, 2, 5);
+    colorGroup64->setLayout(colorLayout);
 }
 
 void GraphicsWindowUniform:: createSettingController() {

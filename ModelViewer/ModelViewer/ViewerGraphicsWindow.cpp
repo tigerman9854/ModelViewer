@@ -554,6 +554,19 @@ void ViewerGraphicsWindow::colorBChanged(int val)
 {
     //TO DO
 }
+void ViewerGraphicsWindow::colorRChanged64(double val)
+{
+    //TO DO
+}
+
+void ViewerGraphicsWindow::colorGChanged64(double val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::colorBChanged64(double val)
+{
+    //TO DO
+}
 void ViewerGraphicsWindow::lightingSwitch(bool val)
 {
     //TO DO, maybe ...

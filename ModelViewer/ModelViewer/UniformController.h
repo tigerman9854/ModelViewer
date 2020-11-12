@@ -20,7 +20,8 @@ public:
     GraphicsWindowUniform(ViewerGraphicsWindow* graphicsWindow, QWidget* parent = nullptr);
 
 private:
-    void createColorController();
+    void createColorController32();
+    void createColorController64();
     void createSettingController();
     void createEffectController();
     void createLightingController();
@@ -33,7 +34,22 @@ private:
     QLabel* colorBLabel;
     QSlider* colorBSlider;
     QDial* colorDial;
-    QGroupBox* colorGroup;
+    QGroupBox* colorGroup32;
+
+    //Color 64 bit
+    QLabel* redLabel64;
+    QDoubleSpinBox* redSpinBox64;
+    QLabel* greenLabel64;
+    QDoubleSpinBox* greenSpinBox64;
+    QLabel* blueLabel64;
+    QDoubleSpinBox* blueSpinBox64;
+    QDial* colorDial64;
+    QGroupBox* colorGroup64;
+
+
+    // Switch color format
+    QStackedWidget* stackedColor;
+    QComboBox* colorFormatCombo;
 
     //Seting uniform
     QCheckBox* lightingOn;
@@ -55,4 +71,31 @@ private:
 
     //ModelViewer
     ViewerGraphicsWindow* m_pGraphicsWindow = nullptr;
+};
+
+//*******************
+//A slider that can emit the double number as the signal
+//Adapted from: https://stackoverflow.com/questions/19003369/how-to-make-a-qslider-change-with-double-values
+//Author: William Spinelli
+//*******************
+
+//*******************
+
+class DoubleSlider : public QSlider {
+    Q_OBJECT
+
+public:
+    DoubleSlider(QWidget* parent = 0) : QSlider(parent) {
+        connect(this, SIGNAL(valueChanged(int)),
+            this, SLOT(notifyValueChanged(int)));
+    }
+
+signals:
+    void doubleValueChanged(double value);
+
+public slots:
+    void notifyValueChanged(int value) {
+        double doubleValue = value / 10.0;
+        emit doubleValueChanged(doubleValue);
+    }
 };

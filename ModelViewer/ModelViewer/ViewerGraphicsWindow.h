@@ -52,6 +52,9 @@ public slots:
     void colorRChanged(int val);
     void colorGChanged(int val);
     void colorBChanged(int val);
+    void colorRChanged64(double val);
+    void colorGChanged64(double val);
+    void colorBChanged64(double val);
     ////settings
     void lightingSwitch(bool val);
     void smoothingSwitch(bool val);
