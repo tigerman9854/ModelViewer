@@ -31,6 +31,9 @@
     <ClCompile Include="GraphicsWindowDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SettingsMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OpenGLWindow.cpp">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="ViewerGraphicsWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SettingsMenu.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

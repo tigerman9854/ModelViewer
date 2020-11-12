@@ -1,6 +1,7 @@
 #include "ModelViewer.h"
 #include "ViewerGraphicsWindow.h"
 #include "GraphicsWindowDelegate.h"
+#include "SettingsMenu.h"
 
 #include <QWidget>
 #include <QLayout>
@@ -18,6 +19,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     // Create a new graphics window, and set it as the central widget
     m_pGraphicsWindow = new ViewerGraphicsWindow();
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
+    m_pSettingsMenu = new SettingsMenu(m_pGraphicsWindow);
     setCentralWidget(m_pGraphicsWindowDelegate);
 
     // Change the size to something usable
@@ -56,7 +58,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     pSaveMenu->setObjectName("SaveMenu");
     pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
     pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
-
+    
     //Screenshot
     pFileMenu->addAction("Screenshot", [=] {  m_pGraphicsWindow->screenshotDialog(); }, QKeySequence(Qt::CTRL + Qt::Key_P));
 
@@ -65,6 +67,9 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     // quit button
     pFileMenu->addAction("Quit", [=] { GetQuit();}, QKeySequence(Qt::CTRL + Qt::Key_Q));
+
+    // setings menu
+    pFileMenu->addAction("Settings", [=] { m_pSettingsMenu->show(); });
 
     // -> Edit menu
     QMenu* pEditMenu = new FocusMenu(m_pGraphicsWindow, "Edit", this);

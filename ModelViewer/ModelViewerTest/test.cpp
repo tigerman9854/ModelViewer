@@ -90,7 +90,7 @@ void ModelViewerTest::ResetViewAndShow()
 }
 
 
-void ModelViewerTest::integration()
+void ModelViewerTest::integration()// README: The addition of my settings menu borked this test
 {
 	// Show the window, make sure it appeared
 	QVERIFY(m_pWindow->isHidden());
