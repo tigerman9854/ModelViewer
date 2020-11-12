@@ -1,6 +1,7 @@
 #include "ModelViewer.h"
 #include "ViewerGraphicsWindow.h"
 #include "GraphicsWindowDelegate.h"
+#include "UniformController.h"
 
 #include <QWidget>
 #include <QLayout>
@@ -20,6 +21,9 @@ ModelViewer::ModelViewer(QWidget *parent)
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
     setCentralWidget(m_pGraphicsWindowDelegate);
 
+    m_pGraphicsWindowUniform = new GraphicsWindowUniform(m_pGraphicsWindow);
+    m_pGraphicsWindowUniform->show();
+
     // Change the size to something usable
     resize(640, 480);
 
@@ -30,7 +34,7 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->setObjectName("LoadMenu");
-    pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
+    pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); }, QKeySequence(Qt::CTRL + Qt::Key_O));
 
     QMenu* pShaderMenu = pLoadMenu->addMenu("Shader");
     pShaderMenu->addAction("Vertex", [=]{m_pGraphicsWindow->loadVertexShader(); });
@@ -51,8 +55,8 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
     pSaveMenu->setObjectName("SaveMenu");
-    pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
-    pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
+    pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ }, QKeySequence(Qt::CTRL + Qt::Key_S));
+    pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ }, QKeySequence(Qt::CTRL + Qt::Key_X));
     
     //Screenshot
     QMenu* pScreenshotMenu = pFileMenu->addMenu("Screenshot");
@@ -64,7 +68,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     pScreenshotMenu->addAction("JPEG", [=] {  m_pGraphicsWindow->screenshotDialog("JPEG"); });
     pScreenshotMenu->addAction("PPM", [=] {  m_pGraphicsWindow->screenshotDialog("PPM"); });
 
-    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); });
+    pFileMenu->addAction("Close", [=] { /*m_pGraphicsWindow->unloadModel(); */});
 
     // quit button
     pFileMenu->addAction("Quit", [=] { GetQuit();/* TODO: m_pGraphicsWindow->exitGracefully(); */ });
@@ -77,7 +81,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     // -> View menu
     QMenu* pViewMenu = menuBar()->addMenu("View");
     pViewMenu->setObjectName("ViewMenu");
-    pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); });
+    pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); }, QKeySequence(Qt::CTRL + Qt::Key_R));
 
     // -> Help menu
 

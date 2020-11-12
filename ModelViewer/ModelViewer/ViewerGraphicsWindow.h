@@ -18,6 +18,7 @@ public:
     void resetView();
 
     bool loadModel(QString filepath = QString());
+    bool unloadModel();
     bool addPrimitive(QString filepath);
     bool screenshotDialog(const char* format);
     bool saveDialog(QString filePath);
@@ -25,7 +26,6 @@ public:
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
 
-    bool addPrimitive(QString filepath);
     bool IsModelValid();
 
     bool GetLeftMousePressed();
@@ -46,6 +46,22 @@ public:
     float nearPlane = 0.1f;
     float farPlane = 100.f;
 
+public slots:
+    ////uniform slots
+    ////color
+    void colorRChanged(int val);
+    void colorGChanged(int val);
+    void colorBChanged(int val);
+    ////settings
+    void lightingSwitch(bool val);
+    void smoothingSwitch(bool val);
+    ////effect
+    void effectType(int val);
+    ////lighting
+    void lightAmbient(float val);
+    void lightDiffuse(float val);
+    void lightSpecular(float val);
+
 signals:
     void Error(QString message);
     void ClearError();
@@ -53,13 +69,6 @@ signals:
     void BeginModelLoading(QString filepath);
     void EndModelLoading(bool success, QString filepath);
     void ModelUnloaded();
-
-protected:
-    // Mouse functions
-    virtual void mousePressEvent(QMouseEvent*) override;
-    virtual void mouseMoveEvent(QMouseEvent*) override;
-    virtual void mouseReleaseEvent(QMouseEvent*) override;
-    virtual void wheelEvent(QWheelEvent*) override;
 
 private:
     bool initialized = false;
@@ -94,15 +103,18 @@ private:
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
 
+    //Key vars
+    QSet<int> keys;
 
 protected:
     // Mouse functions
-    void mousePressEvent(QMouseEvent*) override;
-    void mouseMoveEvent(QMouseEvent*) override;
-    void mouseReleaseEvent(QMouseEvent*) override;
-    void wheelEvent(QWheelEvent*) override;
+    virtual void mousePressEvent(QMouseEvent*) override;
+    virtual void mouseMoveEvent(QMouseEvent*) override;
+    virtual void mouseReleaseEvent(QMouseEvent*) override;
+    virtual void wheelEvent(QWheelEvent*) override;
     void keyPressEvent(QKeyEvent*) override;
     void keyReleaseEvent(QKeyEvent*) override;
+    
     
     QMatrix4x4 m_scaleMatrix;
     QMatrix4x4 m_rotMatrix;

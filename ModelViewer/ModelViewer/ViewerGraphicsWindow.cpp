@@ -21,19 +21,25 @@ static const char* vertexShaderSource =
     "attribute lowp vec4 colAttr;\n"
     "varying lowp vec4 col;\n"
     "uniform highp mat4 matrix;\n"
+    "uniform float uLightX;\n"
+    "uniform float uLightY;\n"
+    "uniform float uLightZ;\n"
+    "out vec3 vNormal\n"
+    "out vec3 vEye\n"
+    "out vec3 vLight\n"
     "void main() {\n"
     "   col = colAttr;\n"
     "   gl_Position = matrix * posAttr;\n"
     "}\n";
 
 static const char* fragmentShaderSource =
+    "in vec3  vN;\n"
+    "in vec3  vL;\n"
+    "in vec3  vE;\n"
     "varying lowp vec4 col;\n"
     "void main() {\n"
     "   gl_FragColor = col;\n"
     "}\n";
-
-//
-QSet<int> keys;
 
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
@@ -77,13 +83,13 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
-bool ViewerGraphicsWindow::unloadModel()
-{
-    m_currentModel = Model();
-    emit ModelUnloaded();
-
-    return true;
-}
+//bool ViewerGraphicsWindow::unloadModel()
+//{
+//    m_currentModel = Model();
+//    emit ModelUnloaded();
+//
+//    return true;
+//}
 
 bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
 {
@@ -285,20 +291,20 @@ void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
 void ViewerGraphicsWindow::keyReleaseEvent(QKeyEvent* event)
 {
     if (event->type() == QEvent::KeyRelease) {
-        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_S))
-        {
-            ViewerGraphicsWindow::saveDialog("TO DO ...");
-        }
+        //if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_S))
+        //{
+        //    ViewerGraphicsWindow::saveDialog("TO DO ...");
+        //}
 
-        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_R))
-        {
-            ViewerGraphicsWindow::resetView();
-        }
+        //if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_R))
+        //{
+        //    ViewerGraphicsWindow::resetView();
+        //}
 
-        if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_O))
-        {
-            ViewerGraphicsWindow::loadModel();
-        }
+        //if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_O))
+        //{
+        //    ViewerGraphicsWindow::loadModel();
+        //}
         //TO DO: more hotkeys
     }
 
@@ -467,7 +473,8 @@ void ViewerGraphicsWindow::resetView()
     }
 }
 
-bool ViewerGraphicsWindow::screenshotDialog(const char* format) {
+bool ViewerGraphicsWindow::screenshotDialog(const char* format) 
+{
     if (!initialized) {
         return false;
     }
@@ -483,7 +490,8 @@ bool ViewerGraphicsWindow::screenshotDialog(const char* format) {
     }
 }
 
-bool ViewerGraphicsWindow::saveDialog(QString filePath) {
+bool ViewerGraphicsWindow::saveDialog(QString filePath) 
+{
     if (!initialized) {
         return false;
     }
@@ -499,7 +507,8 @@ bool ViewerGraphicsWindow::saveDialog(QString filePath) {
     }
 }
 
-void ViewerGraphicsWindow::exportFrame(QString name, const char* format) {
+void ViewerGraphicsWindow::exportFrame(QString name, const char* format) 
+{
     //Initial the image
     QImage image(width(), height(), QImage::Format_ARGB32);
     QString filePath = QString("%1.%2").arg(name, format);
@@ -520,10 +529,59 @@ void ViewerGraphicsWindow::exportFrame(QString name, const char* format) {
     frameCapture.save(filePath, format, -1);
 }
 
-bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
+bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) 
+{
     // Load  model
     QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     return loadModel(filepath);
+}
+
+// ***************************************************
+// This piece of code is used to receive and process the signal 
+// sent by uniform controller.
+// ***************************************************
+
+void ViewerGraphicsWindow::colorRChanged(int val)
+{
+    //TO DO
+}
+
+void ViewerGraphicsWindow::colorGChanged(int val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::colorBChanged(int val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::lightingSwitch(bool val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::smoothingSwitch(bool val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::effectType(int val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::lightAmbient(float val)
+{
+    m_program->setUniformValue(m_uKa, val);
+}
+
+void ViewerGraphicsWindow::lightDiffuse(float val)
+{
+    m_program->setUniformValue(m_uKd, val);
+}
+
+void ViewerGraphicsWindow::lightSpecular(float val)
+{
+    m_program->setUniformValue(m_uKs, val);
 }
 
 // ***************************************************

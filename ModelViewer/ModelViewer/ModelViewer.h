@@ -4,6 +4,7 @@
 
 class ViewerGraphicsWindow;
 class GraphicsWindowDelegate;
+class GraphicsWindowUniform;
 
 class Q_DECL_EXPORT ModelViewer : public QMainWindow
 {
@@ -23,4 +24,5 @@ public:
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow;
     GraphicsWindowDelegate* m_pGraphicsWindowDelegate;
+    GraphicsWindowUniform* m_pGraphicsWindowUniform;
 };
