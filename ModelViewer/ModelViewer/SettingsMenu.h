@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QTreeView>
 #include <QHeaderView>
+#include <QSettings>
 
 // Forward Declares
 class ViewerGraphicsWindow;
@@ -18,8 +19,7 @@ public:
 	void SaveSettingsConf();
 	void ChangeWindow(QListWidgetItem* current, QListWidgetItem* previous);
 
-private slots:
-	void mouseReturnPressed();
+//private slots:
 
 private:
 	enum SETTINGSWIDGET {
@@ -29,11 +29,13 @@ private:
 		model
 	};
 
+
 	ViewerGraphicsWindow* m_pGraphicsWindow = nullptr;
 	QGridLayout* m_pMainLayout = nullptr;
 	QListWidget* m_pSettingsList = nullptr;
 	QWidget* m_pCurrentSettingsWidget = nullptr;
 	QStringList settingHeader = { "Key","Value" };
+	QSettings settings;
 
 	// Settings menus
 	void SetupMouseSettings();
