@@ -30,6 +30,17 @@ public:
     bool reloadCurrentShaders();
     bool openShaderFile(QString filepath = QString());
 
+    QVector3D getLightLocation();
+    void setLightLocation(float x, float y, float z);
+    QVector3D getADS();
+    void setADS(float a, float d, float s);
+    QVector4D getADColor();
+    void setADColor(float r, float g, float b);
+    QVector4D getSpecularColor();
+    void setSpecularColor(float r, float g, float b);
+    float getShininess();
+    void setShininess(float new_shininess);
+
     bool GetLeftMousePressed();
     bool GetRightMousePressed();
     QMatrix4x4 GetScaleMatrix();
@@ -81,6 +92,15 @@ private:
     //GLint m_uADColor = 0;
     GLint m_uSpecularColor = 0;
     GLint m_uShininess = 0;
+
+    QVector3D lightPos;
+    QVector4D ADColor;
+    QVector4D specularColor;
+    float uKa;
+    float uKd;
+    float uKs;
+    float shininess = 1.0;
+
 
     QOpenGLShaderProgram* m_program = nullptr;
     int m_frame = 0;

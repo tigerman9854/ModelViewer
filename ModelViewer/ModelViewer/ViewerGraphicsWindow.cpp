@@ -326,13 +326,22 @@ void ViewerGraphicsWindow::initialize()
     m_normalUniform = m_program->uniformLocation("normalMat");
 
     m_lightPosUniform = m_program->uniformLocation("uLightPos");
+    lightPos = QVector3D(1., 1., -1.);
+
     m_uKa = m_program->uniformLocation("uKa");
     m_uKd = m_program->uniformLocation("uKd");
     m_uKs = m_program->uniformLocation("uKs");
+    uKa = 0.30;
+    uKd = 0.40;
+    uKs = 0.35;
+
+    ADColor = QVector4D(0., 1., 0., 1.);
+
     //m_uADColor = m_program->uniformLocation("uADColor");
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
+    specularColor = QVector4D(1., 1., 1., 1.);
     m_uShininess = m_program->uniformLocation("uShininess");
-
+    shininess = 1.0;
 
     emit Initialized();
 
@@ -363,25 +372,22 @@ void ViewerGraphicsWindow::render()
     QMatrix3x3 normal = modelMatrix.normalMatrix();
     m_program->setUniformValue(m_normalUniform, normal);
 
-    QVector3D lightPos = QVector3D(1., 1., -1.);
+    //QVector3D lightPos = QVector3D(1., 1., -1.);
     m_program->setUniformValue(m_lightPosUniform, lightPos);
 
-    float uKa = 0.35;
     m_program->setUniformValue(m_uKa, uKa);
-    float uKd = 0.45;
     m_program->setUniformValue(m_uKd, uKd);
-    float uKs = 0.15;
     m_program->setUniformValue(m_uKs, uKs);
 
     //QVector4D uADColor = QVector4D(1., 1., 1., 1.);
     //m_program->setUniformValue(m_uADColor, uADColor);
 
-    QVector4D uSpecularColor = QVector4D(1., 1., 1., 1.);
-    m_program->setUniformValue(m_uSpecularColor, uSpecularColor);
+    m_program->setUniformValue(m_uSpecularColor, specularColor);
 
-    GLfloat uShininess = 0.3;
-    m_program->setUniformValue(m_uShininess, uShininess);
+    m_program->setUniformValue(m_uShininess, shininess);
 
+    m_program->setAttributeValue(m_colAttr, ADColor);
+    
     glEnable(GL_DEPTH_TEST);
 
     if (m_currentModel.m_isValid)
@@ -503,4 +509,56 @@ QMatrix4x4 ViewerGraphicsWindow::GetModelMatrix()
 bool ViewerGraphicsWindow::IsModelValid() 
 {
     return m_currentModel.m_isValid;
+}
+
+//uniform vars getters and setters
+QVector3D ViewerGraphicsWindow::getLightLocation()
+{
+    return lightPos;
+}
+
+void ViewerGraphicsWindow::setLightLocation(float x, float y, float z)
+{
+    lightPos = QVector3D(x, y, z);
+    //m_program->setUniformValue(m_lightPosUniform, lightPos);
+}
+
+QVector3D ViewerGraphicsWindow::getADS()
+{
+    QVector3D ADS = QVector3D(uKa, uKd, uKs);
+    return(ADS);
+}
+
+void ViewerGraphicsWindow::setADS(float a, float d, float s)
+{
+    uKa = a;
+    uKd = d;
+    uKs = s;
+}
+
+QVector4D ViewerGraphicsWindow::getSpecularColor()
+{
+    return specularColor;
+}
+
+void ViewerGraphicsWindow::setSpecularColor(float r, float g, float b)
+{
+    specularColor = QVector4D(r, g, b, 1.);
+}
+
+float ViewerGraphicsWindow::getShininess()
+{
+    return shininess;
+}
+void ViewerGraphicsWindow::setShininess(float new_shininess)
+{
+    shininess = new_shininess;
+}
+QVector4D ViewerGraphicsWindow::getADColor()
+{
+    return ADColor;
+}
+void ViewerGraphicsWindow::setADColor(float r, float g, float b)
+{
+    ADColor = QVector4D(r, g, b, 1.);
 }
