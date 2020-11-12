@@ -21,6 +21,8 @@ public:
 
     void GetQuit();
 
+    
+
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow = nullptr;
     GraphicsWindowDelegate* m_pGraphicsWindowDelegate = nullptr;

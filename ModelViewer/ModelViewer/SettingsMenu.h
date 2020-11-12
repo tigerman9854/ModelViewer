@@ -14,10 +14,11 @@ class SettingsMenu : public QWidget
 {
 	Q_OBJECT
 public:
-	SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent = nullptr);
-	void LoadSettingsConf();
-	void SaveSettingsConf();
+	SettingsMenu(QWidget* parent = nullptr);
 	void ChangeWindow(QListWidgetItem* current, QListWidgetItem* previous);
+	void SetupSettings(ViewerGraphicsWindow* graphicsWindow);
+	QSettings* getSettings();
+	
 
 //private slots:
 
@@ -29,13 +30,12 @@ private:
 		model
 	};
 
-
 	ViewerGraphicsWindow* m_pGraphicsWindow = nullptr;
 	QGridLayout* m_pMainLayout = nullptr;
 	QListWidget* m_pSettingsList = nullptr;
 	QWidget* m_pCurrentSettingsWidget = nullptr;
 	QStringList settingHeader = { "Key","Value" };
-	QSettings settings;
+	QSettings* settings;
 
 	// Settings menus
 	void SetupMouseSettings();
@@ -62,3 +62,25 @@ private:
 	QWidget* m_pModelSettings = nullptr;
 	QString m_ModelTitle = QString::fromLatin1("Model");
 };
+
+
+/* List of all keybindings
+ViewerGraphicsWindow / 
+	increase_speed | QT::Key
+	decrease_speed | QT::Key
+	elevate_forwards | QT::Key
+	elevate_backwards | QT::Key
+	strafe_left | QT::Key
+	strafe_right | QT::Key
+	scale_up | QT::Key
+	scale_down | QT::Key
+	panXSensitivity | Float
+	panYSensitivity | Float
+	xRotateSensitivity | Float
+	yRotateSensitivity | Float
+	movementSensitivity | Float
+	zoomSensitivity | Float
+	fieldOfView | Float
+	nearPlane | Float
+	farPlane | Float
+*/

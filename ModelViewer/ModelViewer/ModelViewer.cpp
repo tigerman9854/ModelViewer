@@ -12,14 +12,19 @@
 #include <QLabel>
 #include <QUrl>
 #include <QDesktopServices>
+#include <QSettings>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
 {
+    // Create the settings menu (Contains the 'global' settings object)
+    m_pSettingsMenu = new SettingsMenu();
+    
     // Create a new graphics window, and set it as the central widget
-    m_pGraphicsWindow = new ViewerGraphicsWindow();
+    m_pGraphicsWindow = new ViewerGraphicsWindow(m_pSettingsMenu);
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
-    m_pSettingsMenu = new SettingsMenu(m_pGraphicsWindow);
+    m_pSettingsMenu->SetupSettings(m_pGraphicsWindow);
+    
     setCentralWidget(m_pGraphicsWindowDelegate);
 
     // Change the size to something usable

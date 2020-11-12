@@ -1,5 +1,5 @@
 #include "ViewerGraphicsWindow.h"
-
+#include "SettingsMenu.h"
 #include "ModelLoader.h"
 
 #include <QGuiApplication>
@@ -15,8 +15,8 @@
 #include <QtMath>
 #include <QImage>
 
-ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
-    : OpenGLWindow(parent)
+ViewerGraphicsWindow::ViewerGraphicsWindow(SettingsMenu* settingsMenu, QWindow* parent)
+    : m_pSettingsMenu(settingsMenu), OpenGLWindow(parent)
 {
     QSurfaceFormat format;
     format.setSamples(16);
@@ -25,6 +25,21 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     resetView();
 
     setAnimating(true);
+
+    settings = m_pSettingsMenu->getSettings();
+    loadSettings();
+}
+
+void ViewerGraphicsWindow::loadSettings() {
+    panXSensitivity = settings->value("ViewerGraphicsWindow/panXSensitivity", .01f).toFloat();
+    panYSensitivity = settings->value("ViewerGraphicsWindow/panYSensitivity", .01f).toFloat();
+    xRotateSensitivity = settings->value("ViewerGraphicsWindow/xRotateSensitivity", 0.6f).toFloat();
+    yRotateSensitivity = settings->value("ViewerGraphicsWindow/yRotateSensitivity", 0.6f).toFloat();
+    movementSensitivity = settings->value("ViewerGraphicsWindow/movementSensitivity", 4.0f).toFloat();
+    zoomSensitivity = settings->value("ViewerGraphicsWindow/zoomSensitivity", 0.001f).toFloat();
+    fieldOfView = settings->value("ViewerGraphicsWindow/fieldOfView", 45.f).toFloat();
+    nearPlane = settings->value("ViewerGraphicsWindow/nearPlane", 0.1f).toFloat();
+    farPlane = settings->value("ViewerGraphicsWindow/farPlane", 100.f).toFloat();
 }
 
 bool ViewerGraphicsWindow::loadModel(QString filepath) {
@@ -477,35 +492,35 @@ void ViewerGraphicsWindow::Update(float sec)
 {
     // Allow shift and ctrl to increase/decrease speed
     float effectiveSpeed = movementSensitivity * sec;
-    if (m_pressedKeys.contains(Qt::Key::Key_Shift)) {
+    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/increase_speed", Qt::Key::Key_Shift).toInt())) {
         effectiveSpeed *= 3.f;
     }
-    if (m_pressedKeys.contains(Qt::Key::Key_Control)) {
+    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Control).toInt())) {
         effectiveSpeed /= 3.f;
     }
 
     // W/S to elevate
-    if (m_pressedKeys.contains(Qt::Key::Key_W)) {
+    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/elevate_forwards", Qt::Key::Key_W).toInt())) {
         m_transMatrix.translate(0, effectiveSpeed, 0);
     }
-    if (m_pressedKeys.contains(Qt::Key::Key_S)) {
+    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/elevate_backwards", Qt::Key::Key_S).toInt())) {
         m_transMatrix.translate(0, -effectiveSpeed, 0);
     }
 
     // A/D to strafe
-    if (m_pressedKeys.contains(Qt::Key::Key_A)) {
+    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/strafe_left", Qt::Key::Key_A).toInt())) {
         m_transMatrix.translate(-effectiveSpeed, 0, 0);
     }
-    if (m_pressedKeys.contains(Qt::Key::Key_D)) {
+    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/strafe_right", Qt::Key::Key_D).toInt())) {
         m_transMatrix.translate(effectiveSpeed, 0, 0);
     }
 
     // Implement Q and E as scale instead of translate so the user cannot
     // move behind the object
-    if (m_pressedKeys.contains(Qt::Key::Key_E)) {
+    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/scale_up", Qt::Key::Key_E).toInt())) {
         m_scaleMatrix.scale(1 + (effectiveSpeed / 2.f));
     }
-    if (m_pressedKeys.contains(Qt::Key::Key_Q)) {
+    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/scale_down", Qt::Key::Key_Q).toInt())) {
         m_scaleMatrix.scale(1 - (effectiveSpeed / 2.f));
     }
 

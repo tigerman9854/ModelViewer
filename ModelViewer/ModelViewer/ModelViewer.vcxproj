@@ -49,7 +49,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Qt_INCLUDEPATH_);$(SOLUTIONDIR)ThirdParty\assimp5.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <AdditionalLibraryDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

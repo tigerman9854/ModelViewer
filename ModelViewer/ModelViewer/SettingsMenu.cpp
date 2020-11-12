@@ -1,6 +1,7 @@
 #include "SettingsMenu.h"
 #include "ViewerGraphicsWindow.h"
 #include "TreeItem.h"
+#include "ModelViewer.h"
 
 #include <QGridLayout>
 #include <QListWidget>
@@ -10,12 +11,11 @@
 #include <QFile>
 #include <QFormLayout>
 #include <QLineEdit>
-#include <QCoreApplication>
-#include <QSettings>
+#include <QPushButton>
 
 
-SettingsMenu::SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent)
-	: m_pGraphicsWindow(graphicsWindow), QWidget(parent)
+SettingsMenu::SettingsMenu(QWidget* parent)
+	: QWidget(parent)
 {
 	setWindowTitle(QString::fromLatin1("Settings"));
 	setContentsMargins(0, 0, 0, 0);
@@ -23,7 +23,16 @@ SettingsMenu::SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent
 
 	m_pMainLayout = new QGridLayout(this);
 
-	// Set up all of the settings
+	// Set up the settings
+	settings = new QSettings("TBD", "Model Viewer");	
+}
+
+void SettingsMenu::SetupSettings(ViewerGraphicsWindow* graphicsWindow)
+{
+	// Set the required refrences
+	m_pGraphicsWindow = graphicsWindow;
+
+	// Set up all of the widgets
 	m_pSettingsList = new QListWidget(this);
 	new QListWidgetItem(m_MouseTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::mouse);
 	new QListWidgetItem(m_KebindTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::keybind);
@@ -38,19 +47,15 @@ SettingsMenu::SettingsMenu(ViewerGraphicsWindow* graphicsWindow, QWidget* parent
 	SetupModelSettings();
 
 	m_pCurrentSettingsWidget = m_pMouseSettings;
-	m_pMainLayout->addWidget(m_pSettingsList,0,0,5,1);
+	m_pMainLayout->addWidget(m_pSettingsList, 0, 0, 5, 1);
 	m_pMainLayout->addWidget(m_pCurrentSettingsWidget, 0, 1, 5, 3);
 
 	connect(m_pSettingsList, &QListWidget::currentItemChanged, this, &SettingsMenu::ChangeWindow);
 }
 
-void SettingsMenu::LoadSettingsConf()
+QSettings* SettingsMenu::getSettings()
 {
-	// TODO: Load up a file and set all values.
-}
-
-void SettingsMenu::SaveSettingsConf() {
-	// TODO: Grab all the current values then dump them to a file
+	return settings;
 }
 
 void SettingsMenu::ChangeWindow(QListWidgetItem* current, QListWidgetItem* previous)
@@ -101,6 +106,7 @@ void SettingsMenu::SetupMouseSettings()
 	fieldOfView = new QLineEdit(QString::number(m_pGraphicsWindow->fieldOfView));
 	nearPlane = new QLineEdit(QString::number(m_pGraphicsWindow->nearPlane));
 	farPlane = new QLineEdit(QString::number(m_pGraphicsWindow->farPlane));
+	QPushButton* reset = new QPushButton(QString::fromLatin1("Reset"));
 
 	// Set up input valadation for each field
 	panXSensitivity->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
@@ -121,16 +127,65 @@ void SettingsMenu::SetupMouseSettings()
 	layout->addRow(tr("Feild of View"), fieldOfView);
 	layout->addRow(tr("Near Plane"), nearPlane);
 	layout->addRow(tr("Far Plane"), farPlane);
+	layout->addRow(QString(), reset);
 
 	// Whenever a fields is edited & valadated update the corresponding value.
-	connect(panXSensitivity, &QLineEdit::editingFinished, this, [=] {m_pGraphicsWindow->panXSensitivity = panXSensitivity->text().toFloat(); });
-	connect(panYSensitivity, &QLineEdit::editingFinished, this, [=] {m_pGraphicsWindow->panYSensitivity = panYSensitivity->text().toFloat(); });
-	connect(xRotateSensitivity, &QLineEdit::editingFinished, this, [=] {m_pGraphicsWindow->xRotateSensitivity = xRotateSensitivity->text().toFloat(); });
-	connect(yRotateSensitivity, &QLineEdit::editingFinished, this, [=] {m_pGraphicsWindow->yRotateSensitivity = yRotateSensitivity->text().toFloat(); });
-	connect(zoomSensitivity, &QLineEdit::editingFinished, this, [=] {m_pGraphicsWindow->zoomSensitivity = zoomSensitivity->text().toFloat(); });
-	connect(fieldOfView, &QLineEdit::editingFinished, this, [=] {m_pGraphicsWindow->fieldOfView = fieldOfView->text().toFloat(); });
-	connect(nearPlane, &QLineEdit::editingFinished, this, [=] {m_pGraphicsWindow->nearPlane = nearPlane->text().toFloat(); });
-	connect(farPlane, &QLineEdit::editingFinished, this, [=] {m_pGraphicsWindow->farPlane = farPlane->text().toFloat(); });
+	connect(panXSensitivity, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/panXSensitivity", panXSensitivity->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(panYSensitivity, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/panYSensitivity", panYSensitivity->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(xRotateSensitivity, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/xRotateSensitivity", xRotateSensitivity->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(yRotateSensitivity, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/yRotateSensitivity", yRotateSensitivity->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(zoomSensitivity, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/zoomSensitivity", zoomSensitivity->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(fieldOfView, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/fieldOfView", fieldOfView->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(nearPlane, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/nearPlane", nearPlane->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(farPlane, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/farPlane", farPlane->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(reset, &QPushButton::released, this, [=] {
+		// Remove the saved values
+		settings->remove("ViewerGraphicsWindow/panXSensitivity");
+		settings->remove("ViewerGraphicsWindow/panYSensitivity");
+		settings->remove("ViewerGraphicsWindow/xRotateSensitivity");
+		settings->remove("ViewerGraphicsWindow/yRotateSensitivity");
+		settings->remove("ViewerGraphicsWindow/zoomSensitivity");
+		settings->remove("ViewerGraphicsWindow/fieldOfView");
+		settings->remove("ViewerGraphicsWindow/nearPlane");
+		settings->remove("ViewerGraphicsWindow/farPlane");
+
+		// Reset the defalut values
+		m_pGraphicsWindow->loadSettings();
+
+		// Update the labels
+		panXSensitivity->setText(QString::number(m_pGraphicsWindow->panXSensitivity));
+		panYSensitivity->setText(QString::number(m_pGraphicsWindow->panYSensitivity));
+		xRotateSensitivity->setText(QString::number(m_pGraphicsWindow->xRotateSensitivity));
+		xRotateSensitivity->setText(QString::number(m_pGraphicsWindow->yRotateSensitivity));
+		zoomSensitivity->setText(QString::number(m_pGraphicsWindow->zoomSensitivity));
+		fieldOfView->setText(QString::number(m_pGraphicsWindow->fieldOfView));
+		nearPlane->setText(QString::number(m_pGraphicsWindow->nearPlane));
+		farPlane->setText(QString::number(m_pGraphicsWindow->farPlane));
+	});
 }
 
 void SettingsMenu::SetupKeybindSettings()

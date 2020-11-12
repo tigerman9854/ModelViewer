@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGLWindow.h"
 #include "ModelLoader.h"
+#include "SettingsMenu.h"
 
 #include <QOpenGLShaderProgram>
 #include <QElapsedTimer>
@@ -12,7 +13,7 @@ class ViewerGraphicsWindow : public OpenGLWindow
 public:
     using OpenGLWindow::OpenGLWindow;
 
-    ViewerGraphicsWindow(QWindow* parent = nullptr);
+    ViewerGraphicsWindow(SettingsMenu* settings, QWindow* parent = nullptr);
 
     void initialize() override;
     void render() override;
@@ -45,15 +46,17 @@ public:
     void ClearKeyboard();
 
     // Mouse settings | % adjustment
-    float panXSensitivity = .01f;
-    float panYSensitivity = .01f;
-    float xRotateSensitivity = 0.6f;
-    float yRotateSensitivity = 0.6f;
-    float movementSensitivity = 4.f;
-    float zoomSensitivity = 0.001f;
-    float fieldOfView = 45.f;
-    float nearPlane = 0.1f;
-    float farPlane = 100.f;
+    float panXSensitivity;
+    float panYSensitivity;
+    float xRotateSensitivity;
+    float yRotateSensitivity;
+    float movementSensitivity;
+    float zoomSensitivity;
+    float fieldOfView;
+    float nearPlane;
+    float farPlane;
+
+    void loadSettings();
 
 signals:
     void Error(QString message);
@@ -74,6 +77,9 @@ protected:
     virtual void focusOutEvent(QFocusEvent*) override;
 
 private:
+    SettingsMenu* m_pSettingsMenu = nullptr;
+    QSettings* settings = nullptr;
+
     // Modifies the matrices based on how much time has passed
     void Update(float sec);
     QElapsedTimer m_updateTimer;
