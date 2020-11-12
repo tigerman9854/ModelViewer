@@ -8,11 +8,12 @@
 #include <QScreen>
 #include <QtMath>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMouseEvent>
-#include <QdesktopServices>
+#include <QDesktopServices>
 #include <QUrl>
 #include <QtMath>
-
+#include <QImage>
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     : OpenGLWindow(parent)
@@ -204,6 +205,7 @@ bool ViewerGraphicsWindow::reloadCurrentShaders()
         loadFragmentShader(currentFragFile)) {
         return true;
     }
+    return false;
 }
 
 bool ViewerGraphicsWindow::openShaderFile(QString filepath)
@@ -242,7 +244,7 @@ void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
     lastY = event->y();
 
     // Call the parent class 
-    QWindow::mouseReleaseEvent(event);
+    QWindow::mousePressEvent(event);
 }
 
 void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
@@ -295,6 +297,34 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     QWindow::mouseMoveEvent(event);
 }
 
+void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
+{
+    // Store that this key is pressed
+    m_pressedKeys.insert(event->key());
+
+    QWindow::keyPressEvent(event);
+}
+void ViewerGraphicsWindow::keyReleaseEvent(QKeyEvent* event)
+{
+    // The key has been released
+    m_pressedKeys.remove(event->key());
+
+    QWindow::keyReleaseEvent(event);
+}
+
+void ViewerGraphicsWindow::focusOutEvent(QFocusEvent* event)
+{
+    ClearKeyboard();
+
+    QWindow::focusOutEvent(event);
+}
+
+void ViewerGraphicsWindow::ClearKeyboard()
+{
+    // Clear all pressed keys when the window loses focus
+    m_pressedKeys.clear();
+}
+
 void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
 {
     const float zoomAmount = zoomSensitivity * event->angleDelta().y();
@@ -341,6 +371,14 @@ void ViewerGraphicsWindow::initialize()
 
 void ViewerGraphicsWindow::render()
 {
+    // Determine how much time has passed since the last update,
+    // call update, and reset the timer
+    const qint64 nsec = m_updateTimer.nsecsElapsed();
+    m_updateTimer.restart();
+    const float seconds = (float)nsec * 1e-9f;
+    Update(seconds);
+
+    // Compute viewport with support for high DPI monitors
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
@@ -435,6 +473,68 @@ void ViewerGraphicsWindow::render()
     ++m_frame;
 }
 
+void ViewerGraphicsWindow::Update(float sec)
+{
+    // Allow shift and ctrl to increase/decrease speed
+    float effectiveSpeed = movementSensitivity * sec;
+    if (m_pressedKeys.contains(Qt::Key::Key_Shift)) {
+        effectiveSpeed *= 3.f;
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_Control)) {
+        effectiveSpeed /= 3.f;
+    }
+
+    // W/S to elevate
+    if (m_pressedKeys.contains(Qt::Key::Key_W)) {
+        m_transMatrix.translate(0, effectiveSpeed, 0);
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_S)) {
+        m_transMatrix.translate(0, -effectiveSpeed, 0);
+    }
+
+    // A/D to strafe
+    if (m_pressedKeys.contains(Qt::Key::Key_A)) {
+        m_transMatrix.translate(-effectiveSpeed, 0, 0);
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_D)) {
+        m_transMatrix.translate(effectiveSpeed, 0, 0);
+    }
+
+    // Implement Q and E as scale instead of translate so the user cannot
+    // move behind the object
+    if (m_pressedKeys.contains(Qt::Key::Key_E)) {
+        m_scaleMatrix.scale(1 + (effectiveSpeed / 2.f));
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_Q)) {
+        m_scaleMatrix.scale(1 - (effectiveSpeed / 2.f));
+    }
+
+
+    // Up and down arrows to pitch
+    QMatrix4x4 newRot;
+    QVector3D xAxis(1, 0, 0);
+    float rotSpeed = qRadiansToDegrees(effectiveSpeed);
+
+    if (m_pressedKeys.contains(Qt::Key::Key_Up)) {
+        newRot.rotate(-rotSpeed, xAxis);
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_Down)) {
+        newRot.rotate(rotSpeed, xAxis);
+    }
+
+    // Perform the new rotation AFTER the previous rotations
+    m_rotMatrix = newRot * m_rotMatrix;
+
+    // Left and right to spin
+    QVector3D yAxis(0, 1, 0);
+    if (m_pressedKeys.contains(Qt::Key::Key_Right)) {
+        m_rotMatrix.rotate(rotSpeed, yAxis);
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_Left)) {
+        m_rotMatrix.rotate(-rotSpeed, yAxis);
+    }
+}
+
 void ViewerGraphicsWindow::resetView()
 {
     // Reset matrices to default values
@@ -464,6 +564,62 @@ bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
     QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     return loadModel(filepath);
 }
+
+void ViewerGraphicsWindow::screenshotDialog() {
+    if (!initialized) {
+        return;
+    }
+
+    // Create a screenshot folder
+    QString defaultFolder("../data/Screenshots/");
+    if (!QDir(defaultFolder).exists()) {
+        QDir().mkdir(defaultFolder);
+    }
+
+    // Have the user choose a file location
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save screenshot"),
+        defaultFolder + "capture.png",
+        tr("Images (*.bmp *.jpg *.jpeg *.png *.ppm *.xbm *.xpm)"));
+
+    if (!filepath.isEmpty())
+    {
+        ViewerGraphicsWindow::exportFrame(filepath);
+    }
+}
+
+void ViewerGraphicsWindow::saveDialog(QString filePath) {
+    if (!initialized) {
+        return;
+    }
+
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save"),
+        QString(),
+        tr("all (*)"));
+
+    if (!filepath.isEmpty())
+    {
+        // TO DO...
+    }
+}
+
+void ViewerGraphicsWindow::exportFrame(QString filePath) {
+    // Capture the framebuffer
+    GLubyte* pixels = (GLubyte*)malloc(5 * width() * height());
+    if (pixels) {
+        //Read the data from the frame buffer
+        glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+    }
+
+    // Flip the framebuffer because OpenGL renders upsidedown
+    QImage frameCapture(pixels, width(), height(), QImage::Format_ARGB32);
+    QTransform flipTransform;
+    flipTransform.scale(1, -1);
+    frameCapture = frameCapture.transformed(flipTransform);
+    frameCapture.save(filePath);
+}
+
 
 
 // ***************************************************
