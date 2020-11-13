@@ -11,21 +11,32 @@
 #include <QMatrix4x4>
 #include <QLabel>
 #include <QUrl>
+#include <QSplitter>
 #include <QDesktopServices>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
 {
+    // Change the size to something usable
+    const int defaultWidth = 800;
+    const int defaultHeight = 560;
+    resize(defaultWidth, defaultHeight);
+
     // Create a new graphics window, and set it as the central widget
     m_pGraphicsWindow = new ViewerGraphicsWindow();
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
-    setCentralWidget(m_pGraphicsWindowDelegate);
-
     m_pGraphicsWindowUniform = new GraphicsWindowUniform(m_pGraphicsWindow);
-    m_pGraphicsWindowUniform->show();
 
-    // Change the size to something usable
-    resize(640, 480);
+    // Create a central widget with horizontal splitter so the user can resize the widgets
+    QSplitter* pCentralWidget = new QSplitter(Qt::Orientation::Horizontal, this);
+    setCentralWidget(pCentralWidget);
+    pCentralWidget->addWidget(m_pGraphicsWindowDelegate);
+    pCentralWidget->addWidget(m_pGraphicsWindowUniform);
+
+    // Set defualt sizes such that the uniform window is 1/4 the window width,
+    // and the graphics window is 3/4 the window width
+    QList<int> sizes = { 3 * defaultWidth / 4, defaultWidth / 4 };
+    pCentralWidget->setSizes(sizes);
 
     // Menu bar
     // -> File menu
