@@ -128,9 +128,6 @@ private:
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
     QSet<int> m_pressedKeys;
-
-    //Key vars
-    QSet<int> keys;
   
     QMatrix4x4 m_scaleMatrix;
     QMatrix4x4 m_rotMatrix;
