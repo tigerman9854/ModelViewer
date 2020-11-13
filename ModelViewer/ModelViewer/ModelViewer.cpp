@@ -22,6 +22,9 @@ ModelViewer::ModelViewer(QWidget *parent)
     const int defaultHeight = 560;
     resize(defaultWidth, defaultHeight);
 
+    // Change the window title to our app name
+    setWindowTitle("Model Viewer");
+
     // Create a new graphics window, and set it as the central widget
     m_pGraphicsWindow = new ViewerGraphicsWindow();
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
