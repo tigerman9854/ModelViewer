@@ -26,6 +26,10 @@ private slots:
 
 	void testShow();
 	void loadModel();
+	void loadShader();
+	void loadCurrentShaders();
+	void editCurrentShaders();
+	void openShaderFile();
 	void displayModel();
 	void resetView();
 	void rotateWithMouse();
@@ -33,6 +37,7 @@ private slots:
 	void checkMousePressAndRelease();
 	void zoomWithMouse();
 	void defaultZoom();
+	void testKeyboard();
 
 private:
 	// Helpers
@@ -41,8 +46,10 @@ private:
 
 	ModelViewer* m_pWindow = nullptr;
 	QMatrix4x4 resetMatrix;
-};
 
+	// Enable this setting to skip tests which require user input
+	bool disableAnnoyingTests = true;
+};
 
 
 void ModelViewerTest::initTestCase() 
@@ -50,6 +57,10 @@ void ModelViewerTest::initTestCase()
 	// Called once before all test cases
 	m_pWindow = new ModelViewer();
 	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
+
+	if (disableAnnoyingTests) {
+		printf("WARNING: Annoying tests disabled.\n");
+	}
 }
 
 void ModelViewerTest::cleanupTestCase()
@@ -102,6 +113,7 @@ void ModelViewerTest::integration()
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 	QTest::keyClick(pLoadMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pLoadMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pLoadMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
@@ -135,6 +147,8 @@ void ModelViewerTest::integration()
 	// Unload the shape
 	pFileMenu->popup(m_pWindow->mapToGlobal(pMenuBar->pos()));
 	pFileMenu->setFocus();
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
@@ -229,6 +243,40 @@ void ModelViewerTest::loadModel()
 	ModelLoader m;
 	Model loaded = m.LoadModel("../Data/Primitives/cube.obj");
 	QVERIFY(loaded.m_isValid);
+}
+
+void ModelViewerTest::loadShader()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->loadVertexShader("../Data/Shaders/ads.vert");
+	QVERIFY(success);
+	success = m_pWindow->GetGraphicsWindow()->loadFragmentShader("../Data/Shaders/ads.frag");
+	QVERIFY(success);
+}
+
+void ModelViewerTest::loadCurrentShaders()
+{
+	bool success = m_pWindow->GetGraphicsWindow()->reloadCurrentShaders();
+	QVERIFY(success);
+}
+
+void ModelViewerTest::editCurrentShaders()
+{
+	if (disableAnnoyingTests) {
+		return;
+	}
+
+	bool success = m_pWindow->GetGraphicsWindow()->editCurrentShaders();
+	QVERIFY(success);
+}
+
+void ModelViewerTest::openShaderFile()
+{
+	if (disableAnnoyingTests) {
+		return;
+	}
+
+	bool success = m_pWindow->GetGraphicsWindow()->openShaderFile("../Data/Shaders/basic.frag");
+	QVERIFY(success);
 }
 
 void ModelViewerTest::displayModel()
@@ -332,6 +380,51 @@ void ModelViewerTest::defaultZoom()
 	// Check that the scene was resized to show this model
 	ViewerGraphicsWindow* test = m_pWindow->GetGraphicsWindow();
 	QVERIFY(test->GetModelMatrix() != resetMatrix);
+}
+
+void ModelViewerTest::testKeyboard() 
+{
+	ResetViewAndShow();
+
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+
+	// Load a model
+	bool success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cubeColor.ply");
+	QVERIFY(success);
+
+	// Click on the graphics window to set focus
+	QTest::mouseClick(pGraphicsWindow, Qt::LeftButton);
+
+	auto testKey = [=](int key) {
+		ResetViewAndShow();
+
+		QTest::keyPress(pGraphicsWindow, key);
+		QTest::qWait(100);
+		QTest::keyRelease(pGraphicsWindow, key);
+
+		pGraphicsWindow->requestUpdate();
+		QVERIFY(pGraphicsWindow->GetModelMatrix() != resetMatrix);
+	};
+
+	testKey(Qt::Key_W);
+	testKey(Qt::Key_A);
+	testKey(Qt::Key_S);
+	testKey(Qt::Key_D);
+	testKey(Qt::Key_Q);
+	testKey(Qt::Key_E);
+	testKey(Qt::Key_Up);
+	testKey(Qt::Key_Down);
+
+	QTest::keyPress(pGraphicsWindow, Qt::Key_Shift);
+	testKey(Qt::Key_W);
+	testKey(Qt::Key_A);
+	testKey(Qt::Key_S);
+	testKey(Qt::Key_D);
+	testKey(Qt::Key_Q);
+	testKey(Qt::Key_E);
+	testKey(Qt::Key_Up);
+	testKey(Qt::Key_Down);
+	QTest::keyRelease(pGraphicsWindow, Qt::Key_Shift);
 }
 
 

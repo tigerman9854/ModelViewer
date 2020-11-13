@@ -9,11 +9,13 @@
 #include <QScreen>
 #include <QtMath>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMouseEvent>
+#include <QDesktopServices>
+#include <QUrl>
 #include <QtMath>
 #include <QKeyEvent>
 #include <QImage>
-
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     : OpenGLWindow(parent)
@@ -177,6 +179,57 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     return true;
 }
 
+bool ViewerGraphicsWindow::editCurrentShaders()
+{
+    QDesktopServices desk;
+    QDir dir;
+    QString currentPath = dir.currentPath();
+    //qDebug() << currentPath << endl;
+
+    QString fullVertPath = "//" + currentPath + "/" + currentVertFile;
+    QString fullFragPath = "//" + currentPath + "/" + currentFragFile;
+    //qDebug() << fullVertPath << endl;
+    
+    if (!desk.openUrl(QUrl::fromLocalFile(fullVertPath)))
+    {
+        return false;
+    }
+    if(!desk.openUrl(QUrl::fromLocalFile(fullFragPath)))
+    {
+        return false;
+    }
+    return true;
+}
+
+bool ViewerGraphicsWindow::reloadCurrentShaders()
+{
+    if (loadVertexShader(currentVertFile) &&
+        loadFragmentShader(currentFragFile)) {
+        return true;
+    }
+    return false;
+}
+
+bool ViewerGraphicsWindow::openShaderFile(QString filepath)
+{
+    if (filepath.isEmpty()) {
+        filepath = QFileDialog::getOpenFileName(nullptr, "Open Shader File", "../Data/Shaders/", "");
+        if (filepath.isEmpty()) {
+            return false;
+        }
+    }
+
+    QDesktopServices desk;
+    QDir dir;
+    QString currentPath = dir.currentPath();
+    QString fullPath = "//" + currentPath + "/" + filepath;
+    if (!desk.openUrl(QUrl::fromLocalFile(filepath)))
+    {
+        return false;
+    }
+    return true;
+}
+
 void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
 {
     // Set class vars
@@ -193,7 +246,7 @@ void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
     lastY = event->y();
 
     // Call the parent class 
-    QWindow::mouseReleaseEvent(event);
+    QWindow::mousePressEvent(event);
 }
 
 void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
@@ -246,52 +299,45 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     QWindow::mouseMoveEvent(event);
 }
 
+void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
+{
+    // Store that this key is pressed
+    m_pressedKeys.insert(event->key());
+
+    QWindow::keyPressEvent(event);
+}
+void ViewerGraphicsWindow::keyReleaseEvent(QKeyEvent* event)
+{
+    // The key has been released
+    m_pressedKeys.remove(event->key());
+
+    QWindow::keyReleaseEvent(event);
+}
+
+void ViewerGraphicsWindow::focusOutEvent(QFocusEvent* event)
+{
+    ClearKeyboard();
+
+    QWindow::focusOutEvent(event);
+}
+
+void ViewerGraphicsWindow::ClearKeyboard()
+{
+    // Clear all pressed keys when the window loses focus
+    m_pressedKeys.clear();
+}
+
 void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
 {
     const float zoomAmount = zoomSensitivity * event->angleDelta().y();
     m_scaleMatrix.scale(1.f + zoomAmount);
 }
 
-void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
-{
-    if (event->type() == QEvent::KeyPress) {
-        keys += ((QKeyEvent*)event)->key();
-    }
-
-    QWindow::keyPressEvent(event);
-}
-
-void ViewerGraphicsWindow::keyReleaseEvent(QKeyEvent* event)
-{
-    if (event->type() == QEvent::KeyRelease) {
-        //if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_S))
-        //{
-        //    ViewerGraphicsWindow::saveDialog("TO DO ...");
-        //}
-
-        //if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_R))
-        //{
-        //    ViewerGraphicsWindow::resetView();
-        //}
-
-        //if (keys.contains(Qt::Key_Control) && keys.contains(Qt::Key_O))
-        //{
-        //    ViewerGraphicsWindow::loadModel();
-        //}
-        //TO DO: more hotkeys
-    }
-
-    keys.clear();
-    QWindow::keyReleaseEvent(event);
-}
-
-
-
 void ViewerGraphicsWindow::initialize()
 {
     m_program = new QOpenGLShaderProgram(this);
-    currentVertFile = "../Data/Shaders/basic.vert";
-    currentFragFile = "../Data/Shaders/basic.frag";
+    currentVertFile = "../Data/Shaders/ads.vert";
+    currentFragFile = "../Data/Shaders/ads.frag";
     m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     m_program->link();
@@ -304,8 +350,6 @@ void ViewerGraphicsWindow::initialize()
 
     // Set up the default view
     resetView();
-
-    // TODO: Set attribute locations for m_normAttr and m_uvAttr once our shader supports these
 
     m_normAttr = m_program->attributeLocation("normAttr");
     m_uvAttr = m_program->attributeLocation("uvAttr");
@@ -321,13 +365,22 @@ void ViewerGraphicsWindow::initialize()
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
 
-    //m_program->bind();
+
     emit Initialized();
+
     initialized = true;
 }
 
 void ViewerGraphicsWindow::render()
 {
+    // Determine how much time has passed since the last update,
+    // call update, and reset the timer
+    const qint64 nsec = m_updateTimer.nsecsElapsed();
+    m_updateTimer.restart();
+    const float seconds = (float)nsec * 1e-9f;
+    Update(seconds);
+
+    // Compute viewport with support for high DPI monitors
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
@@ -422,6 +475,68 @@ void ViewerGraphicsWindow::render()
     ++m_frame;
 }
 
+void ViewerGraphicsWindow::Update(float sec)
+{
+    // Allow shift and ctrl to increase/decrease speed
+    float effectiveSpeed = movementSensitivity * sec;
+    if (m_pressedKeys.contains(Qt::Key::Key_Shift)) {
+        effectiveSpeed *= 3.f;
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_Control)) {
+        effectiveSpeed /= 3.f;
+    }
+
+    // W/S to elevate
+    if (m_pressedKeys.contains(Qt::Key::Key_W)) {
+        m_transMatrix.translate(0, effectiveSpeed, 0);
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_S)) {
+        m_transMatrix.translate(0, -effectiveSpeed, 0);
+    }
+
+    // A/D to strafe
+    if (m_pressedKeys.contains(Qt::Key::Key_A)) {
+        m_transMatrix.translate(-effectiveSpeed, 0, 0);
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_D)) {
+        m_transMatrix.translate(effectiveSpeed, 0, 0);
+    }
+
+    // Implement Q and E as scale instead of translate so the user cannot
+    // move behind the object
+    if (m_pressedKeys.contains(Qt::Key::Key_E)) {
+        m_scaleMatrix.scale(1 + (effectiveSpeed / 2.f));
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_Q)) {
+        m_scaleMatrix.scale(1 - (effectiveSpeed / 2.f));
+    }
+
+
+    // Up and down arrows to pitch
+    QMatrix4x4 newRot;
+    QVector3D xAxis(1, 0, 0);
+    float rotSpeed = qRadiansToDegrees(effectiveSpeed);
+
+    if (m_pressedKeys.contains(Qt::Key::Key_Up)) {
+        newRot.rotate(-rotSpeed, xAxis);
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_Down)) {
+        newRot.rotate(rotSpeed, xAxis);
+    }
+
+    // Perform the new rotation AFTER the previous rotations
+    m_rotMatrix = newRot * m_rotMatrix;
+
+    // Left and right to spin
+    QVector3D yAxis(0, 1, 0);
+    if (m_pressedKeys.contains(Qt::Key::Key_Right)) {
+        m_rotMatrix.rotate(rotSpeed, yAxis);
+    }
+    if (m_pressedKeys.contains(Qt::Key::Key_Left)) {
+        m_rotMatrix.rotate(-rotSpeed, yAxis);
+    }
+}
+
 void ViewerGraphicsWindow::resetView()
 {
     // Reset matrices to default values
@@ -446,68 +561,13 @@ void ViewerGraphicsWindow::resetView()
     }
 }
 
-bool ViewerGraphicsWindow::screenshotDialog(const char* format) 
-{
-    if (!initialized) {
-        return false;
-    }
-
-    QString filepath = QFileDialog::getSaveFileName(nullptr,
-        tr("Save screenshot"),
-        QString(),
-        tr("Images (*)"));
-
-    if (!filepath.isEmpty())
-    {
-        ViewerGraphicsWindow::exportFrame(filepath, format);
-    }
-}
-
-bool ViewerGraphicsWindow::saveDialog(QString filePath) 
-{
-    if (!initialized) {
-        return false;
-    }
-
-    QString filepath = QFileDialog::getSaveFileName(nullptr,
-        tr("Save"),
-        QString(),
-        tr("all (*)"));
-
-    if (!filepath.isEmpty())
-    {
-        // TO DO...
-    }
-}
-
-void ViewerGraphicsWindow::exportFrame(QString name, const char* format) 
-{
-    //Initial the image
-    QImage image(width(), height(), QImage::Format_ARGB32);
-    QString filePath = QString("%1.%2").arg(name, format);
-    
-    GLubyte* pixels = (GLubyte*) malloc( 5 * width() * height());
-    if (pixels) {
-        //Read the data from the frame buffer
-        glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, pixels);
-    }
-
-    //Save
-    //To fix: I don't know the reason why the image generated from the framebuffer has a flip,
-    //I add a transform, this transform will be removed after I figure out.
-    QImage frameCapture(pixels, width(), height(), QImage::Format_ARGB32);
-    QTransform flipTransform;
-    flipTransform.rotate(180);
-    frameCapture = frameCapture.transformed(flipTransform);
-    frameCapture.save(filePath, format, -1);
-}
-
 bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) 
 {
     // Load  model
     QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     return loadModel(filepath);
 }
+
 
 // ***************************************************
 // This piece of code is used to receive and process the signal 
@@ -569,6 +629,62 @@ void ViewerGraphicsWindow::lightSpecular(float val)
 {
     m_program->setUniformValue(m_uKs, val);
 }
+
+void ViewerGraphicsWindow::screenshotDialog() {
+    if (!initialized) {
+        return;
+    }
+
+    // Create a screenshot folder
+    QString defaultFolder("../data/Screenshots/");
+    if (!QDir(defaultFolder).exists()) {
+        QDir().mkdir(defaultFolder);
+    }
+
+    // Have the user choose a file location
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save screenshot"),
+        defaultFolder + "capture.png",
+        tr("Images (*.bmp *.jpg *.jpeg *.png *.ppm *.xbm *.xpm)"));
+
+    if (!filepath.isEmpty())
+    {
+        ViewerGraphicsWindow::exportFrame(filepath);
+    }
+}
+
+void ViewerGraphicsWindow::saveDialog(QString filePath) {
+    if (!initialized) {
+        return;
+    }
+
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save"),
+        QString(),
+        tr("all (*)"));
+
+    if (!filepath.isEmpty())
+    {
+        // TO DO...
+    }
+}
+
+void ViewerGraphicsWindow::exportFrame(QString filePath) {
+    // Capture the framebuffer
+    GLubyte* pixels = (GLubyte*)malloc(5 * width() * height());
+    if (pixels) {
+        //Read the data from the frame buffer
+        glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+    }
+
+    // Flip the framebuffer because OpenGL renders upsidedown
+    QImage frameCapture(pixels, width(), height(), QImage::Format_ARGB32);
+    QTransform flipTransform;
+    flipTransform.scale(1, -1);
+    frameCapture = frameCapture.transformed(flipTransform);
+    frameCapture.save(filePath);
+}
+
 
 // ***************************************************
 // Getters & Setters
