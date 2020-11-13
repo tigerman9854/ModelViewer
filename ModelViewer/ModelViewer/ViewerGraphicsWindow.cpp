@@ -15,33 +15,6 @@
 #include <QImage>
 
 
-// Define default shaders
-static const char* vertexShaderSource =
-    "attribute highp vec4 posAttr;\n"
-    "attribute lowp vec4 colAttr;\n"
-    "varying lowp vec4 col;\n"
-    "uniform highp mat4 matrix;\n"
-    "uniform float uLightX;\n"
-    "uniform float uLightY;\n"
-    "uniform float uLightZ;\n"
-    "out vec3 vNormal\n"
-    "out vec3 vEye\n"
-    "out vec3 vLight\n"
-    "void main() {\n"
-    "   col = colAttr;\n"
-    "   gl_Position = matrix * posAttr;\n"
-    "}\n";
-
-static const char* fragmentShaderSource =
-    "in vec3  vN;\n"
-    "in vec3  vL;\n"
-    "in vec3  vE;\n"
-    "varying lowp vec4 col;\n"
-    "void main() {\n"
-    "   gl_FragColor = col;\n"
-    "}\n";
-
-
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     : OpenGLWindow(parent)
 {
@@ -83,13 +56,13 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
-//bool ViewerGraphicsWindow::unloadModel()
-//{
-//    m_currentModel = Model();
-//    emit ModelUnloaded();
-//
-//    return true;
-//}
+bool ViewerGraphicsWindow::unloadModel()
+{
+    m_currentModel = Model();
+    emit ModelUnloaded();
+
+    return true;
+}
 
 bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
 {
