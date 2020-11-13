@@ -482,7 +482,7 @@ void ViewerGraphicsWindow::Update(float sec)
     if (m_pressedKeys.contains(Qt::Key::Key_Shift)) {
         effectiveSpeed *= 3.f;
     }
-    if (m_pressedKeys.contains(Qt::Key::Key_Control)) {
+    if (m_pressedKeys.contains(Qt::Key::Key_Alt)) {
         effectiveSpeed /= 3.f;
     }
 
