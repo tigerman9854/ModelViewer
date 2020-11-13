@@ -425,6 +425,17 @@ void ModelViewerTest::testKeyboard()
 	testKey(Qt::Key_Up);
 	testKey(Qt::Key_Down);
 	QTest::keyRelease(pGraphicsWindow, Qt::Key_Shift);
+
+	QTest::keyPress(pGraphicsWindow, Qt::Key_Alt);
+	testKey(Qt::Key_W);
+	testKey(Qt::Key_A);
+	testKey(Qt::Key_S);
+	testKey(Qt::Key_D);
+	testKey(Qt::Key_Q);
+	testKey(Qt::Key_E);
+	testKey(Qt::Key_Up);
+	testKey(Qt::Key_Down);
+	QTest::keyRelease(pGraphicsWindow, Qt::Key_Alt);
 }
 
 
