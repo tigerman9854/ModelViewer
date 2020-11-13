@@ -116,6 +116,7 @@
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="GraphicsWindowDelegate.cpp" />
     <ClCompile Include="OpenGLWindow.cpp" />
+    <ClCompile Include="UniformController.cpp" />
     <ClCompile Include="ViewerGraphicsWindow.cpp" />
     <QtMoc Include="ModelViewer.h" />
     <ClCompile Include="ModelViewer.cpp" />
@@ -124,6 +125,7 @@
     <QtMoc Include="OpenGLWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="UniformController.h" />
     <ClInclude Include="ModelLoader.h" />
     <QtMoc Include="GraphicsWindowDelegate.h" />
     <QtMoc Include="ViewerGraphicsWindow.h" />

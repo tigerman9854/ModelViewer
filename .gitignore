@@ -367,3 +367,6 @@ FodyWeavers.xsd
 
 # Ignore screenshots
 ModelViewer/Data/Screenshots/**
+ModelViewer/capture.bmp
+ModelViewer/capture.jpg
+ModelViewer/ModelViewerRun/capture.bmp
