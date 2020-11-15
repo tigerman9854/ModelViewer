@@ -5,6 +5,7 @@
 
 class ViewerGraphicsWindow;
 class GraphicsWindowDelegate;
+class GraphicsWindowUniform;
 class SettingsMenu;
 
 class Q_DECL_EXPORT ModelViewer : public QMainWindow
@@ -25,9 +26,10 @@ public:
     
 
 private:
-    ViewerGraphicsWindow* m_pGraphicsWindow = nullptr;
-    GraphicsWindowDelegate* m_pGraphicsWindowDelegate = nullptr;
-    SettingsMenu* m_pSettingsMenu = nullptr;
+    ViewerGraphicsWindow* m_pGraphicsWindow;
+    GraphicsWindowDelegate* m_pGraphicsWindowDelegate;
+    GraphicsWindowUniform* m_pGraphicsWindowUniform;
+    SettingsMenu* m_pSettingsMenu;
 };
 
 

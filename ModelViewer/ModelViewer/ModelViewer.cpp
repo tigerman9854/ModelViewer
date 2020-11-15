@@ -1,6 +1,7 @@
 #include "ModelViewer.h"
 #include "ViewerGraphicsWindow.h"
 #include "GraphicsWindowDelegate.h"
+#include "UniformController.h"
 #include "SettingsMenu.h"
 
 #include <QWidget>
@@ -11,24 +12,40 @@
 #include <QMatrix4x4>
 #include <QLabel>
 #include <QUrl>
+#include <QSplitter>
 #include <QDesktopServices>
 #include <QSettings>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
 {
+    // Change the size to something usable
+    const int defaultWidth = 800;
+    const int defaultHeight = 560;
+    resize(defaultWidth, defaultHeight);
+
+    // Change the window title to our app name
+    setWindowTitle("Model Viewer");
     // Create the settings menu (Contains the 'global' settings object)
     m_pSettingsMenu = new SettingsMenu();
-    
     // Create a new graphics window, and set it as the central widget
     m_pGraphicsWindow = new ViewerGraphicsWindow(m_pSettingsMenu);
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
+    m_pGraphicsWindowUniform = new GraphicsWindowUniform(m_pGraphicsWindow);
     m_pSettingsMenu->SetupSettings(m_pGraphicsWindow);
     
     setCentralWidget(m_pGraphicsWindowDelegate);
 
-    // Change the size to something usable
-    resize(640, 480);
+    // Create a central widget with horizontal splitter so the user can resize the widgets
+    QSplitter* pCentralWidget = new QSplitter(Qt::Orientation::Horizontal, this);
+    setCentralWidget(pCentralWidget);
+    pCentralWidget->addWidget(m_pGraphicsWindowDelegate);
+    pCentralWidget->addWidget(m_pGraphicsWindowUniform);
+
+    // Set defualt sizes such that the uniform window is 1/4 the window width,
+    // and the graphics window is 3/4 the window width
+    QList<int> sizes = { 3 * defaultWidth / 4, defaultWidth / 4 };
+    pCentralWidget->setSizes(sizes);
 
     // Menu bar
     // -> File menu
@@ -61,9 +78,10 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
     pSaveMenu->setObjectName("SaveMenu");
-    pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
-    pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
-    
+
+    pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ }, QKeySequence(Qt::CTRL + Qt::Key_S));
+    pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ }, QKeySequence(Qt::CTRL + Qt::Key_X));
+
     //Screenshot
     pFileMenu->addAction("Screenshot", [=] {  m_pGraphicsWindow->screenshotDialog(); }, QKeySequence(Qt::CTRL + Qt::Key_P));
 

@@ -21,11 +21,10 @@ public:
 
     bool loadModel(QString filepath = QString());
     bool unloadModel();
-
+    bool addPrimitive(QString filepath);
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
 
-    bool addPrimitive(QString filepath);
     void screenshotDialog();
     void saveDialog(QString filePath);
     void exportFrame(QString filePath);
@@ -57,6 +56,25 @@ public:
     float farPlane;
 
     void loadSettings();
+
+public slots:
+    ////uniform slots
+    ////color
+    void colorRChanged(int val);
+    void colorGChanged(int val);
+    void colorBChanged(int val);
+    void colorRChanged64(double val);
+    void colorGChanged64(double val);
+    void colorBChanged64(double val);
+    ////settings
+    void lightingSwitch(bool val);
+    void smoothingSwitch(bool val);
+    ////effect
+    void effectType(int val);
+    ////lighting
+    void lightAmbient(float val);
+    void lightDiffuse(float val);
+    void lightSpecular(float val);
 
 signals:
     void Error(QString message);

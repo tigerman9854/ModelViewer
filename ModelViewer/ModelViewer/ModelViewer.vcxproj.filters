@@ -37,6 +37,9 @@
     <ClCompile Include="GraphicsWindowDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UniformController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="SettingsMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="ViewerGraphicsWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="UniformController.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="SettingsMenu.h">
