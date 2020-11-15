@@ -2,6 +2,7 @@
 #include "ViewerGraphicsWindow.h"
 #include "GraphicsWindowDelegate.h"
 #include "UniformController.h"
+#include "SettingsMenu.h"
 
 #include <QWidget>
 #include <QLayout>
@@ -13,6 +14,7 @@
 #include <QUrl>
 #include <QSplitter>
 #include <QDesktopServices>
+#include <QSettings>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
@@ -24,11 +26,15 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     // Change the window title to our app name
     setWindowTitle("Model Viewer");
-
+    // Create the settings menu (Contains the 'global' settings object)
+    m_pSettingsMenu = new SettingsMenu();
     // Create a new graphics window, and set it as the central widget
-    m_pGraphicsWindow = new ViewerGraphicsWindow();
+    m_pGraphicsWindow = new ViewerGraphicsWindow(m_pSettingsMenu);
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
     m_pGraphicsWindowUniform = new GraphicsWindowUniform(m_pGraphicsWindow);
+    m_pSettingsMenu->SetupSettings(m_pGraphicsWindow);
+    
+    setCentralWidget(m_pGraphicsWindowDelegate);
 
     // Create a central widget with horizontal splitter so the user can resize the widgets
     QSplitter* pCentralWidget = new QSplitter(Qt::Orientation::Horizontal, this);
@@ -85,6 +91,9 @@ ModelViewer::ModelViewer(QWidget *parent)
     // quit button
     pFileMenu->addAction("Quit", [=] { GetQuit();}, QKeySequence(Qt::CTRL + Qt::Key_Q));
 
+    // setings menu
+    pFileMenu->addAction("Settings", [=] { m_pSettingsMenu->show(); });
+
     // -> Edit menu
     QMenu* pEditMenu = new FocusMenu(m_pGraphicsWindow, "Edit", this);
     menuBar()->addMenu(pEditMenu);
@@ -111,6 +120,10 @@ ModelViewer::ModelViewer(QWidget *parent)
 
 ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
+}
+
+SettingsMenu* ModelViewer::GetSettingsWindow() {
+    return m_pSettingsMenu;
 }
 
 GraphicsWindowDelegate* ModelViewer::GetGraphicsDelegate() {

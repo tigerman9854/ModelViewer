@@ -14,6 +14,12 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="Source Files\lib">
+      <UniqueIdentifier>{7364a3f2-4008-4774-b8ba-083be6fd9ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\lib">
+      <UniqueIdentifier>{228b349f-1711-4084-80a9-ef4a01bb96a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ModelViewer.cpp">
@@ -34,6 +40,15 @@
     <ClCompile Include="UniformController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SettingsMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyBindEdit.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="KeySequenceParse.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OpenGLWindow.cpp">
@@ -53,10 +68,19 @@
     <QtMoc Include="UniformController.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="SettingsMenu.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="KeyBindEdit.h">
+      <Filter>Header Files\lib</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ModelLoader.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KeySequenceParse.h">
+      <Filter>Header Files\lib</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

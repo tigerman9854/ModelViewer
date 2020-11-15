@@ -49,7 +49,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Qt_INCLUDEPATH_);$(SOLUTIONDIR)ThirdParty\assimp5.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <AdditionalLibraryDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -113,10 +113,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="KeyBindEdit.cpp" />
+    <ClCompile Include="KeySequenceParse.cpp" />
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="GraphicsWindowDelegate.cpp" />
     <ClCompile Include="OpenGLWindow.cpp" />
     <ClCompile Include="UniformController.cpp" />
+    <ClCompile Include="SettingsMenu.cpp" />
     <ClCompile Include="ViewerGraphicsWindow.cpp" />
     <QtMoc Include="ModelViewer.h" />
     <ClCompile Include="ModelViewer.cpp" />
@@ -126,7 +129,10 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UniformController.h" />
+    <QtMoc Include="KeyBindEdit.h" />
+    <ClInclude Include="KeySequenceParse.h" />
     <ClInclude Include="ModelLoader.h" />
+    <QtMoc Include="SettingsMenu.h" />
     <QtMoc Include="GraphicsWindowDelegate.h" />
     <QtMoc Include="ViewerGraphicsWindow.h" />
   </ItemGroup>
