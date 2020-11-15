@@ -24,35 +24,35 @@ KeyBindEdit::KeyBindEdit(QString text, Qt::Key defaultKey, QWidget* pParent) :QL
 
 QString KeyBindEdit::getSequence()
 {
-    QString final = "";
+    QString finalString = "";
     if (keySequence.length() > 0) {
         for (int i = 0; i < keySequence.length(); i++)
         {
             if (i > 0)
-                final.append("+");
+                finalString.append("+");
             if (keySequence[i] == Qt::Key::Key_Shift)
-                final.append("Shift");
+                finalString.append("Shift");
             else if (keySequence[i] == Qt::Key::Key_Control)
-                final.append("Ctrl");
+                finalString.append("Ctrl");
             else if (keySequence[i] == Qt::Key::Key_Alt)
-                final.append("Alt");
+                finalString.append("Alt");
             else if (keySequence[i] == Qt::Key::Key_Up)
-                final.append("Up");
+                finalString.append("Up");
             else if (keySequence[i] == Qt::Key::Key_Down)
-                final.append("Down");
+                finalString.append("Down");
             else if (keySequence[i] == Qt::Key::Key_Right)
-                final.append("Right");
+                finalString.append("Right");
             else if (keySequence[i] == Qt::Key::Key_Left)
-                final.append("Left");
+                finalString.append("Left");
             else
-                final.append(keySequence[i]);
+                finalString.append(keySequence[i]);
         }
     }
     
-    if (final == "")
+    if (finalString == "")
         return QString::fromLatin1("Unset");
     else
-        return final;
+        return finalString;
 }
 
 void KeyBindEdit::reset()
