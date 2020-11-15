@@ -391,6 +391,10 @@ void ModelViewerTest::testKeyboard()
 {
 	ResetViewAndShow();
 
+	// Make sure all the keybinds are reset
+	QPushButton* resetKeybinds = m_pWindow->GetSettingsWindow()->findChild<QPushButton*>("resetKeybinds");
+	resetKeybinds->released();
+
 	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
 
 	// Load a model
@@ -451,7 +455,7 @@ void ModelViewerTest::testSettings()
 	SettingsMenu* pSettingsWindow = m_pWindow->GetSettingsWindow();
 
 	QPushButton* resetMouse = pSettingsWindow->findChild<QPushButton*>("resetMouseSettings");
-	QPushButton* resetKeybinds = pSettingsWindow->findChild<QPushButton*>("resetMouseSettings");
+	QPushButton* resetKeybinds = m_pWindow->GetSettingsWindow()->findChild<QPushButton*>("resetKeybinds");
 	resetMouse->released();
 	resetKeybinds->released();
 
