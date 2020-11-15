@@ -13,7 +13,7 @@ class ViewerGraphicsWindow : public OpenGLWindow
 public:
     using OpenGLWindow::OpenGLWindow;
 
-    ViewerGraphicsWindow(SettingsMenu* settings, QWindow* parent = nullptr);
+    ViewerGraphicsWindow(QWindow* parent = nullptr);
 
     void initialize() override;
     void render() override;

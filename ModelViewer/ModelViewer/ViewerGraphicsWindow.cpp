@@ -18,8 +18,8 @@
 #include <QKeyEvent>
 #include <QImage>
 
-ViewerGraphicsWindow::ViewerGraphicsWindow(SettingsMenu* settingsMenu, QWindow* parent)
-    : m_pSettingsMenu(settingsMenu), OpenGLWindow(parent)
+ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
+    : OpenGLWindow(parent)
 {
     QSurfaceFormat format;
     format.setSamples(16);

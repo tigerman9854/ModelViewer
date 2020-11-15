@@ -28,7 +28,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     setWindowTitle("Model Viewer");
 
     // Create a new graphics window, and set it as the central widget
-    m_pGraphicsWindow = new ViewerGraphicsWindow(m_pSettingsMenu);
+    m_pGraphicsWindow = new ViewerGraphicsWindow();
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
     m_pGraphicsWindowUniform = new GraphicsWindowUniform(m_pGraphicsWindow);
     m_pSettingsMenu = new SettingsMenu(m_pGraphicsWindow);
