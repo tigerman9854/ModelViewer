@@ -1,7 +1,8 @@
 #include "SettingsMenu.h"
 #include "ViewerGraphicsWindow.h"
-#include "TreeItem.h"
 #include "ModelViewer.h"
+#include "KeyBindEdit.h"
+#include "KeySequenceParse.h"
 
 #include <QGridLayout>
 #include <QListWidget>
@@ -24,7 +25,7 @@ SettingsMenu::SettingsMenu(QWidget* parent)
 	m_pMainLayout = new QGridLayout(this);
 
 	// Set up the settings
-	settings = new QSettings("TBD", "Model Viewer");	
+	settings = new QSettings("The Model Viewers team", "Model Viewer");	
 }
 
 void SettingsMenu::SetupSettings(ViewerGraphicsWindow* graphicsWindow)
@@ -98,15 +99,15 @@ void SettingsMenu::SetupMouseSettings()
 	QFormLayout* layout = new QFormLayout(m_pMouseSettings);
 
 	// Set up each of the form fields with the default values
-	panXSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->panXSensitivity));
-	panYSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->panYSensitivity));
-	xRotateSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->xRotateSensitivity));
-	yRotateSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->yRotateSensitivity));
-	zoomSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->zoomSensitivity));
-	fieldOfView = new QLineEdit(QString::number(m_pGraphicsWindow->fieldOfView));
-	nearPlane = new QLineEdit(QString::number(m_pGraphicsWindow->nearPlane));
-	farPlane = new QLineEdit(QString::number(m_pGraphicsWindow->farPlane));
-	QPushButton* reset = new QPushButton(QString::fromLatin1("Reset"));
+	QLineEdit* panXSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->panXSensitivity));
+	QLineEdit* panYSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->panYSensitivity));
+	QLineEdit* xRotateSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->xRotateSensitivity));
+	QLineEdit* yRotateSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->yRotateSensitivity));
+	QLineEdit* zoomSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->zoomSensitivity));
+	QLineEdit* fieldOfView = new QLineEdit(QString::number(m_pGraphicsWindow->fieldOfView));
+	QLineEdit* nearPlane = new QLineEdit(QString::number(m_pGraphicsWindow->nearPlane));
+	QLineEdit* farPlane = new QLineEdit(QString::number(m_pGraphicsWindow->farPlane));
+	QPushButton* reset = new QPushButton(QString::fromLatin1("Reset All"));
 
 	// Set up input valadation for each field
 	panXSensitivity->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
@@ -119,12 +120,12 @@ void SettingsMenu::SetupMouseSettings()
 	farPlane->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
 	
 	// Add the fields to the layout
-	layout->addRow(tr("Pan X Sensitivty"), panXSensitivity);
-	layout->addRow(tr("Pan Y Sensitivty"), panYSensitivity);
-	layout->addRow(tr("Rotate X Sensitivty"), xRotateSensitivity);
-	layout->addRow(tr("Rotate X Sensitivty"), yRotateSensitivity);
+	layout->addRow(tr("Pan X Sensitivity"), panXSensitivity);
+	layout->addRow(tr("Pan Y Sensitivity"), panYSensitivity);
+	layout->addRow(tr("Rotate X Sensitivity"), xRotateSensitivity);
+	layout->addRow(tr("Rotate X Sensitivity"), yRotateSensitivity);
 	layout->addRow(tr("Zoom Sensitivty"), zoomSensitivity);
-	layout->addRow(tr("Feild of View"), fieldOfView);
+	layout->addRow(tr("Field of View"), fieldOfView);
 	layout->addRow(tr("Near Plane"), nearPlane);
 	layout->addRow(tr("Far Plane"), farPlane);
 	layout->addRow(QString(), reset);
@@ -191,16 +192,108 @@ void SettingsMenu::SetupMouseSettings()
 void SettingsMenu::SetupKeybindSettings()
 {
 	m_pKeybindSettings = new QWidget(this);
-	QGridLayout* pKeybindLayout = new QGridLayout(m_pKeybindSettings);
-	QLabel* keyBindText = new QLabel(QString::fromLatin1("Keybind Placeholder"));
-	pKeybindLayout->addWidget(keyBindText, 0, 0);
-	m_pKeybindSettings->setLayout(pKeybindLayout);
-	m_pKeybindSettings->hide();
-	// https://doc.qt.io/qt-5/qkeysequenceedit.html
+	QFormLayout* layout = new QFormLayout(m_pKeybindSettings);
+
+	KeyBindEdit* increaseSpeed = new KeyBindEdit("ViewerGraphicsWindow/increase_speed", Qt::Key::Key_Shift);
+	KeyBindEdit* decreaseSpeed = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Control);
+	KeyBindEdit* elevateForwards = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_W);
+	KeyBindEdit* elevateBackwards = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_S);
+	KeyBindEdit* strafeLeft = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_A);
+	KeyBindEdit* strafeRight = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_D);
+	KeyBindEdit* scaleUp = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_E);
+	KeyBindEdit* scaleDown = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Q);
+	KeyBindEdit* pitchUp = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Up);
+	KeyBindEdit* pitchDown = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Down);
+	KeyBindEdit* spinRight = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Right);
+	KeyBindEdit* spinLeft = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Left);
+	QPushButton* reset = new QPushButton(QString::fromLatin1("Reset All"));
+
+	layout->addRow(tr("Increase Speed"), increaseSpeed);
+	layout->addRow(tr("Decrease Speed"), decreaseSpeed);
+	layout->addRow(tr("Move Up"), elevateForwards);
+	layout->addRow(tr("Move Down"), elevateBackwards);
+	layout->addRow(tr("Move Right"), strafeRight);
+	layout->addRow(tr("Move Left"), strafeLeft);
+	layout->addRow(tr("Zoom In"), scaleUp);
+	layout->addRow(tr("Zoom Out"), scaleDown);
+	layout->addRow(tr("Pitch Up"), pitchUp);
+	layout->addRow(tr("Pitch Down"), pitchDown);
+	layout->addRow(tr("Rotate Right"), spinRight);
+	layout->addRow(tr("Rotate left"), spinLeft);
+	layout->addRow(QString(), reset);
+
+	connect(increaseSpeed, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/increase_speed", increaseSpeed->getSequence());
+	});
+	connect(decreaseSpeed, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/decrease_speed", decreaseSpeed->getSequence());
+	});
+	connect(elevateForwards, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/elevate_forwards", elevateForwards->getSequence());
+	});
+	connect(elevateBackwards, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/elevate_backwards", elevateBackwards->getSequence());
+	});
+	connect(strafeLeft, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/strafe_left", strafeLeft->getSequence());
+	});
+	connect(strafeRight, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/strafe_right", strafeRight->getSequence());
+	});
+	connect(scaleUp, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/scale_up", scaleUp->getSequence());
+	});
+	connect(scaleDown, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/scale_down", scaleDown->getSequence());
+	});
+	connect(pitchUp, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/pitch_up", pitchUp->getSequence());
+	});
+	connect(pitchDown, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/pitch_down", pitchDown->getSequence());
+	});
+	connect(spinRight, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/spin_right", spinRight->getSequence());
+	});
+	connect(spinLeft, &KeyBindEdit::editingFinished, this, [=]() {
+		settings->setValue("ViewerGraphicsWindow/spin_left", spinLeft->getSequence());
+	});
+	connect(reset, &QPushButton::released, this, [=] {
+		// Remove the saved values
+		settings->remove("ViewerGraphicsWindow/increase_speed");
+		settings->remove("ViewerGraphicsWindow/decrease_speed");
+		settings->remove("ViewerGraphicsWindow/elevate_forwards");
+		settings->remove("ViewerGraphicsWindow/elevate_backwards");
+		settings->remove("ViewerGraphicsWindow/strafe_left");
+		settings->remove("ViewerGraphicsWindow/strafe_right");
+		settings->remove("ViewerGraphicsWindow/scale_up");
+		settings->remove("ViewerGraphicsWindow/scale_down");
+		settings->remove("ViewerGraphicsWindow/pitch_up");
+		settings->remove("ViewerGraphicsWindow/pitch_down");
+		settings->remove("ViewerGraphicsWindow/spin_right");
+		settings->remove("ViewerGraphicsWindow/spin_left");
+
+		// Reset the text feilds
+		increaseSpeed->reset();
+		decreaseSpeed->reset();
+		elevateForwards->reset();
+		elevateBackwards->reset();
+		strafeLeft->reset();
+		strafeRight->reset();
+		scaleUp->reset();
+		scaleDown->reset();
+		pitchUp->reset();
+		pitchDown->reset();
+		spinRight->reset();
+		spinLeft->reset();
+	});
+
+	m_pKeybindSettings->hide();// As it's not the defalut
 }
 
 void SettingsMenu::SetupShaderSettings()
 {
+	// README: Non-0 chance that we wont use this b/c it will end up being a side bar
 	m_pShaderSettings = new QWidget(this);
 	QGridLayout* pShaderLayout = new QGridLayout(m_pShaderSettings);
 	QLabel* shaderText = new QLabel(QString::fromLatin1("Shader Placeholder"));
@@ -211,6 +304,7 @@ void SettingsMenu::SetupShaderSettings()
 
 void SettingsMenu::SetupModelSettings()
 {
+	// README: Non-0 chance that we wont use this b/c it will end up being a side bar
 	m_pModelSettings = new QWidget(this);
 	QGridLayout* pModelLayout = new QGridLayout(m_pModelSettings);
 	QLabel* modelText = new QLabel(QString::fromLatin1("Model Placeholder"));

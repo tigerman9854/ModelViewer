@@ -41,14 +41,6 @@ private:
 	void SetupMouseSettings();
 	QWidget* m_pMouseSettings = nullptr;
 	QString m_MouseTitle = QString::fromLatin1("Mouse");
-	QLineEdit* panXSensitivity;
-	QLineEdit* panYSensitivity;
-	QLineEdit* xRotateSensitivity;
-	QLineEdit* yRotateSensitivity;
-	QLineEdit* zoomSensitivity;
-	QLineEdit* fieldOfView;
-	QLineEdit* nearPlane;
-	QLineEdit* farPlane;
 
 	void SetupKeybindSettings();
 	QWidget* m_pKeybindSettings = nullptr;
@@ -74,6 +66,11 @@ ViewerGraphicsWindow /
 	strafe_right | QT::Key
 	scale_up | QT::Key
 	scale_down | QT::Key
+	pitch_up | QKeySequence
+	pitch_down | QKeySequence
+	spin_right | QKeySequence
+	spin_left | QKeySequence
+
 	panXSensitivity | Float
 	panYSensitivity | Float
 	xRotateSensitivity | Float

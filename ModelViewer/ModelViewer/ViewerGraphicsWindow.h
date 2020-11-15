@@ -115,7 +115,7 @@ private:
     int lastY;
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
-    QSet<int> m_pressedKeys;
+    QSet<QKeySequence> m_pressedKeys;
 
     QMatrix4x4 m_scaleMatrix;
     QMatrix4x4 m_rotMatrix;

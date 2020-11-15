@@ -113,6 +113,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="KeyBindEdit.cpp" />
+    <ClCompile Include="KeySequenceParse.cpp" />
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="GraphicsWindowDelegate.cpp" />
     <ClCompile Include="OpenGLWindow.cpp" />
@@ -125,6 +127,8 @@
     <QtMoc Include="OpenGLWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="KeyBindEdit.h" />
+    <ClInclude Include="KeySequenceParse.h" />
     <ClInclude Include="ModelLoader.h" />
     <QtMoc Include="SettingsMenu.h" />
     <QtMoc Include="GraphicsWindowDelegate.h" />

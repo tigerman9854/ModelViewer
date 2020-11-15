@@ -1,6 +1,7 @@
 #include "ViewerGraphicsWindow.h"
 #include "SettingsMenu.h"
 #include "ModelLoader.h"
+#include "KeySequenceParse.h"
 
 #include <QGuiApplication>
 #include <QMatrix4x4>
@@ -492,35 +493,36 @@ void ViewerGraphicsWindow::Update(float sec)
 {
     // Allow shift and ctrl to increase/decrease speed
     float effectiveSpeed = movementSensitivity * sec;
-    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/increase_speed", Qt::Key::Key_Shift).toInt())) {
+  
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/increase_speed", QString(Qt::Key::Key_Shift)).toString()).get())) {
         effectiveSpeed *= 3.f;
     }
-    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Control).toInt())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/decrease_speed", QString(Qt::Key::Key_Control)).toString()).get())) {
         effectiveSpeed /= 3.f;
     }
 
     // W/S to elevate
-    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/elevate_forwards", Qt::Key::Key_W).toInt())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/elevate_forwards", QString(Qt::Key::Key_W)).toString()).get())) {
         m_transMatrix.translate(0, effectiveSpeed, 0);
     }
-    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/elevate_backwards", Qt::Key::Key_S).toInt())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/elevate_backwards", QString(Qt::Key::Key_S)).toString()).get())) {
         m_transMatrix.translate(0, -effectiveSpeed, 0);
     }
 
     // A/D to strafe
-    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/strafe_left", Qt::Key::Key_A).toInt())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/strafe_left", QString(Qt::Key::Key_A)).toString()).get())) {
         m_transMatrix.translate(-effectiveSpeed, 0, 0);
     }
-    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/strafe_right", Qt::Key::Key_D).toInt())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/strafe_right", QString(Qt::Key::Key_D)).toString()).get())) {
         m_transMatrix.translate(effectiveSpeed, 0, 0);
     }
 
     // Implement Q and E as scale instead of translate so the user cannot
     // move behind the object
-    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/scale_up", Qt::Key::Key_E).toInt())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/scale_up", QString(Qt::Key::Key_E)).toString()).get())) {
         m_scaleMatrix.scale(1 + (effectiveSpeed / 2.f));
     }
-    if (m_pressedKeys.contains((Qt::Key) settings->value("ViewerGraphicsWindow/scale_down", Qt::Key::Key_Q).toInt())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/scale_down", QString(Qt::Key::Key_Q)).toString()).get())) {
         m_scaleMatrix.scale(1 - (effectiveSpeed / 2.f));
     }
 
@@ -530,10 +532,10 @@ void ViewerGraphicsWindow::Update(float sec)
     QVector3D xAxis(1, 0, 0);
     float rotSpeed = qRadiansToDegrees(effectiveSpeed);
 
-    if (m_pressedKeys.contains(Qt::Key::Key_Up)) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/pitch_up", "Up").toString()).get())) {
         newRot.rotate(-rotSpeed, xAxis);
     }
-    if (m_pressedKeys.contains(Qt::Key::Key_Down)) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/pitch_down", "Down").toString()).get())) {
         newRot.rotate(rotSpeed, xAxis);
     }
 
@@ -542,10 +544,10 @@ void ViewerGraphicsWindow::Update(float sec)
 
     // Left and right to spin
     QVector3D yAxis(0, 1, 0);
-    if (m_pressedKeys.contains(Qt::Key::Key_Right)) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/spin_right", "Right").toString()).get())) {
         m_rotMatrix.rotate(rotSpeed, yAxis);
     }
-    if (m_pressedKeys.contains(Qt::Key::Key_Left)) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/spin_left", "Left").toString()).get())) {
         m_rotMatrix.rotate(-rotSpeed, yAxis);
     }
 }
