@@ -6,6 +6,7 @@
 class ViewerGraphicsWindow;
 class GraphicsWindowDelegate;
 class SettingsMenu;
+class GraphicsWindowUniform;
 
 class Q_DECL_EXPORT ModelViewer : public QMainWindow
 {
@@ -27,6 +28,7 @@ public:
 private:
     ViewerGraphicsWindow* m_pGraphicsWindow = nullptr;
     GraphicsWindowDelegate* m_pGraphicsWindowDelegate = nullptr;
+    GraphicsWindowUniform* m_pGraphicsWindowUniform = nullptr;
     SettingsMenu* m_pSettingsMenu = nullptr;
 };
 

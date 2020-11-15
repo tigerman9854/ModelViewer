@@ -3,6 +3,7 @@
 #include "ModelLoader.h"
 #include "KeySequenceParse.h"
 
+
 #include <QGuiApplication>
 #include <QMatrix4x4>
 #include <QOpenGLShaderProgram>
@@ -14,6 +15,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QtMath>
+#include <QKeyEvent>
 #include <QImage>
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(SettingsMenu* settingsMenu, QWindow* parent)
@@ -576,10 +578,73 @@ void ViewerGraphicsWindow::resetView()
     }
 }
 
-bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
+bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) 
+{
     // Load  model
     QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     return loadModel(filepath);
+}
+
+
+// ***************************************************
+// This piece of code is used to receive and process the signal 
+// sent by uniform controller.
+// ***************************************************
+
+void ViewerGraphicsWindow::colorRChanged(int val)
+{
+    //TO DO
+}
+
+void ViewerGraphicsWindow::colorGChanged(int val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::colorBChanged(int val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::colorRChanged64(double val)
+{
+    //TO DO
+}
+
+void ViewerGraphicsWindow::colorGChanged64(double val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::colorBChanged64(double val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::lightingSwitch(bool val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::smoothingSwitch(bool val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::effectType(int val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::lightAmbient(float val)
+{
+    m_program->setUniformValue(m_uKa, val);
+}
+
+void ViewerGraphicsWindow::lightDiffuse(float val)
+{
+    m_program->setUniformValue(m_uKd, val);
+}
+
+void ViewerGraphicsWindow::lightSpecular(float val)
+{
+    m_program->setUniformValue(m_uKs, val);
 }
 
 void ViewerGraphicsWindow::screenshotDialog() {
@@ -636,7 +701,6 @@ void ViewerGraphicsWindow::exportFrame(QString filePath) {
     frameCapture = frameCapture.transformed(flipTransform);
     frameCapture.save(filePath);
 }
-
 
 
 // ***************************************************
