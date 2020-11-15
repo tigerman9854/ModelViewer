@@ -29,7 +29,6 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(SettingsMenu* settingsMenu, QWindow* 
 
     setAnimating(true);
 
-    settings = m_pSettingsMenu->getSettings();
     loadSettings();
 }
 

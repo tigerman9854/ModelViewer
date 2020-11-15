@@ -15,8 +15,8 @@
 #include <QPushButton>
 
 
-SettingsMenu::SettingsMenu(QWidget* parent)
-	: QWidget(parent)
+SettingsMenu::SettingsMenu(ViewerGraphicsWindow* gWindow, QWidget* parent)
+	: m_pGraphicsWindow(gWindow), QWidget(parent)
 {
 	setWindowTitle(QString::fromLatin1("Settings"));
 	setContentsMargins(0, 0, 0, 0);
@@ -26,12 +26,6 @@ SettingsMenu::SettingsMenu(QWidget* parent)
 
 	// Set up the settings
 	settings = new QSettings("The Model Viewers team", "Model Viewer");	
-}
-
-void SettingsMenu::SetupSettings(ViewerGraphicsWindow* graphicsWindow)
-{
-	// Set the required refrences
-	m_pGraphicsWindow = graphicsWindow;
 
 	// Set up all of the widgets
 	m_pSettingsList = new QListWidget(this);
@@ -45,7 +39,7 @@ void SettingsMenu::SetupSettings(ViewerGraphicsWindow* graphicsWindow)
 	// Set up the indvidual setting menus
 	SetupMouseSettings();
 	SetupKeybindSettings();
-	
+
 	// TODO: Decide if we need these
 	// SetupShaderSettings();
 	// SetupModelSettings();

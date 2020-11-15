@@ -19,9 +19,6 @@
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
 {
-    // Create the settings menu (Contains the 'global' settings object)
-    m_pSettingsMenu = new SettingsMenu();
-    
     // Change the size to something usable
     const int defaultWidth = 800;
     const int defaultHeight = 560;
@@ -34,13 +31,10 @@ ModelViewer::ModelViewer(QWidget *parent)
     m_pGraphicsWindow = new ViewerGraphicsWindow(m_pSettingsMenu);
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
     m_pGraphicsWindowUniform = new GraphicsWindowUniform(m_pGraphicsWindow);
-     
-    // Initlise the settings menu
-    m_pSettingsMenu->SetupSettings(m_pGraphicsWindow);
+    m_pSettingsMenu = new SettingsMenu(m_pGraphicsWindow);
     
     setCentralWidget(m_pGraphicsWindowDelegate);
     
-
     // Create a central widget with horizontal splitter so the user can resize the widgets
     QSplitter* pCentralWidget = new QSplitter(Qt::Orientation::Horizontal, this);
     setCentralWidget(pCentralWidget);

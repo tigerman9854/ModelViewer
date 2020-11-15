@@ -96,7 +96,7 @@ protected:
 
 private:
     SettingsMenu* m_pSettingsMenu = nullptr;
-    QSettings* settings = nullptr;
+    QSettings* settings = new QSettings("The Model Viewers team", "Model Viewer");
 
     // Modifies the matrices based on how much time has passed
     void Update(float sec);

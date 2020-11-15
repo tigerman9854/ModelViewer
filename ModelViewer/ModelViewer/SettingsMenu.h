@@ -14,9 +14,8 @@ class SettingsMenu : public QWidget
 {
 	Q_OBJECT
 public:
-	SettingsMenu(QWidget* parent = nullptr);
+	SettingsMenu(ViewerGraphicsWindow* gWindow, QWidget* parent = nullptr);
 	void ChangeWindow(QListWidgetItem* current, QListWidgetItem* previous);
-	void SetupSettings(ViewerGraphicsWindow* graphicsWindow);
 	QSettings* getSettings();
 	
 
