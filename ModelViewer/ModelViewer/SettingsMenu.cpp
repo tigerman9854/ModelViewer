@@ -44,7 +44,7 @@ SettingsMenu::SettingsMenu(ViewerGraphicsWindow* gWindow, QWidget* parent)
 	// SetupShaderSettings();
 	// SetupModelSettings();
 
-	m_pCurrentSettingsWidget = m_pKeybindSettings;
+	m_pCurrentSettingsWidget = m_pMouseSettings;
 	m_pMainLayout->addWidget(m_pSettingsList, 0, 0, 5, 1);
 	m_pMainLayout->addWidget(m_pCurrentSettingsWidget, 0, 1, 5, 3);
 
@@ -201,8 +201,6 @@ void SettingsMenu::SetupMouseSettings()
 		nearPlane->setText(QString::number(m_pGraphicsWindow->nearPlane));
 		farPlane->setText(QString::number(m_pGraphicsWindow->farPlane));
 	});
-
-	m_pMouseSettings->hide();
 }
 
 void SettingsMenu::SetupKeybindSettings()
@@ -318,7 +316,7 @@ void SettingsMenu::SetupKeybindSettings()
 		spinLeft->reset();
 	});
 
-	//m_pKeybindSettings->hide();// As it's not the defalut
+	m_pKeybindSettings->hide();// As it's not the defalut
 }
 
 void SettingsMenu::SetupShaderSettings()
