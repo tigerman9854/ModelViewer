@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGLWindow.h"
 #include "ModelLoader.h"
+#include "SettingsMenu.h"
 
 #include <QOpenGLShaderProgram>
 #include <QElapsedTimer>
@@ -44,15 +45,17 @@ public:
     void ClearKeyboard();
 
     // Mouse settings | % adjustment
-    float panXSensitivity = .01f;
-    float panYSensitivity = .01f;
-    float xRotateSensitivity = 0.6f;
-    float yRotateSensitivity = 0.6f;
-    float movementSensitivity = 4.f;
-    float zoomSensitivity = 0.001f;
-    float fieldOfView = 45.f;
-    float nearPlane = 0.1f;
-    float farPlane = 100.f;
+    float panXSensitivity;
+    float panYSensitivity;
+    float xRotateSensitivity;
+    float yRotateSensitivity;
+    float movementSensitivity;
+    float zoomSensitivity;
+    float fieldOfView;
+    float nearPlane;
+    float farPlane;
+
+    void loadSettings();
 
 public slots:
     ////uniform slots
@@ -92,6 +95,9 @@ protected:
     virtual void focusOutEvent(QFocusEvent*) override;
 
 private:
+    SettingsMenu* m_pSettingsMenu = nullptr;
+    QSettings* settings = new QSettings("The Model Viewers team", "Model Viewer");
+
     // Modifies the matrices based on how much time has passed
     void Update(float sec);
     QElapsedTimer m_updateTimer;
@@ -127,8 +133,7 @@ private:
     int lastY;
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
-    QSet<int> m_pressedKeys;
-  
+    QSet<QKeySequence> m_pressedKeys;
     QMatrix4x4 m_scaleMatrix;
     QMatrix4x4 m_rotMatrix;
     QMatrix4x4 m_transMatrix;
