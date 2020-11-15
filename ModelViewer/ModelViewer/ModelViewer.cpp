@@ -33,8 +33,6 @@ ModelViewer::ModelViewer(QWidget *parent)
     m_pGraphicsWindowUniform = new GraphicsWindowUniform(m_pGraphicsWindow);
     m_pSettingsMenu = new SettingsMenu(m_pGraphicsWindow);
     
-    setCentralWidget(m_pGraphicsWindowDelegate);
-    
     // Create a central widget with horizontal splitter so the user can resize the widgets
     QSplitter* pCentralWidget = new QSplitter(Qt::Orientation::Horizontal, this);
     setCentralWidget(pCentralWidget);
