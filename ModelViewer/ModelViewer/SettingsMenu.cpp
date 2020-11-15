@@ -183,6 +183,7 @@ void SettingsMenu::SetupMouseSettings()
 		settings->remove("ViewerGraphicsWindow/panYSensitivity");
 		settings->remove("ViewerGraphicsWindow/xRotateSensitivity");
 		settings->remove("ViewerGraphicsWindow/yRotateSensitivity");
+		settings->remove("ViewerGraphicsWindow/movementSensitivity");
 		settings->remove("ViewerGraphicsWindow/zoomSensitivity");
 		settings->remove("ViewerGraphicsWindow/fieldOfView");
 		settings->remove("ViewerGraphicsWindow/nearPlane");
