@@ -65,13 +65,13 @@
     <QtMoc Include="SettingsMenu.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="KeyBindEdit.h">
+      <Filter>Header Files\lib</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ModelLoader.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyBindEdit.h">
-      <Filter>Header Files\lib</Filter>
     </ClInclude>
     <ClInclude Include="KeySequenceParse.h">
       <Filter>Header Files\lib</Filter>

@@ -37,17 +37,20 @@ void SettingsMenu::SetupSettings(ViewerGraphicsWindow* graphicsWindow)
 	m_pSettingsList = new QListWidget(this);
 	new QListWidgetItem(m_MouseTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::mouse);
 	new QListWidgetItem(m_KebindTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::keybind);
-	new QListWidgetItem(m_ShaderTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::shader);
-	new QListWidgetItem(m_ModelTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::model);
+	// TODO: Decide if we need these
+	// new QListWidgetItem(m_ShaderTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::shader);
+	// new QListWidgetItem(m_ModelTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::model);
 	m_pSettingsList->setMaximumWidth(100);
 
 	// Set up the indvidual setting menus
 	SetupMouseSettings();
 	SetupKeybindSettings();
-	SetupShaderSettings();
-	SetupModelSettings();
+	
+	// TODO: Decide if we need these
+	// SetupShaderSettings();
+	// SetupModelSettings();
 
-	m_pCurrentSettingsWidget = m_pMouseSettings;
+	m_pCurrentSettingsWidget = m_pKeybindSettings;
 	m_pMainLayout->addWidget(m_pSettingsList, 0, 0, 5, 1);
 	m_pMainLayout->addWidget(m_pCurrentSettingsWidget, 0, 1, 5, 3);
 
@@ -95,19 +98,31 @@ void SettingsMenu::SetupMouseSettings()
 {
 	// Set up the widget...
 	m_pMouseSettings = new QWidget(this);
+	m_pMouseSettings->setObjectName("mouseSettings");
 	// and it's layout.
 	QFormLayout* layout = new QFormLayout(m_pMouseSettings);
 
 	// Set up each of the form fields with the default values
 	QLineEdit* panXSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->panXSensitivity));
+	panXSensitivity->setObjectName("panXSensitivity");
 	QLineEdit* panYSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->panYSensitivity));
+	panYSensitivity->setObjectName("panYSensitivity");
 	QLineEdit* xRotateSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->xRotateSensitivity));
+	xRotateSensitivity->setObjectName("xRotateSensitivity");
 	QLineEdit* yRotateSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->yRotateSensitivity));
+	yRotateSensitivity->setObjectName("yRotateSensitivity");
+	QLineEdit* movementSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->movementSensitivity));
+	movementSensitivity->setObjectName("movementSensitivity");
 	QLineEdit* zoomSensitivity = new QLineEdit(QString::number(m_pGraphicsWindow->zoomSensitivity));
+	zoomSensitivity->setObjectName("zoomSensitivity");
 	QLineEdit* fieldOfView = new QLineEdit(QString::number(m_pGraphicsWindow->fieldOfView));
+	fieldOfView->setObjectName("fieldOfView");
 	QLineEdit* nearPlane = new QLineEdit(QString::number(m_pGraphicsWindow->nearPlane));
+	nearPlane->setObjectName("nearPlane");
 	QLineEdit* farPlane = new QLineEdit(QString::number(m_pGraphicsWindow->farPlane));
+	farPlane->setObjectName("farPlane");
 	QPushButton* reset = new QPushButton(QString::fromLatin1("Reset All"));
+	reset->setObjectName("resetMouseSettings");
 
 	// Set up input valadation for each field
 	panXSensitivity->setValidator(new QDoubleValidator(0.00001, 10000.0, 5));
@@ -124,6 +139,7 @@ void SettingsMenu::SetupMouseSettings()
 	layout->addRow(tr("Pan Y Sensitivity"), panYSensitivity);
 	layout->addRow(tr("Rotate X Sensitivity"), xRotateSensitivity);
 	layout->addRow(tr("Rotate X Sensitivity"), yRotateSensitivity);
+	layout->addRow(tr("Movement Sensitivity"), movementSensitivity);
 	layout->addRow(tr("Zoom Sensitivty"), zoomSensitivity);
 	layout->addRow(tr("Field of View"), fieldOfView);
 	layout->addRow(tr("Near Plane"), nearPlane);
@@ -145,6 +161,10 @@ void SettingsMenu::SetupMouseSettings()
 	});
 	connect(yRotateSensitivity, &QLineEdit::editingFinished, this, [=] {
 		settings->setValue("ViewerGraphicsWindow/yRotateSensitivity", yRotateSensitivity->text().toFloat());
+		m_pGraphicsWindow->loadSettings();
+	});
+	connect(movementSensitivity, &QLineEdit::editingFinished, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/movementSensitivity", movementSensitivity->text().toFloat());
 		m_pGraphicsWindow->loadSettings();
 	});
 	connect(zoomSensitivity, &QLineEdit::editingFinished, this, [=] {
@@ -187,26 +207,42 @@ void SettingsMenu::SetupMouseSettings()
 		nearPlane->setText(QString::number(m_pGraphicsWindow->nearPlane));
 		farPlane->setText(QString::number(m_pGraphicsWindow->farPlane));
 	});
+
+	m_pMouseSettings->hide();
 }
 
 void SettingsMenu::SetupKeybindSettings()
 {
 	m_pKeybindSettings = new QWidget(this);
+	m_pKeybindSettings->setObjectName("keybindSettings");
 	QFormLayout* layout = new QFormLayout(m_pKeybindSettings);
 
 	KeyBindEdit* increaseSpeed = new KeyBindEdit("ViewerGraphicsWindow/increase_speed", Qt::Key::Key_Shift);
+	increaseSpeed->setObjectName("increaseSpeed");
 	KeyBindEdit* decreaseSpeed = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Control);
-	KeyBindEdit* elevateForwards = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_W);
-	KeyBindEdit* elevateBackwards = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_S);
-	KeyBindEdit* strafeLeft = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_A);
-	KeyBindEdit* strafeRight = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_D);
-	KeyBindEdit* scaleUp = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_E);
-	KeyBindEdit* scaleDown = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Q);
-	KeyBindEdit* pitchUp = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Up);
-	KeyBindEdit* pitchDown = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Down);
-	KeyBindEdit* spinRight = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Right);
-	KeyBindEdit* spinLeft = new KeyBindEdit("ViewerGraphicsWindow/decrease_speed", Qt::Key::Key_Left);
+	decreaseSpeed->setObjectName("decreaseSpeed");
+	KeyBindEdit* elevateForwards = new KeyBindEdit("ViewerGraphicsWindow/elevate_forwards", Qt::Key::Key_W);
+	elevateForwards->setObjectName("elevateForwards");
+	KeyBindEdit* elevateBackwards = new KeyBindEdit("ViewerGraphicsWindow/elevate_backwards", Qt::Key::Key_S);
+	elevateBackwards->setObjectName("elevateBackwards");
+	KeyBindEdit* strafeLeft = new KeyBindEdit("ViewerGraphicsWindow/strafeLeft", Qt::Key::Key_A);
+	strafeLeft->setObjectName("strafeLeft");
+	KeyBindEdit* strafeRight = new KeyBindEdit("ViewerGraphicsWindow/strafeRight", Qt::Key::Key_D);
+	strafeRight->setObjectName("strafeRight");
+	KeyBindEdit* scaleUp = new KeyBindEdit("ViewerGraphicsWindow/scaleUp", Qt::Key::Key_E);
+	scaleUp->setObjectName("scaleUp");
+	KeyBindEdit* scaleDown = new KeyBindEdit("ViewerGraphicsWindow/scaleDown", Qt::Key::Key_Q);
+	scaleDown->setObjectName("scaleDown");
+	KeyBindEdit* pitchUp = new KeyBindEdit("ViewerGraphicsWindow/pitchUp", Qt::Key::Key_Up);
+	pitchUp->setObjectName("pitchUp");
+	KeyBindEdit* pitchDown = new KeyBindEdit("ViewerGraphicsWindow/pitchDown", Qt::Key::Key_Down);
+	pitchDown->setObjectName("pitchDown");
+	KeyBindEdit* spinRight = new KeyBindEdit("ViewerGraphicsWindow/spinRight", Qt::Key::Key_Right);
+	spinRight->setObjectName("spinRight");
+	KeyBindEdit* spinLeft = new KeyBindEdit("ViewerGraphicsWindow/spinLeft", Qt::Key::Key_Left);
+	spinLeft->setObjectName("spinLeft");
 	QPushButton* reset = new QPushButton(QString::fromLatin1("Reset All"));
+	reset->setObjectName("resetKeybinds");
 
 	layout->addRow(tr("Increase Speed"), increaseSpeed);
 	layout->addRow(tr("Decrease Speed"), decreaseSpeed);
@@ -288,7 +324,7 @@ void SettingsMenu::SetupKeybindSettings()
 		spinLeft->reset();
 	});
 
-	m_pKeybindSettings->hide();// As it's not the defalut
+	//m_pKeybindSettings->hide();// As it's not the defalut
 }
 
 void SettingsMenu::SetupShaderSettings()

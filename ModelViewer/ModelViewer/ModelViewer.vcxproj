@@ -127,7 +127,7 @@
     <QtMoc Include="OpenGLWindow.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="KeyBindEdit.h" />
+    <QtMoc Include="KeyBindEdit.h" />
     <ClInclude Include="KeySequenceParse.h" />
     <ClInclude Include="ModelLoader.h" />
     <QtMoc Include="SettingsMenu.h" />

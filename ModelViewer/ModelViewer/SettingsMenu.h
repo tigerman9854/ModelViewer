@@ -57,7 +57,7 @@ private:
 
 
 /* List of all keybindings
-ViewerGraphicsWindow / 
+ViewerGraphicsWindow/ 
 	increase_speed | QT::Key
 	decrease_speed | QT::Key
 	elevate_forwards | QT::Key

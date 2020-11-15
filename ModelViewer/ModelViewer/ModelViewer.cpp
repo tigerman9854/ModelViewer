@@ -104,6 +104,10 @@ ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
 }
 
+SettingsMenu* ModelViewer::GetSettingsWindow() {
+    return m_pSettingsMenu;
+}
+
 GraphicsWindowDelegate* ModelViewer::GetGraphicsDelegate() {
     return m_pGraphicsWindowDelegate;
 }

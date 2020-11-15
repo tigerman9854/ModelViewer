@@ -494,10 +494,10 @@ void ViewerGraphicsWindow::Update(float sec)
     // Allow shift and ctrl to increase/decrease speed
     float effectiveSpeed = movementSensitivity * sec;
   
-    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/increase_speed", QString(Qt::Key::Key_Shift)).toString()).get())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/increase_speed", "Shift").toString()).get())) {
         effectiveSpeed *= 3.f;
     }
-    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/decrease_speed", QString(Qt::Key::Key_Control)).toString()).get())) {
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/decrease_speed", "Ctrl").toString()).get())) {
         effectiveSpeed /= 3.f;
     }
 

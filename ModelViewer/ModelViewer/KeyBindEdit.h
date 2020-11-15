@@ -3,6 +3,7 @@
 
 class KeyBindEdit : public QLineEdit
 {
+    Q_OBJECT
 public:
     KeyBindEdit(QString text, Qt::Key defaultKey = Qt::Key::Key_AsciiTilde, QWidget* pParent = NULL);
     ~KeyBindEdit() {}

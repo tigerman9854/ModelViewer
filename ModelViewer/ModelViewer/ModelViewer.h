@@ -16,6 +16,7 @@ public:
 
     ViewerGraphicsWindow* GetGraphicsWindow();
     GraphicsWindowDelegate* GetGraphicsDelegate();
+    SettingsMenu* GetSettingsWindow();
     
     void GetHelp();
 
