@@ -494,6 +494,8 @@ void ModelViewerTest::testSettings()
 	QVERIFY(pGraphicsWindow->nearPlane == 0.1f);
 	QVERIFY(pGraphicsWindow->farPlane == 0.1f);
 
+	resetMouse->released();
+
 	// Set & check all of the keybind values
 	KeyBindEdit* increaseSpeed = pSettingsWindow->findChild<KeyBindEdit*>("increaseSpeed");
 	QTest::keyClick(increaseSpeed, Qt::Key::Key_Escape);
@@ -557,7 +559,6 @@ void ModelViewerTest::testSettings()
 	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/spin_right").toString() == QString(Qt::Key::Key_D));
 	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/spin_left").toString() == QString(Qt::Key::Key_A));
 
-	resetMouse->released();
 	resetKeybinds->released();
 }
 
