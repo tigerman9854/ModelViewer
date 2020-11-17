@@ -22,6 +22,7 @@ public:
 
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
+    void setUniformLocations();
 
     bool addPrimitive(QString filepath);
     bool IsModelValid();
@@ -93,6 +94,12 @@ private:
     GLint m_uSpecularColor = 0;
     GLint m_uShininess = 0;
 
+    GLint m_uMat4_1;
+    GLint m_uVec3_1;
+    GLint m_uVec4_1;
+    GLint m_uFloat_1;
+    GLint m_uInt_1;
+
     QVector3D lightPos;
     QVector4D ADColor;
     QVector4D specularColor;
@@ -101,6 +108,11 @@ private:
     float uKs;
     float shininess = 1.0;
 
+    QMatrix4x4 uMat4_1;
+    QVector3D uVec3_1;
+    QVector4D uVec4_1;
+    float uFloat_1;
+    int uInt_1;
 
     QOpenGLShaderProgram* m_program = nullptr;
     int m_frame = 0;

@@ -93,25 +93,7 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     }
 
     currentVertFile = vertfilepath;
-    m_posAttr = m_program->attributeLocation("posAttr");
-    Q_ASSERT(m_posAttr != -1);
-    m_colAttr = m_program->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
-    m_matrixUniform = m_program->uniformLocation("matrix");
-    Q_ASSERT(m_matrixUniform != -1);
-
-    m_normAttr = m_program->attributeLocation("normAttr");
-    m_uvAttr = m_program->attributeLocation("uvAttr");
-
-    m_modelviewUniform = m_program->uniformLocation("modelview");
-    m_normalUniform = m_program->uniformLocation("normalMat");
-
-    m_lightPosUniform = m_program->uniformLocation("uLightPos");
-    m_uKa = m_program->uniformLocation("uKa");
-    m_uKd = m_program->uniformLocation("uKd");
-    m_uKs = m_program->uniformLocation("uKs");
-    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
-    m_uShininess = m_program->uniformLocation("uShininess");
+    setUniformLocations();
     
     emit ClearError();
     return true;
@@ -152,25 +134,7 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     }
     
     currentFragFile = fragfilepath;
-    m_posAttr = m_program->attributeLocation("posAttr");
-    Q_ASSERT(m_posAttr != -1);
-    m_colAttr = m_program->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
-    m_matrixUniform = m_program->uniformLocation("matrix");
-    Q_ASSERT(m_matrixUniform != -1);
-
-    m_normAttr = m_program->attributeLocation("normAttr");
-    m_uvAttr = m_program->attributeLocation("uvAttr");
-
-    m_modelviewUniform = m_program->uniformLocation("modelview");
-    m_normalUniform = m_program->uniformLocation("normalMat");
-
-    m_lightPosUniform = m_program->uniformLocation("uLightPos");
-    m_uKa = m_program->uniformLocation("uKa");
-    m_uKd = m_program->uniformLocation("uKd");
-    m_uKs = m_program->uniformLocation("uKs");
-    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
-    m_uShininess = m_program->uniformLocation("uShininess");
+    setUniformLocations();
 
     emit ClearError();
     return true;
@@ -196,6 +160,35 @@ bool ViewerGraphicsWindow::editCurrentShaders()
         return false;
     }
     return true;
+}
+
+void ViewerGraphicsWindow::setUniformLocations()
+{
+    m_posAttr = m_program->attributeLocation("posAttr");
+    Q_ASSERT(m_posAttr != -1);
+    m_colAttr = m_program->attributeLocation("colAttr");
+    Q_ASSERT(m_colAttr != -1);
+    m_matrixUniform = m_program->uniformLocation("matrix");
+    Q_ASSERT(m_matrixUniform != -1);
+
+    m_normAttr = m_program->attributeLocation("normAttr");
+    m_uvAttr = m_program->attributeLocation("uvAttr");
+
+    m_modelviewUniform = m_program->uniformLocation("modelview");
+    m_normalUniform = m_program->uniformLocation("normalMat");
+
+    m_lightPosUniform = m_program->uniformLocation("uLightPos");
+    m_uKa = m_program->uniformLocation("uKa");
+    m_uKd = m_program->uniformLocation("uKd");
+    m_uKs = m_program->uniformLocation("uKs");
+    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
+    m_uShininess = m_program->uniformLocation("uShininess");
+
+    m_uMat4_1 = m_program->uniformLocation("uMat4_1");
+    m_uVec3_1 = m_program->uniformLocation("uVec3_1");
+    m_uVec4_1 = m_program->uniformLocation("uVec4_1");
+    m_uFloat_1 = m_program->uniformLocation("uFloat_1");
+    m_uInt_1 = m_program->uniformLocation("uInt_1");
 }
 
 bool ViewerGraphicsWindow::reloadCurrentShaders()
@@ -309,39 +302,25 @@ void ViewerGraphicsWindow::initialize()
     m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     m_program->link();
-    m_posAttr = m_program->attributeLocation("posAttr");
-    Q_ASSERT(m_posAttr != -1);
-    m_colAttr = m_program->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
-    m_matrixUniform = m_program->uniformLocation("matrix");
-    Q_ASSERT(m_matrixUniform != -1);
+
+    setUniformLocations();
 
     // Set up the default view
     resetView();
 
-    m_normAttr = m_program->attributeLocation("normAttr");
-    m_uvAttr = m_program->attributeLocation("uvAttr");
-
-    m_modelviewUniform = m_program->uniformLocation("modelview");
-    m_normalUniform = m_program->uniformLocation("normalMat");
-
-    m_lightPosUniform = m_program->uniformLocation("uLightPos");
     lightPos = QVector3D(1., 1., -1.);
-
-    m_uKa = m_program->uniformLocation("uKa");
-    m_uKd = m_program->uniformLocation("uKd");
-    m_uKs = m_program->uniformLocation("uKs");
     uKa = 0.30;
     uKd = 0.40;
     uKs = 0.35;
-
     ADColor = QVector4D(0., 1., 0., 1.);
-
-    //m_uADColor = m_program->uniformLocation("uADColor");
-    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     specularColor = QVector4D(1., 1., 1., 1.);
-    m_uShininess = m_program->uniformLocation("uShininess");
     shininess = 1.0;
+
+    uMat4_1 = QMatrix4x4();
+    uVec3_1 = QVector3D(0.5, 0.5, 0.);
+    uVec4_1 = QVector4D(1., 1., 1., 1.);
+    uFloat_1 = 0.;
+    uInt_1 = 0;
 
     emit Initialized();
 
@@ -372,21 +351,23 @@ void ViewerGraphicsWindow::render()
     QMatrix3x3 normal = modelMatrix.normalMatrix();
     m_program->setUniformValue(m_normalUniform, normal);
 
-    //QVector3D lightPos = QVector3D(1., 1., -1.);
     m_program->setUniformValue(m_lightPosUniform, lightPos);
 
     m_program->setUniformValue(m_uKa, uKa);
     m_program->setUniformValue(m_uKd, uKd);
     m_program->setUniformValue(m_uKs, uKs);
 
-    //QVector4D uADColor = QVector4D(1., 1., 1., 1.);
-    //m_program->setUniformValue(m_uADColor, uADColor);
-
     m_program->setUniformValue(m_uSpecularColor, specularColor);
 
     m_program->setUniformValue(m_uShininess, shininess);
 
     m_program->setAttributeValue(m_colAttr, ADColor);
+
+    m_program->setUniformValue(m_uMat4_1, uMat4_1);
+    m_program->setUniformValue(m_uVec3_1, uVec3_1);
+    m_program->setUniformValue(m_uVec4_1, uVec4_1);
+    m_program->setUniformValue(m_uFloat_1, uFloat_1);
+    m_program->setUniformValue(m_uInt_1, uInt_1);
     
     glEnable(GL_DEPTH_TEST);
 
