@@ -1,8 +1,10 @@
 #pragma once
 #include "OpenGLWindow.h"
 #include "ModelLoader.h"
+#include "SettingsMenu.h"
 
 #include <QOpenGLShaderProgram>
+#include <QElapsedTimer>
 
 class ViewerGraphicsWindow : public OpenGLWindow
 {
@@ -19,12 +21,14 @@ public:
 
     bool loadModel(QString filepath = QString());
     bool unloadModel();
-
+    bool addPrimitive(QString filepath);
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
     void setUniformLocations();
 
-    bool addPrimitive(QString filepath);
+    void screenshotDialog();
+    void saveDialog(QString filePath);
+    void exportFrame(QString filePath);
     bool IsModelValid();
 
     bool editCurrentShaders();
@@ -50,15 +54,39 @@ public:
     QMatrix4x4 GetTranslationMatrix();
     QMatrix4x4 GetModelMatrix();
 
+    void ClearKeyboard();
+
     // Mouse settings | % adjustment
-    float panXSensitivity = .01f;
-    float panYSensitivity = .01f;
-    float xRotateSensitivity = 0.6f;
-    float yRotateSensitivity = 0.6f;
-    float zoomSensitivity = 0.001f;
-    float fieldOfView = 45.f;
-    float nearPlane = 0.1f;
-    float farPlane = 100.f;
+    float panXSensitivity;
+    float panYSensitivity;
+    float xRotateSensitivity;
+    float yRotateSensitivity;
+    float movementSensitivity;
+    float zoomSensitivity;
+    float fieldOfView;
+    float nearPlane;
+    float farPlane;
+
+    void loadSettings();
+
+public slots:
+    ////uniform slots
+    ////color
+    void colorRChanged(int val);
+    void colorGChanged(int val);
+    void colorBChanged(int val);
+    void colorRChanged64(double val);
+    void colorGChanged64(double val);
+    void colorBChanged64(double val);
+    ////settings
+    void lightingSwitch(bool val);
+    void smoothingSwitch(bool val);
+    ////effect
+    void effectType(int val);
+    ////lighting
+    void lightAmbient(float val);
+    void lightDiffuse(float val);
+    void lightSpecular(float val);
 
 signals:
     void Error(QString message);
@@ -74,8 +102,18 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent*) override;
     virtual void mouseReleaseEvent(QMouseEvent*) override;
     virtual void wheelEvent(QWheelEvent*) override;
+    virtual void keyPressEvent(QKeyEvent*) override;
+    virtual void keyReleaseEvent(QKeyEvent*) override;
+    virtual void focusOutEvent(QFocusEvent*) override;
 
 private:
+    SettingsMenu* m_pSettingsMenu = nullptr;
+    QSettings* settings = new QSettings("The Model Viewers team", "Model Viewer");
+
+    // Modifies the matrices based on how much time has passed
+    void Update(float sec);
+    QElapsedTimer m_updateTimer;
+
     bool initialized = false;
 
     GLint m_posAttr = 0;
@@ -127,7 +165,7 @@ private:
     int lastY;
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
-
+    QSet<QKeySequence> m_pressedKeys;
     QMatrix4x4 m_scaleMatrix;
     QMatrix4x4 m_rotMatrix;
     QMatrix4x4 m_transMatrix;

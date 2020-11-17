@@ -1,6 +1,8 @@
 #include "ViewerGraphicsWindow.h"
-
+#include "SettingsMenu.h"
 #include "ModelLoader.h"
+#include "KeySequenceParse.h"
+
 
 #include <QGuiApplication>
 #include <QMatrix4x4>
@@ -8,11 +10,13 @@
 #include <QScreen>
 #include <QtMath>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMouseEvent>
-#include <QdesktopServices>
+#include <QDesktopServices>
 #include <QUrl>
 #include <QtMath>
-
+#include <QKeyEvent>
+#include <QImage>
 
 ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     : OpenGLWindow(parent)
@@ -24,6 +28,20 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
     resetView();
 
     setAnimating(true);
+
+    loadSettings();
+}
+
+void ViewerGraphicsWindow::loadSettings() {
+    panXSensitivity = settings->value("ViewerGraphicsWindow/panXSensitivity", .01f).toFloat();
+    panYSensitivity = settings->value("ViewerGraphicsWindow/panYSensitivity", .01f).toFloat();
+    xRotateSensitivity = settings->value("ViewerGraphicsWindow/xRotateSensitivity", 0.6f).toFloat();
+    yRotateSensitivity = settings->value("ViewerGraphicsWindow/yRotateSensitivity", 0.6f).toFloat();
+    movementSensitivity = settings->value("ViewerGraphicsWindow/movementSensitivity", 4.0f).toFloat();
+    zoomSensitivity = settings->value("ViewerGraphicsWindow/zoomSensitivity", 0.001f).toFloat();
+    fieldOfView = settings->value("ViewerGraphicsWindow/fieldOfView", 45.f).toFloat();
+    nearPlane = settings->value("ViewerGraphicsWindow/nearPlane", 0.1f).toFloat();
+    farPlane = settings->value("ViewerGraphicsWindow/farPlane", 100.f).toFloat();
 }
 
 bool ViewerGraphicsWindow::loadModel(QString filepath) {
@@ -197,6 +215,7 @@ bool ViewerGraphicsWindow::reloadCurrentShaders()
         loadFragmentShader(currentFragFile)) {
         return true;
     }
+    return false;
 }
 
 bool ViewerGraphicsWindow::openShaderFile(QString filepath)
@@ -235,7 +254,7 @@ void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
     lastY = event->y();
 
     // Call the parent class 
-    QWindow::mouseReleaseEvent(event);
+    QWindow::mousePressEvent(event);
 }
 
 void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
@@ -288,6 +307,34 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     QWindow::mouseMoveEvent(event);
 }
 
+void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
+{
+    // Store that this key is pressed
+    m_pressedKeys.insert(event->key());
+
+    QWindow::keyPressEvent(event);
+}
+void ViewerGraphicsWindow::keyReleaseEvent(QKeyEvent* event)
+{
+    // The key has been released
+    m_pressedKeys.remove(event->key());
+
+    QWindow::keyReleaseEvent(event);
+}
+
+void ViewerGraphicsWindow::focusOutEvent(QFocusEvent* event)
+{
+    ClearKeyboard();
+
+    QWindow::focusOutEvent(event);
+}
+
+void ViewerGraphicsWindow::ClearKeyboard()
+{
+    // Clear all pressed keys when the window loses focus
+    m_pressedKeys.clear();
+}
+
 void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
 {
     const float zoomAmount = zoomSensitivity * event->angleDelta().y();
@@ -329,6 +376,14 @@ void ViewerGraphicsWindow::initialize()
 
 void ViewerGraphicsWindow::render()
 {
+    // Determine how much time has passed since the last update,
+    // call update, and reset the timer
+    const qint64 nsec = m_updateTimer.nsecsElapsed();
+    m_updateTimer.restart();
+    const float seconds = (float)nsec * 1e-9f;
+    Update(seconds);
+
+    // Compute viewport with support for high DPI monitors
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
@@ -422,6 +477,69 @@ void ViewerGraphicsWindow::render()
     ++m_frame;
 }
 
+void ViewerGraphicsWindow::Update(float sec)
+{
+    // Allow shift and ctrl to increase/decrease speed
+    float effectiveSpeed = movementSensitivity * sec;
+  
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/increase_speed", "Shift").toString()).get())) {
+        effectiveSpeed *= 3.f;
+    }
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/decrease_speed", "Ctrl").toString()).get())) {
+        effectiveSpeed /= 3.f;
+    }
+
+    // W/S to elevate
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/elevate_forwards", QString(Qt::Key::Key_W)).toString()).get())) {
+        m_transMatrix.translate(0, effectiveSpeed, 0);
+    }
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/elevate_backwards", QString(Qt::Key::Key_S)).toString()).get())) {
+        m_transMatrix.translate(0, -effectiveSpeed, 0);
+    }
+
+    // A/D to strafe
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/strafe_left", QString(Qt::Key::Key_A)).toString()).get())) {
+        m_transMatrix.translate(-effectiveSpeed, 0, 0);
+    }
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/strafe_right", QString(Qt::Key::Key_D)).toString()).get())) {
+        m_transMatrix.translate(effectiveSpeed, 0, 0);
+    }
+
+    // Implement Q and E as scale instead of translate so the user cannot
+    // move behind the object
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/scale_up", QString(Qt::Key::Key_E)).toString()).get())) {
+        m_scaleMatrix.scale(1 + (effectiveSpeed / 2.f));
+    }
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/scale_down", QString(Qt::Key::Key_Q)).toString()).get())) {
+        m_scaleMatrix.scale(1 - (effectiveSpeed / 2.f));
+    }
+
+
+    // Up and down arrows to pitch
+    QMatrix4x4 newRot;
+    QVector3D xAxis(1, 0, 0);
+    float rotSpeed = qRadiansToDegrees(effectiveSpeed);
+
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/pitch_up", "Up").toString()).get())) {
+        newRot.rotate(-rotSpeed, xAxis);
+    }
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/pitch_down", "Down").toString()).get())) {
+        newRot.rotate(rotSpeed, xAxis);
+    }
+
+    // Perform the new rotation AFTER the previous rotations
+    m_rotMatrix = newRot * m_rotMatrix;
+
+    // Left and right to spin
+    QVector3D yAxis(0, 1, 0);
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/spin_right", "Right").toString()).get())) {
+        m_rotMatrix.rotate(rotSpeed, yAxis);
+    }
+    if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/spin_left", "Left").toString()).get())) {
+        m_rotMatrix.rotate(-rotSpeed, yAxis);
+    }
+}
+
 void ViewerGraphicsWindow::resetView()
 {
     // Reset matrices to default values
@@ -446,10 +564,128 @@ void ViewerGraphicsWindow::resetView()
     }
 }
 
-bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) {
+bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) 
+{
     // Load  model
     QString filepath = QString("../Data/Primitives/%1").arg(primitiveName);
     return loadModel(filepath);
+}
+
+
+// ***************************************************
+// This piece of code is used to receive and process the signal 
+// sent by uniform controller.
+// ***************************************************
+
+void ViewerGraphicsWindow::colorRChanged(int val)
+{
+    //TO DO
+}
+
+void ViewerGraphicsWindow::colorGChanged(int val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::colorBChanged(int val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::colorRChanged64(double val)
+{
+    //TO DO
+}
+
+void ViewerGraphicsWindow::colorGChanged64(double val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::colorBChanged64(double val)
+{
+    //TO DO
+}
+void ViewerGraphicsWindow::lightingSwitch(bool val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::smoothingSwitch(bool val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::effectType(int val)
+{
+    //TO DO, maybe ...
+}
+
+void ViewerGraphicsWindow::lightAmbient(float val)
+{
+    m_program->setUniformValue(m_uKa, val);
+}
+
+void ViewerGraphicsWindow::lightDiffuse(float val)
+{
+    m_program->setUniformValue(m_uKd, val);
+}
+
+void ViewerGraphicsWindow::lightSpecular(float val)
+{
+    m_program->setUniformValue(m_uKs, val);
+}
+
+void ViewerGraphicsWindow::screenshotDialog() {
+    if (!initialized) {
+        return;
+    }
+
+    // Create a screenshot folder
+    QString defaultFolder("../data/Screenshots/");
+    if (!QDir(defaultFolder).exists()) {
+        QDir().mkdir(defaultFolder);
+    }
+
+    // Have the user choose a file location
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save screenshot"),
+        defaultFolder + "capture.png",
+        tr("Images (*.bmp *.jpg *.jpeg *.png *.ppm *.xbm *.xpm)"));
+
+    if (!filepath.isEmpty())
+    {
+        ViewerGraphicsWindow::exportFrame(filepath);
+    }
+}
+
+void ViewerGraphicsWindow::saveDialog(QString filePath) {
+    if (!initialized) {
+        return;
+    }
+
+    QString filepath = QFileDialog::getSaveFileName(nullptr,
+        tr("Save"),
+        QString(),
+        tr("all (*)"));
+
+    if (!filepath.isEmpty())
+    {
+        // TO DO...
+    }
+}
+
+void ViewerGraphicsWindow::exportFrame(QString filePath) {
+    // Capture the framebuffer
+    GLubyte* pixels = (GLubyte*)malloc(5 * width() * height());
+    if (pixels) {
+        //Read the data from the frame buffer
+        glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+    }
+
+    // Flip the framebuffer because OpenGL renders upsidedown
+    QImage frameCapture(pixels, width(), height(), QImage::Format_ARGB32);
+    QTransform flipTransform;
+    flipTransform.scale(1, -1);
+    frameCapture = frameCapture.transformed(flipTransform);
+    frameCapture.save(filePath);
 }
 
 

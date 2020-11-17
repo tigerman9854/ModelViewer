@@ -2,11 +2,15 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QSignalSpy>
+#include <QlineEdit>
+#include <QPushButton>
 
 #include "ModelViewer.h"
 #include "ModelLoader.h"
 #include "ViewerGraphicsWindow.h"
 #include "GraphicsWindowDelegate.h"
+#include "KeyBindEdit.h"
+#include "KeySequenceParse.h"
 
 class ModelViewerTest : public QObject {
 	Q_OBJECT
@@ -37,6 +41,8 @@ private slots:
 	void checkMousePressAndRelease();
 	void zoomWithMouse();
 	void defaultZoom();
+	void testKeyboard();
+	void testSettings();
 
 private:
 	// Helpers
@@ -45,6 +51,9 @@ private:
 
 	ModelViewer* m_pWindow = nullptr;
 	QMatrix4x4 resetMatrix;
+
+	// Enable this setting to skip tests which require user input
+	bool disableAnnoyingTests = true;
 };
 
 
@@ -53,6 +62,10 @@ void ModelViewerTest::initTestCase()
 	// Called once before all test cases
 	m_pWindow = new ModelViewer();
 	resetMatrix = m_pWindow->GetGraphicsWindow()->GetModelMatrix();
+
+	if (disableAnnoyingTests) {
+		printf("WARNING: Annoying tests disabled.\n");
+	}
 }
 
 void ModelViewerTest::cleanupTestCase()
@@ -105,6 +118,7 @@ void ModelViewerTest::integration()
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 	QTest::keyClick(pLoadMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pLoadMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pLoadMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pPrimitiveMenu, Qt::Key_Down, Qt::NoModifier, 20);
@@ -138,6 +152,8 @@ void ModelViewerTest::integration()
 	// Unload the shape
 	pFileMenu->popup(m_pWindow->mapToGlobal(pMenuBar->pos()));
 	pFileMenu->setFocus();
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
+	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Down, Qt::NoModifier, 20);
 	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
@@ -247,19 +263,27 @@ void ModelViewerTest::loadCurrentShaders()
 	bool success = m_pWindow->GetGraphicsWindow()->reloadCurrentShaders();
 	QVERIFY(success);
 }
-/*
+
 void ModelViewerTest::editCurrentShaders()
 {
+	if (disableAnnoyingTests) {
+		return;
+	}
+
 	bool success = m_pWindow->GetGraphicsWindow()->editCurrentShaders();
 	QVERIFY(success);
 }
 
 void ModelViewerTest::openShaderFile()
 {
+	if (disableAnnoyingTests) {
+		return;
+	}
+
 	bool success = m_pWindow->GetGraphicsWindow()->openShaderFile("../Data/Shaders/basic.frag");
 	QVERIFY(success);
 }
-*/
+
 void ModelViewerTest::displayModel()
 {
 	m_pWindow->show();
@@ -361,6 +385,185 @@ void ModelViewerTest::defaultZoom()
 	// Check that the scene was resized to show this model
 	ViewerGraphicsWindow* test = m_pWindow->GetGraphicsWindow();
 	QVERIFY(test->GetModelMatrix() != resetMatrix);
+}
+
+void ModelViewerTest::testKeyboard() 
+{
+	ResetViewAndShow();
+
+	// Make sure all the keybinds are reset
+	QPushButton* resetKeybinds = m_pWindow->GetSettingsWindow()->findChild<QPushButton*>("resetKeybinds");
+	resetKeybinds->released();
+
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+
+	// Load a model
+	bool success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cubeColor.ply");
+	QVERIFY(success);
+
+	// Click on the graphics window to set focus
+	QTest::mouseClick(pGraphicsWindow, Qt::LeftButton);
+
+	auto testKey = [=](int key) {
+		ResetViewAndShow();
+
+		QTest::keyPress(pGraphicsWindow, key);
+		QTest::qWait(100);
+		QTest::keyRelease(pGraphicsWindow, key);
+
+		pGraphicsWindow->requestUpdate();
+		QVERIFY(pGraphicsWindow->GetModelMatrix() != resetMatrix);
+	};
+
+	testKey(Qt::Key_W);
+	testKey(Qt::Key_A);
+	testKey(Qt::Key_S);
+	testKey(Qt::Key_D);
+	testKey(Qt::Key_Q);
+	testKey(Qt::Key_E);
+	testKey(Qt::Key_Up);
+	testKey(Qt::Key_Down);
+
+	QTest::keyPress(pGraphicsWindow, Qt::Key_Shift);
+	testKey(Qt::Key_W);
+	testKey(Qt::Key_A);
+	testKey(Qt::Key_S);
+	testKey(Qt::Key_D);
+	testKey(Qt::Key_Q);
+	testKey(Qt::Key_E);
+	testKey(Qt::Key_Up);
+	testKey(Qt::Key_Down);
+	QTest::keyRelease(pGraphicsWindow, Qt::Key_Shift);
+
+	QTest::keyPress(pGraphicsWindow, Qt::Key_Alt);
+	testKey(Qt::Key_W);
+	testKey(Qt::Key_A);
+	testKey(Qt::Key_S);
+	testKey(Qt::Key_D);
+	testKey(Qt::Key_Q);
+	testKey(Qt::Key_E);
+	testKey(Qt::Key_Up);
+	testKey(Qt::Key_Down);
+	QTest::keyRelease(pGraphicsWindow, Qt::Key_Alt);
+}
+
+void ModelViewerTest::testSettings()
+{
+	ResetViewAndShow();
+
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+	SettingsMenu* pSettingsWindow = m_pWindow->GetSettingsWindow();
+
+	QPushButton* resetMouse = pSettingsWindow->findChild<QPushButton*>("resetMouseSettings");
+	QPushButton* resetKeybinds = m_pWindow->GetSettingsWindow()->findChild<QPushButton*>("resetKeybinds");
+	resetMouse->released();
+	resetKeybinds->released();
+
+	// Set & check all of the sensitivity values
+	QLineEdit* panXSensitivity = pSettingsWindow->findChild<QLineEdit*>("panXSensitivity");
+	panXSensitivity->setText(QString::number(0.1));
+	panXSensitivity->editingFinished();
+	QLineEdit* panYSensitivity = pSettingsWindow->findChild<QLineEdit*>("panYSensitivity");
+	panYSensitivity->setText(QString::number(0.1));
+	panYSensitivity->editingFinished();
+	QLineEdit* xRotateSensitivity = pSettingsWindow->findChild<QLineEdit*>("xRotateSensitivity");
+	xRotateSensitivity->setText(QString::number(0.1));
+	xRotateSensitivity->editingFinished();
+	QLineEdit* yRotateSensitivity = pSettingsWindow->findChild<QLineEdit*>("yRotateSensitivity");
+	yRotateSensitivity->setText(QString::number(0.1));
+	yRotateSensitivity->editingFinished();
+	QLineEdit* movementSensitivity = pSettingsWindow->findChild<QLineEdit*>("movementSensitivity");
+	movementSensitivity->setText(QString::number(0.1));
+	movementSensitivity->editingFinished();
+	QLineEdit* zoomSensitivity = pSettingsWindow->findChild<QLineEdit*>("zoomSensitivity");
+	zoomSensitivity->setText(QString::number(0.1));
+	zoomSensitivity->editingFinished();
+	QLineEdit* fieldOfView = pSettingsWindow->findChild<QLineEdit*>("fieldOfView");
+	fieldOfView->setText(QString::number(0.1));
+	fieldOfView->editingFinished();
+	QLineEdit* nearPlane = pSettingsWindow->findChild<QLineEdit*>("nearPlane");
+	nearPlane->setText(QString::number(0.1));
+	nearPlane->editingFinished();
+	QLineEdit* farPlane = pSettingsWindow->findChild<QLineEdit*>("farPlane");
+	farPlane->setText(QString::number(0.1));
+	farPlane->editingFinished();
+
+	QVERIFY(pGraphicsWindow->panXSensitivity == 0.1f);
+	QVERIFY(pGraphicsWindow->panYSensitivity == 0.1f);
+	QVERIFY(pGraphicsWindow->xRotateSensitivity == 0.1f);
+	QVERIFY(pGraphicsWindow->yRotateSensitivity == 0.1f);
+	QVERIFY(pGraphicsWindow->movementSensitivity == 0.1f);
+	QVERIFY(pGraphicsWindow->zoomSensitivity == 0.1f);
+	QVERIFY(pGraphicsWindow->fieldOfView == 0.1f);
+	QVERIFY(pGraphicsWindow->nearPlane == 0.1f);
+	QVERIFY(pGraphicsWindow->farPlane == 0.1f);
+
+	resetMouse->released();
+
+	// Set & check all of the keybind values
+	KeyBindEdit* increaseSpeed = pSettingsWindow->findChild<KeyBindEdit*>("increaseSpeed");
+	QTest::keyClick(increaseSpeed, Qt::Key::Key_Escape);
+	QTest::keyClick(increaseSpeed, Qt::Key::Key_Y);
+	increaseSpeed->editingFinished();
+	KeyBindEdit* decreaseSpeed = pSettingsWindow->findChild<KeyBindEdit*>("decreaseSpeed");
+	QTest::keyClick(decreaseSpeed, Qt::Key::Key_Escape);
+	QTest::keyClick(decreaseSpeed, Qt::Key::Key_P);
+	decreaseSpeed->editingFinished();
+	KeyBindEdit* elevateForwards = pSettingsWindow->findChild<KeyBindEdit*>("elevateForwards");
+	QTest::keyClick(elevateForwards, Qt::Key::Key_Escape);
+	QTest::keyClick(elevateForwards, Qt::Key::Key_I);
+	elevateForwards->editingFinished();
+	KeyBindEdit* elevateBackwards = pSettingsWindow->findChild<KeyBindEdit*>("elevateBackwards");
+	QTest::keyClick(elevateBackwards, Qt::Key::Key_Escape);
+	QTest::keyClick(elevateBackwards, Qt::Key::Key_K);
+	elevateBackwards->editingFinished();
+	KeyBindEdit* strafeLeft = pSettingsWindow->findChild<KeyBindEdit*>("strafeLeft");
+	QTest::keyClick(strafeLeft, Qt::Key::Key_Escape);
+	QTest::keyClick(strafeLeft, Qt::Key::Key_J);
+	strafeLeft->editingFinished();
+	KeyBindEdit* strafeRight = pSettingsWindow->findChild<KeyBindEdit*>("strafeRight");
+	QTest::keyClick(strafeRight, Qt::Key::Key_Escape);
+	QTest::keyClick(strafeRight, Qt::Key::Key_L);
+	strafeRight->editingFinished();
+	KeyBindEdit* scaleUp = pSettingsWindow->findChild<KeyBindEdit*>("scaleUp");
+	QTest::keyClick(scaleUp, Qt::Key::Key_Escape);
+	QTest::keyClick(scaleUp, Qt::Key::Key_O);
+	scaleUp->editingFinished();
+	KeyBindEdit* scaleDown = pSettingsWindow->findChild<KeyBindEdit*>("scaleDown");
+	QTest::keyClick(scaleDown, Qt::Key::Key_Escape);
+	QTest::keyClick(scaleDown, Qt::Key::Key_U);
+	scaleDown->editingFinished();
+	KeyBindEdit* pitchUp = pSettingsWindow->findChild<KeyBindEdit*>("pitchUp");
+	QTest::keyClick(pitchUp, Qt::Key::Key_Escape);
+	QTest::keyClick(pitchUp, Qt::Key::Key_W);
+	pitchUp->editingFinished();
+	KeyBindEdit* pitchDown = pSettingsWindow->findChild<KeyBindEdit*>("pitchDown");
+	QTest::keyClick(pitchDown, Qt::Key::Key_Escape);
+	QTest::keyClick(pitchDown, Qt::Key::Key_S);
+	pitchDown->editingFinished();
+	KeyBindEdit* spinRight = pSettingsWindow->findChild<KeyBindEdit*>("spinRight");
+	QTest::keyClick(spinRight, Qt::Key::Key_Escape);
+	QTest::keyClick(spinRight, Qt::Key::Key_D);
+	spinRight->editingFinished();
+	KeyBindEdit* spinLeft = pSettingsWindow->findChild<KeyBindEdit*>("spinLeft");
+	QTest::keyClick(spinLeft, Qt::Key::Key_Escape);
+	QTest::keyClick(spinLeft, Qt::Key::Key_A);
+	spinLeft->editingFinished();
+
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/increase_speed").toString() == QString(Qt::Key::Key_Y));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/decrease_speed").toString() == QString(Qt::Key::Key_P));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/elevate_forwards").toString() == QString(Qt::Key::Key_I));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/elevate_backwards").toString() == QString(Qt::Key::Key_K));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/strafe_left").toString() == QString(Qt::Key::Key_J));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/strafe_right").toString() == QString(Qt::Key::Key_L));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/scale_up").toString() == QString(Qt::Key::Key_O));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/scale_down").toString() == QString(Qt::Key::Key_U));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/pitch_up").toString() == QString(Qt::Key::Key_W));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/pitch_down").toString() == QString(Qt::Key::Key_S));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/spin_right").toString() == QString(Qt::Key::Key_D));
+	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/spin_left").toString() == QString(Qt::Key::Key_A));
+
+	resetKeybinds->released();
 }
 
 

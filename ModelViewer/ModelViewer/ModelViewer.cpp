@@ -1,35 +1,58 @@
 #include "ModelViewer.h"
 #include "ViewerGraphicsWindow.h"
 #include "GraphicsWindowDelegate.h"
+#include "SettingsMenu.h"
+#include "UniformController.h"
 
 #include <QWidget>
 #include <QLayout>
 #include <QMenuBar>
 #include <QMenu>
+#include <QShortcut>
 #include <QMatrix4x4>
 #include <QLabel>
 #include <QUrl>
+#include <QSplitter>
 #include <QDesktopServices>
+#include <QSettings>
 
 ModelViewer::ModelViewer(QWidget *parent)
     : QMainWindow(parent)
 {
+    // Change the size to something usable
+    const int defaultWidth = 800;
+    const int defaultHeight = 560;
+    resize(defaultWidth, defaultHeight);
+
+    // Change the window title to our app name
+    setWindowTitle("Model Viewer");
+
     // Create a new graphics window, and set it as the central widget
     m_pGraphicsWindow = new ViewerGraphicsWindow();
     m_pGraphicsWindowDelegate = new GraphicsWindowDelegate(m_pGraphicsWindow);
-    setCentralWidget(m_pGraphicsWindowDelegate);
+    m_pGraphicsWindowUniform = new GraphicsWindowUniform(m_pGraphicsWindow);
+    m_pSettingsMenu = new SettingsMenu(m_pGraphicsWindow);
+    
+    // Create a central widget with horizontal splitter so the user can resize the widgets
+    QSplitter* pCentralWidget = new QSplitter(Qt::Orientation::Horizontal, this);
+    setCentralWidget(pCentralWidget);
+    pCentralWidget->addWidget(m_pGraphicsWindowDelegate);
+    pCentralWidget->addWidget(m_pGraphicsWindowUniform);
 
-    // Change the size to something usable
-    resize(640, 480);
+    // Set defualt sizes such that the uniform window is 1/4 the window width,
+    // and the graphics window is 3/4 the window width
+    QList<int> sizes = { 3 * defaultWidth / 4, defaultWidth / 4 };
+    pCentralWidget->setSizes(sizes);
 
     // Menu bar
     // -> File menu
-    QMenu* pFileMenu = menuBar()->addMenu("File");
+    QMenu* pFileMenu = new FocusMenu(m_pGraphicsWindow, "File", this);
+    menuBar()->addMenu(pFileMenu);
     pFileMenu->setObjectName("FileMenu");
 
     QMenu* pLoadMenu = pFileMenu->addMenu("Load");
     pLoadMenu->setObjectName("LoadMenu");
-    pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); });
+    pLoadMenu->addAction("Model", [=] {m_pGraphicsWindow->loadModel(); }, QKeySequence(Qt::CTRL + Qt::Key_O));
 
     QMenu* pShaderMenu = pLoadMenu->addMenu("Shader");
     pShaderMenu->addAction("Vertex", [=]{m_pGraphicsWindow->loadVertexShader(); });
@@ -52,37 +75,51 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
     pSaveMenu->setObjectName("SaveMenu");
-    pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ });
-    pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ });
+    pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ }, QKeySequence(Qt::CTRL + Qt::Key_S));
+    pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ }, QKeySequence(Qt::CTRL + Qt::Key_X));
 
-    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); });
-    pFileMenu->addAction("Screenshot", [=] { /* TODO: m_pGraphicsWindow->screenshot(); */ });
-    pFileMenu->addAction("Quit", [=] { /* TODO: m_pGraphicsWindow->exitGracefully(); */ });
+    //Screenshot
+    pFileMenu->addAction("Screenshot", [=] {  m_pGraphicsWindow->screenshotDialog(); }, QKeySequence(Qt::CTRL + Qt::Key_P));
+
+    // Close
+    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); }, QKeySequence(Qt::CTRL + Qt::Key_W));
+
+    // quit button
+    pFileMenu->addAction("Quit", [=] { GetQuit();}, QKeySequence(Qt::CTRL + Qt::Key_Q));
+
+    // setings menu
+    pFileMenu->addAction("Settings", [=] { m_pSettingsMenu->show(); });
 
     // -> Edit menu
-    QMenu* pEditMenu = menuBar()->addMenu("Edit");
+    QMenu* pEditMenu = new FocusMenu(m_pGraphicsWindow, "Edit", this);
+    menuBar()->addMenu(pEditMenu);
     pEditMenu->setObjectName("EditMenu");
 
     pEditMenu->addAction("Shader File", [=] { m_pGraphicsWindow->openShaderFile(); });
     pEditMenu->addAction("Current Shaders", [=] { m_pGraphicsWindow->editCurrentShaders(); });
 
     // -> View menu
-    QMenu* pViewMenu = menuBar()->addMenu("View");
+    QMenu* pViewMenu = new FocusMenu(m_pGraphicsWindow, "View", this);
+    menuBar()->addMenu(pViewMenu);
     pViewMenu->setObjectName("ViewMenu");
-    pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); });
+    pViewMenu->addAction("Reset", [=] { m_pGraphicsWindow->resetView(); }, QKeySequence(Qt::CTRL + Qt::Key_R));
 
     // -> Help menu
 
     // if user click help menu, it will let user go to github page to read the Wiki
-    // try
-    QMenu* pHelpMenu = menuBar()->addMenu("Help");
+    QMenu* pHelpMenu = new FocusMenu(m_pGraphicsWindow, "Help", this);
+    menuBar()->addMenu(pHelpMenu);
     pHelpMenu->setObjectName("HelpMenu");
-    pHelpMenu->addAction("Help", [=] {GetHelp(); });
+    pHelpMenu->addAction("Help", [=] {GetHelp(); }, QKeySequence(Qt::CTRL + Qt::Key_F1));
 }
 
 
 ViewerGraphicsWindow* ModelViewer::GetGraphicsWindow() {
     return m_pGraphicsWindow;
+}
+
+SettingsMenu* ModelViewer::GetSettingsWindow() {
+    return m_pSettingsMenu;
 }
 
 GraphicsWindowDelegate* ModelViewer::GetGraphicsDelegate() {
@@ -96,3 +133,19 @@ void ModelViewer::GetHelp() {
     QDesktopServices::openUrl(QUrl(link));
 }
 
+
+void ModelViewer::GetQuit() {
+    close();
+}
+
+FocusMenu::FocusMenu(ViewerGraphicsWindow* pGraphicsWindow, const QString& title, QWidget* parent)
+    : QMenu(title, parent)
+{
+    // When the menu is shown, clear all currently pressed keys so the graphics window
+    // does not keep moving while the menu is shown
+    connect(this, &QMenu::aboutToShow, this, [=] {pGraphicsWindow->ClearKeyboard(); });
+
+    // When the menu is hidden, return focus to the graphics window so it can capture
+    // future key presses
+    connect(this, &QMenu::aboutToHide, this, [=] {pGraphicsWindow->requestActivate(); });
+}

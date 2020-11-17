@@ -364,3 +364,9 @@ FodyWeavers.xsd
 # Make sure we do not ignore anything in the third party or data folders
 !ModelViewer/ThirdParty/**
 !ModelViewer/Data/**
+
+# Ignore screenshots
+ModelViewer/Data/Screenshots/**
+ModelViewer/capture.bmp
+ModelViewer/capture.jpg
+ModelViewer/ModelViewerRun/capture.bmp
