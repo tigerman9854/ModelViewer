@@ -11,6 +11,7 @@ public:
     void reset();
 protected:
     void keyPressEvent(QKeyEvent* event);
+    virtual void mousePressEvent(QMouseEvent* event);
     QVector<Qt::Key> defalutKeys;
     QVector<Qt::Key> keySequence;
 };
