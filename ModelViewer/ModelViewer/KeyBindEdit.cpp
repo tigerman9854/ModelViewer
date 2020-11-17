@@ -92,3 +92,12 @@ void KeyBindEdit::keyPressEvent(QKeyEvent* keyEvent)
     keySequence.append(key);
     setText(getSequence());
 }
+
+void KeyBindEdit::mousePressEvent(QMouseEvent* event)
+{
+    // Clear the keybinding when the text box is clicked
+    keySequence.clear();
+    setText(NULL);
+
+    QWidget::mousePressEvent(event);
+}

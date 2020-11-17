@@ -44,7 +44,7 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <IncludePath>C:\workspace\ModelViewer\ModelViewer\ModelViewer;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(QTDIR);$(IncludePath)</IncludePath>
+    <IncludePath>$(SOLUTIONDIR)ModelViewer;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(QTDIR);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <IncludePath>$(SOLUTIONDIR)\ModelViewer;$(IncludePath)</IncludePath>
