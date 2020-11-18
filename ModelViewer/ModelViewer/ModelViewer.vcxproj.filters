@@ -25,9 +25,6 @@
     <ClCompile Include="ModelViewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <QtMoc Include="OpenGLWindow.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <ClCompile Include="ViewerGraphicsWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -47,11 +44,6 @@
       <Filter>Source Files\lib</Filter>
     </ClCompile>
     <ClCompile Include="UniformController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="OpenGLWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KeySequenceParse.h">
+      <Filter>Header Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Axes.h">
       <Filter>Header Files\lib</Filter>
     </ClInclude>
   </ItemGroup>
