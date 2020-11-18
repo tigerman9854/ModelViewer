@@ -36,7 +36,8 @@ public:
     bool GetRightMousePressed();
     QMatrix4x4 GetScaleMatrix();
     void SetScale(float scale);
-    QMatrix4x4 GetRotationMatrix();
+    float GetRotY();
+    float GetRotX();
     QMatrix4x4 GetTranslationMatrix();
     QMatrix4x4 GetModelMatrix();
 
@@ -142,10 +143,11 @@ private:
     // Mouse vars
     int lastX;
     int lastY;
+    float rotX;
+    float rotY;
     bool m_leftMousePressed = false;
     bool m_rightMousePressed = false;
     QSet<QKeySequence> m_pressedKeys;
     QMatrix4x4 m_scaleMatrix;
-    QMatrix4x4 m_rotMatrix;
     QMatrix4x4 m_transMatrix;
 };

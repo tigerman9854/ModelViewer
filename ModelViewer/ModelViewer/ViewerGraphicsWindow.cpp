@@ -4,7 +4,6 @@
 #include "KeySequenceParse.h"
 #include "Axes.h"
 
-
 #include <QGuiApplication>
 #include <QMatrix4x4>
 #include <QOpenGLShaderProgram>
@@ -301,17 +300,12 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     float deltaX = lastX - event->x();
     float deltaY = lastY - event->y();
 
-    // RMB: Rotate off of x y movement
+    // RMB: Rotate off of x-y movement
     if (event->buttons() & Qt::LeftButton && m_leftMousePressed) {
-        QVector3D xAxis(1, 0, 0);
-        QVector3D yAxis(0, 1, 0);
-        
-        QMatrix4x4 newRot;
-        newRot.rotate(-deltaX * xRotateSensitivity, yAxis);
-        newRot.rotate(-deltaY * yRotateSensitivity, xAxis);
+        rotX += -deltaX * xRotateSensitivity;
+        rotY += -deltaY * yRotateSensitivity;
 
-        // Perform the new rotation AFTER the previous rotations
-        m_rotMatrix = newRot * m_rotMatrix;
+        rotY = std::max(-90.f, std::min(rotY, 90.f));
     }
 
     // MMB: Pan off of x y movement
@@ -657,27 +651,23 @@ void ViewerGraphicsWindow::Update(float sec)
 
 
     // Up and down arrows to pitch
-    QMatrix4x4 newRot;
-    QVector3D xAxis(1, 0, 0);
     float rotSpeed = qRadiansToDegrees(effectiveSpeed);
-
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/pitch_up", "Up").toString()).get())) {
-        newRot.rotate(-rotSpeed, xAxis);
+        rotY += rotSpeed;
     }
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/pitch_down", "Down").toString()).get())) {
-        newRot.rotate(rotSpeed, xAxis);
+        rotY += -rotSpeed;
     }
 
-    // Perform the new rotation AFTER the previous rotations
-    m_rotMatrix = newRot * m_rotMatrix;
+    // Clamp
+    rotY = std::max(-90.f, std::min(rotY, 90.f));
 
     // Left and right to spin
-    QVector3D yAxis(0, 1, 0);
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/spin_right", "Right").toString()).get())) {
-        m_rotMatrix.rotate(rotSpeed, yAxis);
+        rotX += -rotSpeed;
     }
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/spin_left", "Left").toString()).get())) {
-        m_rotMatrix.rotate(-rotSpeed, yAxis);
+        rotX += rotSpeed;
     }
 }
 
@@ -685,7 +675,8 @@ void ViewerGraphicsWindow::resetView()
 {
     // Reset matrices to default values
     m_scaleMatrix = QMatrix4x4();
-    m_rotMatrix = QMatrix4x4();
+    rotY = 30.f;
+    rotX = 0;
     m_transMatrix = QMatrix4x4();
     m_transMatrix.translate(0, 0, -4);
 
@@ -841,9 +832,13 @@ void ViewerGraphicsWindow::SetScale(float scale)
     newMat.scale(scale);
     m_scaleMatrix = newMat;
 }
-QMatrix4x4 ViewerGraphicsWindow::GetRotationMatrix()
+float ViewerGraphicsWindow::GetRotY()
 {
-    return m_rotMatrix;
+    return rotY;
+}
+float ViewerGraphicsWindow::GetRotX()
+{
+    return rotX;
 }
 QMatrix4x4 ViewerGraphicsWindow::GetTranslationMatrix()
 {
@@ -851,7 +846,14 @@ QMatrix4x4 ViewerGraphicsWindow::GetTranslationMatrix()
 }
 QMatrix4x4 ViewerGraphicsWindow::GetModelMatrix()
 {
-    return m_transMatrix * m_rotMatrix * m_scaleMatrix;
+    QVector3D xAxis(1, 0, 0);
+    QVector3D yAxis(0, 1, 0);
+
+    QMatrix4x4 rotMatrix;
+    rotMatrix.rotate(rotY, xAxis);
+    rotMatrix.rotate(rotX, yAxis);
+
+    return m_transMatrix * rotMatrix * m_scaleMatrix;
 }
 bool ViewerGraphicsWindow::IsModelValid() 
 {
