@@ -699,6 +699,9 @@ void ViewerGraphicsWindow::exportFrame(QString filePath) {
     flipTransform.scale(1, -1);
     frameCapture = frameCapture.transformed(flipTransform);
     frameCapture.save(filePath);
+
+    // Clean up memory
+    free(pixels);
 }
 
 
