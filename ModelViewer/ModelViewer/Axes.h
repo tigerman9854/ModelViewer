@@ -16,6 +16,29 @@ static const char* flatFragmentShaderSource =
 "   gl_FragColor = col;\n"
 "}\n";
 
+static const GLfloat axes[] = {
+    0.f, 0.f, 0.f,
+    1.f, 0.f, 0.f,
+
+    0.f, 0.f, 0.f,
+    0.f, 1.f, 0.f,
+
+    0.f, 0.f, 0.f,
+    0.f, 0.f, 1.f,
+};
+
+static const GLfloat axesColors[] = {
+    1.f, 0.f, 0.f,
+    1.f, 0.f, 0.f,
+
+    0.f, 1.f, 0.f,
+    0.f, 1.f, 0.f,
+
+    0.f, 0.f, 1.f,
+    0.f, 0.f, 1.f,
+};
+
+
 // Defines a grid from 0 to 10 with 1 spacing.
 static const GLfloat grid[] = {
     10.f, 0, 10.f,

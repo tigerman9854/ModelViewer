@@ -427,7 +427,9 @@ void ViewerGraphicsWindow::paintGL()
     m_frametimes.push_back(seconds);
     Update(seconds);
 
+    // Compute viewport with support for high DPI monitors
     const qreal retinaScale = devicePixelRatio();
+    glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
     QMatrix4x4 viewMatrix;
     viewMatrix.perspective(fieldOfView, float(width() * retinaScale) / float(height() * retinaScale), nearPlane, farPlane);
@@ -524,6 +526,9 @@ void ViewerGraphicsWindow::paintGL()
     // Draw a grid for the object
     RenderGrid(viewMatrix * modelMatrix);
 
+    // Draw axes so the user understands direction
+    RenderAxes();
+
     // Draw the framerate counter and size of this mesh
     RenderText();
 
@@ -533,7 +538,7 @@ void ViewerGraphicsWindow::paintGL()
 
 void ViewerGraphicsWindow::RenderGrid(QMatrix4x4 mvp)
 {
-    // Bind the flat shader for drawing axes and gridlines
+    // Bind the flat shader for drawing gridlines
     m_flatShader->bind();
 
     // Bind the grid attributes and colors
@@ -567,11 +572,52 @@ void ViewerGraphicsWindow::RenderGrid(QMatrix4x4 mvp)
         glDrawArrays(GL_LINES, 0, sizeof(grid) / 3 / sizeof(float));
     };
 
+    glLineWidth(1.f);
     drawGrid(m_gridScale, mvp, 0);
 
     // Disable all the stuff we enabled
     glDisable(GL_BLEND);
 
+    glDisableVertexAttribArray(m_flatShaderColAttr);
+    glDisableVertexAttribArray(m_flatShaderPosAttr);
+
+    m_flatShader->release();
+}
+
+void ViewerGraphicsWindow::RenderAxes()
+{
+    // Viewport to the bottom right corner
+    const qreal retinaScale = devicePixelRatio();
+    const float size = width() * retinaScale * 0.1f;
+    const float padding = 4.f * retinaScale;
+    glViewport(width() * retinaScale - size - padding, padding, size, size);
+
+    // Orithographic projection
+    QMatrix4x4 viewMatrix;
+    viewMatrix.ortho(-1, 1, -1, 1, 0.01, 5);
+
+    // Rotate the axes
+    QMatrix4x4 modelMatrix;
+    modelMatrix.translate(0, 0, -1);
+    modelMatrix.rotate(rotY, 1, 0, 0);
+    modelMatrix.rotate(rotX, 0, 1, 0);
+
+    // Bind the flat shader for drawing axes
+    m_flatShader->bind();
+
+    m_flatShader->setUniformValue(m_flatShaderMatrixAttr, viewMatrix * modelMatrix);
+
+    // Bind the grid attributes and colors
+    glVertexAttribPointer(m_flatShaderPosAttr, 3, GL_FLOAT, GL_FALSE, 0, axes);
+    glVertexAttribPointer(m_flatShaderColAttr, 3, GL_FLOAT, GL_FALSE, 0, axesColors);
+
+    glEnableVertexAttribArray(m_flatShaderPosAttr);
+    glEnableVertexAttribArray(m_flatShaderColAttr);
+
+    glLineWidth(2.f);
+    glDrawArrays(GL_LINES, 0, sizeof(axes) / 3 / sizeof(float));
+
+    // Disable all the stuff we enabled
     glDisableVertexAttribArray(m_flatShaderColAttr);
     glDisableVertexAttribArray(m_flatShaderPosAttr);
 
