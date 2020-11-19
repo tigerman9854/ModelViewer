@@ -66,7 +66,7 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 
 
 	// OpenGL screen, shown when viewing a model
-	m_pModelWidget = QWidget::createWindowContainer(m_pGraphicsWindow);
+	m_pModelWidget = graphicsWindow;
 
 	// Start by showing the graphics window briefly so the OpenGl context can be 
 	// initialized.  It will automatically be swapped with the empty screen

@@ -147,5 +147,5 @@ FocusMenu::FocusMenu(ViewerGraphicsWindow* pGraphicsWindow, const QString& title
 
     // When the menu is hidden, return focus to the graphics window so it can capture
     // future key presses
-    connect(this, &QMenu::aboutToHide, this, [=] {pGraphicsWindow->requestActivate(); });
+    connect(this, &QMenu::aboutToHide, this, [=] {pGraphicsWindow->setFocus(); });
 }
