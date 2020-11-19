@@ -4,8 +4,10 @@
 #include <QString>
 #include <QOpenGLBuffer>
 #include <QVector3D>
+#include <QMatrix4x4>
 
 struct aiScene;
+struct aiNode;
 
 struct Mesh {
 	// Stores vertex attribute data
@@ -36,6 +38,9 @@ struct Mesh {
 	bool m_hasUVCoordinates;
 	bool m_hasColors;
 
+	// Store the transformation matrix for this mesh
+	QMatrix4x4 m_transform;
+
 	// Define 2 points, the min and max of the axis aligned bounding box
 	QVector3D m_AABBMin;
 	QVector3D m_AABBMax;
@@ -50,6 +55,12 @@ struct Model {
 	QVector3D m_AABBMax;
 
 	void Finalize() {
+		// Scale the AABB by the transformation matrix
+		for (auto& it : m_meshes) {
+			it.m_AABBMin = it.m_transform * it.m_AABBMin;
+			it.m_AABBMax = it.m_transform * it.m_AABBMax;
+		}
+
 		// Compute the AABB for the entire model
 		m_AABBMin = { FLT_MAX, FLT_MAX, FLT_MAX };
 		m_AABBMax = { FLT_MIN, FLT_MIN, FLT_MIN };
@@ -76,5 +87,7 @@ public:
 	Model LoadModel(const QString& file);
 
 private:
-	Model ProcessModel(aiScene const* mObject);
+	Mesh ProcessMesh(aiScene const* pObject, uint meshIdx);
+	void TraverseNodeTree(aiNode const* pNode, aiScene const* pObject, Model& model, QMatrix4x4 transform);
+	Model ProcessModel(aiScene const* pScene);
 };
