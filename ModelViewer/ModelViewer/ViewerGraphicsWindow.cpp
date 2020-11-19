@@ -519,46 +519,61 @@ void ViewerGraphicsWindow::paintGL()
     }
     m_program->release();
 
-
-    // Bind the flat shader for drawing axes and gridlines
-    {
-        m_flatShader->bind();
-
-        glVertexAttribPointer(m_flatShaderPosAttr, 3, GL_FLOAT, GL_FALSE, 0, grid);
-        glVertexAttribPointer(m_flatShaderColAttr, 4, GL_FLOAT, GL_FALSE, 0, gridColors);
-
-        glEnableVertexAttribArray(m_flatShaderPosAttr);
-        glEnableVertexAttribArray(m_flatShaderColAttr);
-
-        // Enable alpha blending
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        // Move the model so it's sitting on the grid
-        modelViewProjectionMatrix.translate(0, m_currentModel.m_AABBMin.y(), 0);
-        m_flatShader->setUniformValue(m_flatShaderMatrixAttr, modelViewProjectionMatrix);
-
-        // Draw the grid
-        for (int i = 0; i < 4; ++i) {
-            glDrawArrays(GL_LINES, 0, sizeof(grid) / 3 / sizeof(float));
-
-            // Rotate 90 degrees for the next iteration
-            modelViewProjectionMatrix.rotate(90.f, 0, 1, 0);
-            m_flatShader->setUniformValue(m_flatShaderMatrixAttr, modelViewProjectionMatrix);
-        }
-        glDisable(GL_BLEND);
-
-        glDisableVertexAttribArray(m_flatShaderColAttr);
-        glDisableVertexAttribArray(m_flatShaderPosAttr);
-
-        m_flatShader->release();
-    }
+    // Draw a grid for the object
+    RenderGrid(modelViewProjectionMatrix);
 
     // Draw the framerate counter and size of this mesh
     RenderText();
 
     // Increase the frame counter by one
     ++m_frame;
+}
+
+void ViewerGraphicsWindow::RenderGrid(QMatrix4x4 mvp)
+{
+    // Bind the flat shader for drawing axes and gridlines
+    m_flatShader->bind();
+
+    // Bind the grid attributes and colors
+    glVertexAttribPointer(m_flatShaderPosAttr, 3, GL_FLOAT, GL_FALSE, 0, grid);
+    glVertexAttribPointer(m_flatShaderColAttr, 4, GL_FLOAT, GL_FALSE, 0, gridColors);
+
+    glEnableVertexAttribArray(m_flatShaderPosAttr);
+    glEnableVertexAttribArray(m_flatShaderColAttr);
+
+    // Enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Move the model so it's sitting on the grid
+    mvp.translate(0, m_currentModel.m_AABBMin.y(), 0);
+    m_flatShader->setUniformValue(m_flatShaderMatrixAttr, mvp);
+
+    // Helper function to draw grids
+    auto drawGrid = [&](float scale, QMatrix4x4 modelViewProj, float offset) {
+        // Scale the drawing
+        modelViewProj.scale(scale);
+        modelViewProj.translate(offset, 0, offset);
+
+        // Draw the grid
+        m_flatShader->setUniformValue(m_flatShaderMatrixAttr, modelViewProj);
+        glDrawArrays(GL_LINES, 0, sizeof(grid) / 3 / sizeof(float));
+
+        // Rotate 90 degrees for the next iteration
+        modelViewProj.rotate(90.f, 0, 1, 0);
+        m_flatShader->setUniformValue(m_flatShaderMatrixAttr, modelViewProj);
+        glDrawArrays(GL_LINES, 0, sizeof(grid) / 3 / sizeof(float));
+    };
+
+    drawGrid(m_gridScale, mvp, 0);
+
+    // Disable all the stuff we enabled
+    glDisable(GL_BLEND);
+
+    glDisableVertexAttribArray(m_flatShaderColAttr);
+    glDisableVertexAttribArray(m_flatShaderPosAttr);
+
+    m_flatShader->release();
 }
 
 void ViewerGraphicsWindow::RenderText()
@@ -612,13 +627,15 @@ void ViewerGraphicsWindow::RenderText()
             .arg(max.y() - min.y(), 0, 'f', 2)
             .arg(max.z() - min.z(), 0, 'f', 2);
     }
+    const QString gridText = QString("Grid: %1x%1").arg(m_gridScale);
 
-    QString topLeft = framerateText + "\n" + polygonText;
+    const QString topLeft = framerateText + "\n" + polygonText;
+    const QString bottomLeft = gridText + "\n" + sizeText;
 
     // Draw the text
     const int padding = 4;
     painter.drawText(padding, padding, 500, 500, Qt::AlignTop, topLeft);
-    painter.drawText(padding, height() - (f.lineSpacing() * 4) - padding, 500, 500, Qt::AlignTop, sizeText);
+    painter.drawText(padding, height() - (f.lineSpacing() * 5) - padding, 500, 500, Qt::AlignTop, bottomLeft);
 }
 
 void ViewerGraphicsWindow::Update(float sec)
@@ -689,6 +706,17 @@ void ViewerGraphicsWindow::resetView()
     m_transMatrix = QMatrix4x4();
     m_transMatrix.translate(0, 0, -4);
 
+    const float optimalScale = ComputeOptimalScale();
+    m_scaleMatrix.scale(optimalScale);
+
+    // Compute the scale for the grid under the object
+    // Use the optimal scale, but then round to the nearest power of 10
+    const float gridScale = 1.f / optimalScale;
+    const float logGridScale = (int)(log10f(gridScale));
+    m_gridScale = powf(10.f, logGridScale);
+}
+
+float ViewerGraphicsWindow::ComputeOptimalScale() {
     // Scale the scene so the entire model can be viewed
     if (m_currentModel.m_isValid)
     {
@@ -698,11 +726,11 @@ void ViewerGraphicsWindow::resetView()
         // Compute optimal viewing distance as modelSize / atan(fov)
         const float modelSize = std::max(m_currentModel.m_AABBMax.length(), m_currentModel.m_AABBMin.length());
         const float optimalViewingDistance = modelSize / qAtan(qDegreesToRadians(effectiveFOV)) * 1.6f;
-        
+
         // Scale the world so 4 looks like optimalViewingDistance
-        const float scale = 4.f / optimalViewingDistance;
-        m_scaleMatrix.scale(scale);
+        return 4.f / optimalViewingDistance;
     }
+    return 1.f;
 }
 
 bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) 

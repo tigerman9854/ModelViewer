@@ -108,6 +108,8 @@ private:
     QList<float> m_frametimes;
 
     void RenderText();
+    void RenderGrid(QMatrix4x4 mvp);
+    float ComputeOptimalScale();
 
     bool initialized = false;
 
@@ -136,6 +138,9 @@ private:
     int m_frame = 0;
 
     Model m_currentModel;
+
+    // Stores the scale for drawing the grid under the object
+    float m_gridScale = 1.f;
 
     QString currentVertFile;
     QString currentFragFile;
