@@ -591,24 +591,33 @@ void ViewerGraphicsWindow::RenderText()
     }
     m_frametimes = newFrametimes;
 
-    // Draw the framerate counter and size of this mesh
-    QString framerateText = QString("FPS: %1").arg(fps);
+    // Compute number of polygons, assume triangles
+    int polyCount = 0;
+    if (m_currentModel.m_isValid) {
+        for (auto it : m_currentModel.m_meshes) {
+            polyCount += (it.m_indexCount / 3);
+        }
+    }
+
+    // Format the text for drawing
+    const QString framerateText = QString("FPS: %1").arg(fps);
+    const QString polygonText = QString("Polys: %1").arg(polyCount);
     QString sizeText;
     if (m_currentModel.m_isValid) {
         QVector3D max = m_currentModel.m_AABBMax;
         QVector3D min = m_currentModel.m_AABBMin;
         // Round to 2 decimal
-        sizeText = QString("Model Size\nX: (%1,%2)\nY: (%3,%4)\nZ: (%5,%6)")
-            .arg(min.x(), 0, 'f', 2)
-            .arg(max.x(), 0, 'f', 2)
-            .arg(min.y(), 0, 'f', 2)
-            .arg(max.y(), 0, 'f', 2)
-            .arg(min.z(), 0, 'f', 2)
-            .arg(max.z(), 0, 'f', 2);
+        sizeText = QString("Model Size\nX: %1\nY: %2\nZ: %3")
+            .arg(max.x() - min.x(), 0, 'f', 2)
+            .arg(max.y() - min.y(), 0, 'f', 2)
+            .arg(max.z() - min.z(), 0, 'f', 2);
     }
 
+    QString topLeft = framerateText + "\n" + polygonText;
+
+    // Draw the text
     const int padding = 4;
-    painter.drawText(padding, padding, 100, 100, Qt::AlignTop, framerateText);
+    painter.drawText(padding, padding, 500, 500, Qt::AlignTop, topLeft);
     painter.drawText(padding, height() - (f.lineSpacing() * 4) - padding, 500, 500, Qt::AlignTop, sizeText);
 }
 
