@@ -99,7 +99,7 @@ Mesh ModelLoader::ProcessMesh(aiScene const* pScene, uint meshIdx)
 	//   3. UV Coordinates (optional)
 	//   4. Colors (optional)
 	int currentOffset = 0;
-	if (true) {
+	if (true) { // Always has positions
 		newMesh.m_positionOffset = currentOffset;
 		currentOffset += positionBufferSize;
 	}
