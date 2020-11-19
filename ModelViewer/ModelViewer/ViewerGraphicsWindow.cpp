@@ -475,6 +475,11 @@ void ViewerGraphicsWindow::paintGL()
         for (Mesh& mesh : m_currentModel.m_meshes) {
             mesh.m_vertexBuffer.bind();
             mesh.m_indexBuffer.bind();
+            
+            // Handle transformation for each mesh
+            QMatrix4x4 mvpCopy = modelViewProjectionMatrix;
+            mvpCopy *= mesh.m_transform;
+            m_program->setUniformValue(m_matrixUniform, mvpCopy);
 
             // Positions
             glVertexAttribPointer(m_posAttr, mesh.m_numPositionComponents, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_positionOffset);
