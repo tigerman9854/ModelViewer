@@ -55,6 +55,12 @@ struct Model {
 	QVector3D m_AABBMax;
 
 	void Finalize() {
+		// Scale the AABB by the transformation matrix
+		for (auto& it : m_meshes) {
+			it.m_AABBMin = it.m_transform * it.m_AABBMin;
+			it.m_AABBMax = it.m_transform * it.m_AABBMax;
+		}
+
 		// Compute the AABB for the entire model
 		m_AABBMin = { FLT_MAX, FLT_MAX, FLT_MAX };
 		m_AABBMax = { FLT_MIN, FLT_MIN, FLT_MIN };

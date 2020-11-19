@@ -434,19 +434,9 @@ void ViewerGraphicsWindow::paintGL()
 
     QMatrix4x4 modelMatrix = GetModelMatrix();
 
-    QMatrix4x4 modelViewProjectionMatrix;
-    modelViewProjectionMatrix = viewMatrix * modelMatrix;
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_program->bind();
-
-    m_program->setUniformValue(m_matrixUniform, modelViewProjectionMatrix);
-
-    m_program->setUniformValue(m_modelviewUniform, modelMatrix);
-
-    QMatrix3x3 normal = modelMatrix.normalMatrix();
-    m_program->setUniformValue(m_normalUniform, normal);
 
     QVector3D lightPos = QVector3D(1., 1., -1.);
     m_program->setUniformValue(m_lightPosUniform, lightPos);
@@ -477,9 +467,16 @@ void ViewerGraphicsWindow::paintGL()
             mesh.m_indexBuffer.bind();
             
             // Handle transformation for each mesh
-            QMatrix4x4 mvpCopy = modelViewProjectionMatrix;
-            mvpCopy *= mesh.m_transform;
-            m_program->setUniformValue(m_matrixUniform, mvpCopy);
+            QMatrix4x4 modelTransformed = modelMatrix * mesh.m_transform;
+            QMatrix4x4 modelViewProjectionMatrix;
+            modelViewProjectionMatrix = viewMatrix * modelTransformed;
+
+            m_program->setUniformValue(m_matrixUniform, modelViewProjectionMatrix);
+
+            m_program->setUniformValue(m_modelviewUniform, modelTransformed);
+
+            QMatrix3x3 normal = modelTransformed.normalMatrix();
+            m_program->setUniformValue(m_normalUniform, normal);
 
             // Positions
             glVertexAttribPointer(m_posAttr, mesh.m_numPositionComponents, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_positionOffset);
@@ -525,7 +522,7 @@ void ViewerGraphicsWindow::paintGL()
     m_program->release();
 
     // Draw a grid for the object
-    RenderGrid(modelViewProjectionMatrix);
+    RenderGrid(viewMatrix * modelMatrix);
 
     // Draw the framerate counter and size of this mesh
     RenderText();
