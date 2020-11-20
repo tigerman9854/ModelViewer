@@ -109,6 +109,7 @@ private:
 
     void RenderText();
     void RenderGrid(QMatrix4x4 mvp);
+    void RenderAxes();
     float ComputeOptimalScale();
 
     bool initialized = false;
