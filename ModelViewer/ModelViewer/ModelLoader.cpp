@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <QMatrix4x4>
+#include <QImage>
 
 Model ModelLoader::LoadModel(const QString& file)
 {
@@ -72,8 +73,32 @@ Mesh ModelLoader::ProcessMesh(aiScene const* pScene, uint meshIdx)
 
 
 
-	// TODO: Handle textures
+	// Search for an ambient, diffuse, or specular texture.  We will only load the first one we find because our shader
+	// only handles a single texture
+	std::vector<aiTextureType> validTextureTypes = { aiTextureType_AMBIENT, aiTextureType_DIFFUSE, aiTextureType_SPECULAR };
+	newMesh.m_hasTexture = false;
+	for (auto it : validTextureTypes)
+	{
+		// Only load 1 texture
+		if (newMesh.m_hasTexture) {
+			break;
+		}
 
+		// Loop through all textures of this type
+		int count = pMaterial->GetTextureCount(it);
+		for (int i = 0; i < count; ++i) {
+			// Get the filepath
+			aiString path;
+			pMaterial->GetTexture(it, i, &path);
+
+			// Load the texture to Qt
+			QString qPath(path.C_Str());
+			QImage image(qPath);
+			newMesh.m_texture = new QOpenGLTexture(image);
+			newMesh.m_hasTexture = true;
+			break;
+		}
+	}
 
 
 	// Determine if we have colors, normals, or texture coordinates
