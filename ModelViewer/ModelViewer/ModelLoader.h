@@ -5,6 +5,7 @@
 #include <QOpenGLBuffer>
 #include <QVector3D>
 #include <QMatrix4x4>
+#include <QOpenGLTexture>
 
 struct aiScene;
 struct aiNode;
@@ -33,10 +34,14 @@ struct Mesh {
 	GLfloat m_diffuse[4];
 	GLfloat m_shininess;
 
+	// We only allow 1 texture per mesh for now. Usually there are not more.
+	QOpenGLTexture* m_texture = nullptr;
+
 	// Keep track of what features this mesh has
 	bool m_hasNormals;
 	bool m_hasUVCoordinates;
 	bool m_hasColors;
+	bool m_hasTexture;
 
 	// Store the transformation matrix for this mesh
 	QMatrix4x4 m_transform;
