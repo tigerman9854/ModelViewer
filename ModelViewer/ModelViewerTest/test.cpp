@@ -4,6 +4,8 @@
 #include <QSignalSpy>
 #include <QlineEdit>
 #include <QPushButton>
+#include <QEvent>
+#include <QMouseEvent>
 
 #include "ModelViewer.h"
 #include "ModelLoader.h"
@@ -132,7 +134,8 @@ void ModelViewerTest::integration()
 
 	// Rotate the camera
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
-	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
+	QMouseEvent event(QEvent::MouseMove, QPoint(3, 3), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+	QApplication::sendEvent(m_pWindow->GetGraphicsWindow(), &event);
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(3, 3));
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
@@ -143,7 +146,8 @@ void ModelViewerTest::integration()
 	m_pWindow->GetGraphicsWindow()->resetView();
 
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(0, 0));
-	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(150, 150));
+	event = QMouseEvent(QEvent::MouseMove, QPoint(150, 150), Qt::RightButton, Qt::RightButton, Qt::NoModifier);
+	QApplication::sendEvent(m_pWindow->GetGraphicsWindow(), &event);
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(150, 150));
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
@@ -306,7 +310,8 @@ void ModelViewerTest::resetView()
 
 	// Check that after altering it we end w/ an idenity matrix
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
-	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
+	QMouseEvent event(QEvent::MouseMove, QPoint(5, 5), Qt::RightButton, Qt::RightButton, Qt::NoModifier);
+	QApplication::sendEvent(m_pWindow->GetGraphicsWindow(), &event);
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(3, 3));
 
 	// Reset the view
@@ -321,9 +326,11 @@ void ModelViewerTest::rotateWithMouse()
 	ResetViewAndShow();
 
 	// Test rotating
-	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton);
-	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(3, 3));
-	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(3, 3));
+	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(50, 50), 20);
+	QMouseEvent event(QEvent::MouseMove, QPoint(60, 60), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+	QApplication::sendEvent(m_pWindow->GetGraphicsWindow(), &event);
+	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::LeftButton, { 0 }, QPoint(60, 60), 20);
+	QTest::qWait(100);
 
 	QVERIFY(m_pWindow->GetGraphicsWindow()->GetModelMatrix() != resetMatrix);
 	m_pWindow->hide();
@@ -336,7 +343,8 @@ void ModelViewerTest::panWithMouse()
 
 	// Test Pan
 	QTest::mousePress(m_pWindow->GetGraphicsWindow(), Qt::RightButton);
-	QTest::mouseMove(m_pWindow->GetGraphicsWindow(), QPoint(10, 10));
+	QMouseEvent event(QEvent::MouseMove, QPoint(10, 10), Qt::RightButton, Qt::RightButton, Qt::NoModifier);
+	QApplication::sendEvent(m_pWindow->GetGraphicsWindow(), &event);
 	QTest::mouseRelease(m_pWindow->GetGraphicsWindow(), Qt::RightButton, { 0 }, QPoint(10, 10)); // Release the mouse at (10, 10)
 
 	// Wait for new frame to be drawn
@@ -401,17 +409,16 @@ void ModelViewerTest::testKeyboard()
 	bool success = m_pWindow->GetGraphicsWindow()->loadModel("../Data/Models/cubeColor.ply");
 	QVERIFY(success);
 
-	// Click on the graphics window to set focus
-	QTest::mouseClick(pGraphicsWindow, Qt::LeftButton);
-
 	auto testKey = [=](int key) {
 		ResetViewAndShow();
+		pGraphicsWindow->setFocus();
+		QTest::qWait(10);
 
 		QTest::keyPress(pGraphicsWindow, key);
 		QTest::qWait(100);
+		pGraphicsWindow->update();
 		QTest::keyRelease(pGraphicsWindow, key);
 
-		pGraphicsWindow->requestUpdate();
 		QVERIFY(pGraphicsWindow->GetModelMatrix() != resetMatrix);
 	};
 

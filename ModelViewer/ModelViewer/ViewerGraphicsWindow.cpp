@@ -2,7 +2,7 @@
 #include "SettingsMenu.h"
 #include "ModelLoader.h"
 #include "KeySequenceParse.h"
-
+#include "Axes.h"
 
 #include <QGuiApplication>
 #include <QMatrix4x4>
@@ -17,9 +17,14 @@
 #include <QtMath>
 #include <QKeyEvent>
 #include <QImage>
+#include <QPainter>
+#include <QColor>
+#include <QFont>
+#include <QFontMetrics>
+#include <QTimer>
 
-ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
-    : OpenGLWindow(parent)
+ViewerGraphicsWindow::ViewerGraphicsWindow(QWidget* parent)
+    : QOpenGLWidget(parent)
 {
     QSurfaceFormat format;
     format.setSamples(16);
@@ -27,9 +32,17 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWindow* parent)
 
     resetView();
 
-    setAnimating(true);
-
     loadSettings();
+
+    // Call update every millisecond to force repainting
+    // Calling update() several times normally results in just one paintGL() call
+    // This results in locking the fps to the monitor refresh rate
+    QTimer* updateTrigger = new QTimer(this);
+    updateTrigger->start();
+    connect(updateTrigger, &QTimer::timeout, this, [=] {
+        update();
+        updateTrigger->start(1);
+    });
 }
 
 void ViewerGraphicsWindow::loadSettings() {
@@ -240,6 +253,9 @@ bool ViewerGraphicsWindow::openShaderFile(QString filepath)
 
 void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
 {
+    // Focus this object
+    setFocus();
+
     // Set class vars
     if (event->button() == Qt::LeftButton) {
         m_leftMousePressed = true;
@@ -254,7 +270,7 @@ void ViewerGraphicsWindow::mousePressEvent(QMouseEvent* event)
     lastY = event->y();
 
     // Call the parent class 
-    QWindow::mousePressEvent(event);
+    QOpenGLWidget::mousePressEvent(event);
 }
 
 void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
@@ -269,7 +285,7 @@ void ViewerGraphicsWindow::mouseReleaseEvent(QMouseEvent* event)
     }
 
     // Call the parent class
-    QWindow::mouseReleaseEvent(event);
+    QOpenGLWidget::mouseReleaseEvent(event);
 }
 
 void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
@@ -277,17 +293,12 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     float deltaX = lastX - event->x();
     float deltaY = lastY - event->y();
 
-    // RMB: Rotate off of x y movement
+    // RMB: Rotate off of x-y movement
     if (event->buttons() & Qt::LeftButton && m_leftMousePressed) {
-        QVector3D xAxis(1, 0, 0);
-        QVector3D yAxis(0, 1, 0);
-        
-        QMatrix4x4 newRot;
-        newRot.rotate(-deltaX * xRotateSensitivity, yAxis);
-        newRot.rotate(-deltaY * yRotateSensitivity, xAxis);
+        rotX += -deltaX * xRotateSensitivity;
+        rotY += -deltaY * yRotateSensitivity;
 
-        // Perform the new rotation AFTER the previous rotations
-        m_rotMatrix = newRot * m_rotMatrix;
+        rotY = std::max(-90.f, std::min(rotY, 90.f));
     }
 
     // MMB: Pan off of x y movement
@@ -304,7 +315,7 @@ void ViewerGraphicsWindow::mouseMoveEvent(QMouseEvent* event)
     lastY = event->y();
 
     // Call the parent class 
-    QWindow::mouseMoveEvent(event);
+    QOpenGLWidget::mouseMoveEvent(event);
 }
 
 void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
@@ -312,21 +323,21 @@ void ViewerGraphicsWindow::keyPressEvent(QKeyEvent* event)
     // Store that this key is pressed
     m_pressedKeys.insert(event->key());
 
-    QWindow::keyPressEvent(event);
+    QOpenGLWidget::keyPressEvent(event);
 }
 void ViewerGraphicsWindow::keyReleaseEvent(QKeyEvent* event)
 {
     // The key has been released
     m_pressedKeys.remove(event->key());
 
-    QWindow::keyReleaseEvent(event);
+    QOpenGLWidget::keyReleaseEvent(event);
 }
 
 void ViewerGraphicsWindow::focusOutEvent(QFocusEvent* event)
 {
     ClearKeyboard();
 
-    QWindow::focusOutEvent(event);
+    QOpenGLWidget::focusOutEvent(event);
 }
 
 void ViewerGraphicsWindow::ClearKeyboard()
@@ -341,8 +352,10 @@ void ViewerGraphicsWindow::wheelEvent(QWheelEvent* event)
     m_scaleMatrix.scale(1.f + zoomAmount);
 }
 
-void ViewerGraphicsWindow::initialize()
+void ViewerGraphicsWindow::initializeGL()
 {
+    initializeOpenGLFunctions();
+
     m_program = new QOpenGLShaderProgram(this);
     currentVertFile = "../Data/Shaders/ads.vert";
     currentFragFile = "../Data/Shaders/ads.frag";
@@ -351,6 +364,18 @@ void ViewerGraphicsWindow::initialize()
     m_program->link();
 
     setUniformLocations();
+    
+    // Load the flat shader
+    m_flatShader = new QOpenGLShaderProgram(this);
+    m_flatShader->addShaderFromSourceCode(QOpenGLShader::Vertex, flatVertexShaderSource);
+    m_flatShader->addShaderFromSourceCode(QOpenGLShader::Fragment, flatFragmentShaderSource);
+    m_flatShader->link();
+    m_flatShaderPosAttr = m_flatShader->attributeLocation("posAttr");
+    Q_ASSERT(m_flatShaderPosAttr != -1);
+    m_flatShaderColAttr = m_flatShader->attributeLocation("colAttr");
+    Q_ASSERT(m_flatShaderColAttr != -1);
+    m_flatShaderMatrixAttr = m_flatShader->uniformLocation("matrix");
+    Q_ASSERT(m_flatShaderMatrixAttr != -1);
 
     // Set up the default view
     resetView();
@@ -374,13 +399,20 @@ void ViewerGraphicsWindow::initialize()
     initialized = true;
 }
 
-void ViewerGraphicsWindow::render()
+void ViewerGraphicsWindow::resizeGL(int w, int h) {
+    // Compute viewport with support for high DPI monitors
+    const qreal retinaScale = devicePixelRatio();
+    glViewport(0, 0,w * retinaScale, h * retinaScale);
+}
+
+void ViewerGraphicsWindow::paintGL()
 {
     // Determine how much time has passed since the last update,
     // call update, and reset the timer
     const qint64 nsec = m_updateTimer.nsecsElapsed();
     m_updateTimer.restart();
     const float seconds = (float)nsec * 1e-9f;
+    m_frametimes.push_back(seconds);
     Update(seconds);
 
     // Compute viewport with support for high DPI monitors
@@ -392,9 +424,6 @@ void ViewerGraphicsWindow::render()
 
     QMatrix4x4 modelMatrix = GetModelMatrix();
 
-    QMatrix4x4 modelViewProjectionMatrix;
-    modelViewProjectionMatrix = viewMatrix * modelMatrix;
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_program->bind();
@@ -405,6 +434,7 @@ void ViewerGraphicsWindow::render()
 
     QMatrix3x3 normal = modelMatrix.normalMatrix();
     m_program->setUniformValue(m_normalUniform, normal);
+
 
     m_program->setUniformValue(m_lightPosUniform, lightPos);
 
@@ -432,6 +462,18 @@ void ViewerGraphicsWindow::render()
         for (Mesh& mesh : m_currentModel.m_meshes) {
             mesh.m_vertexBuffer.bind();
             mesh.m_indexBuffer.bind();
+            
+            // Handle transformation for each mesh
+            QMatrix4x4 modelTransformed = modelMatrix * mesh.m_transform;
+            QMatrix4x4 modelViewProjectionMatrix;
+            modelViewProjectionMatrix = viewMatrix * modelTransformed;
+
+            m_program->setUniformValue(m_matrixUniform, modelViewProjectionMatrix);
+
+            m_program->setUniformValue(m_modelviewUniform, modelTransformed);
+
+            QMatrix3x3 normal = modelTransformed.normalMatrix();
+            m_program->setUniformValue(m_normalUniform, normal);
 
             // Positions
             glVertexAttribPointer(m_posAttr, mesh.m_numPositionComponents, GL_FLOAT, GL_FALSE, 0, (void*)mesh.m_positionOffset);
@@ -469,12 +511,174 @@ void ViewerGraphicsWindow::render()
             }
 
             glDisableVertexAttribArray(m_posAttr);
+
+            mesh.m_vertexBuffer.release();
+            mesh.m_indexBuffer.release();
+        }
+    }
+    m_program->release();
+
+    // Draw a grid for the object
+    RenderGrid(viewMatrix * modelMatrix);
+
+    // Draw axes so the user understands direction
+    RenderAxes();
+
+    // Draw the framerate counter and size of this mesh
+    RenderText();
+
+    // Increase the frame counter by one
+    ++m_frame;
+}
+
+void ViewerGraphicsWindow::RenderGrid(QMatrix4x4 mvp)
+{
+    // Bind the flat shader for drawing gridlines
+    m_flatShader->bind();
+
+    // Bind the grid attributes and colors
+    glVertexAttribPointer(m_flatShaderPosAttr, 3, GL_FLOAT, GL_FALSE, 0, grid);
+    glVertexAttribPointer(m_flatShaderColAttr, 4, GL_FLOAT, GL_FALSE, 0, gridColors);
+
+    glEnableVertexAttribArray(m_flatShaderPosAttr);
+    glEnableVertexAttribArray(m_flatShaderColAttr);
+
+    // Enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Move the model so it's sitting on the grid
+    mvp.translate(0, m_currentModel.m_AABBMin.y(), 0);
+    m_flatShader->setUniformValue(m_flatShaderMatrixAttr, mvp);
+
+    // Helper function to draw grids
+    auto drawGrid = [&](float scale, QMatrix4x4 modelViewProj, float offset) {
+        // Scale the drawing
+        modelViewProj.scale(scale);
+        modelViewProj.translate(offset, 0, offset);
+
+        // Draw the grid
+        m_flatShader->setUniformValue(m_flatShaderMatrixAttr, modelViewProj);
+        glDrawArrays(GL_LINES, 0, sizeof(grid) / 3 / sizeof(float));
+
+        // Rotate 90 degrees for the next iteration
+        modelViewProj.rotate(90.f, 0, 1, 0);
+        m_flatShader->setUniformValue(m_flatShaderMatrixAttr, modelViewProj);
+        glDrawArrays(GL_LINES, 0, sizeof(grid) / 3 / sizeof(float));
+    };
+
+    glLineWidth(1.f);
+    drawGrid(m_gridScale, mvp, 0);
+
+    // Disable all the stuff we enabled
+    glDisable(GL_BLEND);
+
+    glDisableVertexAttribArray(m_flatShaderColAttr);
+    glDisableVertexAttribArray(m_flatShaderPosAttr);
+
+    m_flatShader->release();
+}
+
+void ViewerGraphicsWindow::RenderAxes()
+{
+    // Viewport to the bottom right corner
+    const qreal retinaScale = devicePixelRatio();
+    const float size = width() * retinaScale * 0.1f;
+    const float padding = 4.f * retinaScale;
+    glViewport(width() * retinaScale - size - padding, padding, size, size);
+
+    // Orithographic projection
+    QMatrix4x4 viewMatrix;
+    viewMatrix.ortho(-1, 1, -1, 1, 0.01, 5);
+
+    // Rotate the axes
+    QMatrix4x4 modelMatrix;
+    modelMatrix.translate(0, 0, -1);
+    modelMatrix.rotate(rotY, 1, 0, 0);
+    modelMatrix.rotate(rotX, 0, 1, 0);
+
+    // Bind the flat shader for drawing axes
+    m_flatShader->bind();
+
+    m_flatShader->setUniformValue(m_flatShaderMatrixAttr, viewMatrix * modelMatrix);
+
+    // Bind the grid attributes and colors
+    glVertexAttribPointer(m_flatShaderPosAttr, 3, GL_FLOAT, GL_FALSE, 0, axes);
+    glVertexAttribPointer(m_flatShaderColAttr, 3, GL_FLOAT, GL_FALSE, 0, axesColors);
+
+    glEnableVertexAttribArray(m_flatShaderPosAttr);
+    glEnableVertexAttribArray(m_flatShaderColAttr);
+
+    glLineWidth(2.f);
+    glDrawArrays(GL_LINES, 0, sizeof(axes) / 3 / sizeof(float));
+
+    // Disable all the stuff we enabled
+    glDisableVertexAttribArray(m_flatShaderColAttr);
+    glDisableVertexAttribArray(m_flatShaderPosAttr);
+
+    m_flatShader->release();
+}
+
+void ViewerGraphicsWindow::RenderText()
+{
+    // Prepare to draw text on the screen
+    QPainter painter(this);
+    QColor col(165, 165, 165, 200);
+    QFontMetrics f(painter.font());
+    painter.setPen(col);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
+    // Compute framerate
+    float total = 0;
+    for (auto it : m_frametimes) {
+        total += it;
+    }
+    const int fps = round(m_frametimes.size() / total);
+
+    // Remove any frametimes older than 0.25 seconds
+    total = 0;
+    QList<float> newFrametimes;
+    for (auto it = m_frametimes.rbegin(); it != m_frametimes.rend(); ++it) {
+        if (total < 0.25f) {
+            total += *it;
+            newFrametimes.push_front(*it);
+        }
+        else {
+            break;
+        }
+    }
+    m_frametimes = newFrametimes;
+
+    // Compute number of polygons, assume triangles
+    int polyCount = 0;
+    if (m_currentModel.m_isValid) {
+        for (auto it : m_currentModel.m_meshes) {
+            polyCount += (it.m_indexCount / 3);
         }
     }
 
-    m_program->release();
+    // Format the text for drawing
+    const QString framerateText = QString("FPS: %1").arg(fps);
+    const QString polygonText = QString("Polys: %1").arg(polyCount);
+    QString sizeText;
+    if (m_currentModel.m_isValid) {
+        QVector3D max = m_currentModel.m_AABBMax;
+        QVector3D min = m_currentModel.m_AABBMin;
+        // Round to 2 decimal
+        sizeText = QString("Model Size\nX: %1\nY: %2\nZ: %3")
+            .arg(max.x() - min.x(), 0, 'f', 2)
+            .arg(max.y() - min.y(), 0, 'f', 2)
+            .arg(max.z() - min.z(), 0, 'f', 2);
+    }
+    const QString gridText = QString("Grid: %1x%1").arg(m_gridScale);
 
-    ++m_frame;
+    const QString topLeft = framerateText + "\n" + polygonText;
+    const QString bottomLeft = gridText + "\n" + sizeText;
+
+    // Draw the text
+    const int padding = 4;
+    painter.drawText(padding, padding, 500, 500, Qt::AlignTop, topLeft);
+    painter.drawText(padding, height() - (f.lineSpacing() * 5) - padding, 500, 500, Qt::AlignTop, bottomLeft);
 }
 
 void ViewerGraphicsWindow::Update(float sec)
@@ -491,18 +695,18 @@ void ViewerGraphicsWindow::Update(float sec)
 
     // W/S to elevate
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/elevate_forwards", QString(Qt::Key::Key_W)).toString()).get())) {
-        m_transMatrix.translate(0, effectiveSpeed, 0);
+        m_transMatrix.translate(0, -effectiveSpeed, 0);
     }
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/elevate_backwards", QString(Qt::Key::Key_S)).toString()).get())) {
-        m_transMatrix.translate(0, -effectiveSpeed, 0);
+        m_transMatrix.translate(0, effectiveSpeed, 0);
     }
 
     // A/D to strafe
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/strafe_left", QString(Qt::Key::Key_A)).toString()).get())) {
-        m_transMatrix.translate(-effectiveSpeed, 0, 0);
+        m_transMatrix.translate(effectiveSpeed, 0, 0);
     }
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/strafe_right", QString(Qt::Key::Key_D)).toString()).get())) {
-        m_transMatrix.translate(effectiveSpeed, 0, 0);
+        m_transMatrix.translate(-effectiveSpeed, 0, 0);
     }
 
     // Implement Q and E as scale instead of translate so the user cannot
@@ -516,27 +720,23 @@ void ViewerGraphicsWindow::Update(float sec)
 
 
     // Up and down arrows to pitch
-    QMatrix4x4 newRot;
-    QVector3D xAxis(1, 0, 0);
     float rotSpeed = qRadiansToDegrees(effectiveSpeed);
-
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/pitch_up", "Up").toString()).get())) {
-        newRot.rotate(-rotSpeed, xAxis);
+        rotY += rotSpeed;
     }
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/pitch_down", "Down").toString()).get())) {
-        newRot.rotate(rotSpeed, xAxis);
+        rotY += -rotSpeed;
     }
 
-    // Perform the new rotation AFTER the previous rotations
-    m_rotMatrix = newRot * m_rotMatrix;
+    // Clamp
+    rotY = std::max(-90.f, std::min(rotY, 90.f));
 
     // Left and right to spin
-    QVector3D yAxis(0, 1, 0);
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/spin_right", "Right").toString()).get())) {
-        m_rotMatrix.rotate(rotSpeed, yAxis);
+        rotX += -rotSpeed;
     }
     if (m_pressedKeys.contains(KeySequenceParse(settings->value("ViewerGraphicsWindow/spin_left", "Left").toString()).get())) {
-        m_rotMatrix.rotate(-rotSpeed, yAxis);
+        rotX += rotSpeed;
     }
 }
 
@@ -544,10 +744,22 @@ void ViewerGraphicsWindow::resetView()
 {
     // Reset matrices to default values
     m_scaleMatrix = QMatrix4x4();
-    m_rotMatrix = QMatrix4x4();
+    rotY = 30.f;
+    rotX = 0;
     m_transMatrix = QMatrix4x4();
     m_transMatrix.translate(0, 0, -4);
 
+    const float optimalScale = ComputeOptimalScale();
+    m_scaleMatrix.scale(optimalScale);
+
+    // Compute the scale for the grid under the object
+    // Use the optimal scale, but then round to the nearest power of 10
+    const float gridScale = 1.f / optimalScale;
+    const float logGridScale = (int)(log10f(gridScale));
+    m_gridScale = powf(10.f, logGridScale);
+}
+
+float ViewerGraphicsWindow::ComputeOptimalScale() {
     // Scale the scene so the entire model can be viewed
     if (m_currentModel.m_isValid)
     {
@@ -557,11 +769,11 @@ void ViewerGraphicsWindow::resetView()
         // Compute optimal viewing distance as modelSize / atan(fov)
         const float modelSize = std::max(m_currentModel.m_AABBMax.length(), m_currentModel.m_AABBMin.length());
         const float optimalViewingDistance = modelSize / qAtan(qDegreesToRadians(effectiveFOV)) * 1.6f;
-        
+
         // Scale the world so 4 looks like optimalViewingDistance
-        const float scale = 4.f / optimalViewingDistance;
-        m_scaleMatrix.scale(scale);
+        return 4.f / optimalViewingDistance;
     }
+    return 1.f;
 }
 
 bool ViewerGraphicsWindow::addPrimitive(QString primitiveName) 
@@ -673,18 +885,7 @@ void ViewerGraphicsWindow::saveDialog(QString filePath) {
 }
 
 void ViewerGraphicsWindow::exportFrame(QString filePath) {
-    // Capture the framebuffer
-    GLubyte* pixels = (GLubyte*)malloc(5 * width() * height());
-    if (pixels) {
-        //Read the data from the frame buffer
-        glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, pixels);
-    }
-
-    // Flip the framebuffer because OpenGL renders upsidedown
-    QImage frameCapture(pixels, width(), height(), QImage::Format_ARGB32);
-    QTransform flipTransform;
-    flipTransform.scale(1, -1);
-    frameCapture = frameCapture.transformed(flipTransform);
+    QImage frameCapture = grabFramebuffer();
     frameCapture.save(filePath);
 }
 
@@ -711,9 +912,13 @@ void ViewerGraphicsWindow::SetScale(float scale)
     newMat.scale(scale);
     m_scaleMatrix = newMat;
 }
-QMatrix4x4 ViewerGraphicsWindow::GetRotationMatrix()
+float ViewerGraphicsWindow::GetRotY()
 {
-    return m_rotMatrix;
+    return rotY;
+}
+float ViewerGraphicsWindow::GetRotX()
+{
+    return rotX;
 }
 QMatrix4x4 ViewerGraphicsWindow::GetTranslationMatrix()
 {
@@ -721,7 +926,14 @@ QMatrix4x4 ViewerGraphicsWindow::GetTranslationMatrix()
 }
 QMatrix4x4 ViewerGraphicsWindow::GetModelMatrix()
 {
-    return m_transMatrix * m_rotMatrix * m_scaleMatrix;
+    QVector3D xAxis(1, 0, 0);
+    QVector3D yAxis(0, 1, 0);
+
+    QMatrix4x4 rotMatrix;
+    rotMatrix.rotate(rotY, xAxis);
+    rotMatrix.rotate(rotX, yAxis);
+
+    return m_transMatrix * rotMatrix * m_scaleMatrix;
 }
 bool ViewerGraphicsWindow::IsModelValid() 
 {
