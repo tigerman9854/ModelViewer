@@ -579,16 +579,16 @@ bool ViewerGraphicsWindow::addPrimitive(QString primitiveName)
 
 void ViewerGraphicsWindow::colorRChanged(int val)
 {
-    //TO DO
+    setADColor(val, ADColor[1], ADColor[2]);
 }
 
 void ViewerGraphicsWindow::colorGChanged(int val)
 {
-    //TO DO
+    setADColor(ADColor[0], val, ADColor[2]);
 }
 void ViewerGraphicsWindow::colorBChanged(int val)
 {
-    //TO DO
+    setADColor(ADColor[0], ADColor[1], val);
 }
 void ViewerGraphicsWindow::colorRChanged64(double val)
 {
@@ -620,17 +620,17 @@ void ViewerGraphicsWindow::effectType(int val)
 
 void ViewerGraphicsWindow::lightAmbient(float val)
 {
-    m_program->setUniformValue(m_uKa, val);
+    setADS(val, uKd, uKs);
 }
 
 void ViewerGraphicsWindow::lightDiffuse(float val)
 {
-    m_program->setUniformValue(m_uKd, val);
+    setADS(uKa, val, uKs);
 }
 
 void ViewerGraphicsWindow::lightSpecular(float val)
 {
-    m_program->setUniformValue(m_uKs, val);
+    setADS(uKa, uKd, val);
 }
 
 void ViewerGraphicsWindow::screenshotDialog() {
