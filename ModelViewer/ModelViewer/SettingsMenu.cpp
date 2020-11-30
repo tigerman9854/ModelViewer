@@ -49,6 +49,12 @@ SettingsMenu::SettingsMenu(ViewerGraphicsWindow* gWindow, QWidget* parent)
 	m_pMainLayout->addWidget(m_pCurrentSettingsWidget, 0, 1, 5, 3);
 
 	connect(m_pSettingsList, &QListWidget::currentItemChanged, this, &SettingsMenu::ChangeWindow);
+	this->setStyleSheet("background-color: rgb(28,30,37); color: rgb(186,186,186); border-color: blue; selection-color: rgb(100,100,100)");
+	m_pMouseSettings->setStyleSheet("QLineEdit {border: 1px solid rgb(186,186,186)}");
+	m_pKeybindSettings->setStyleSheet("QLineEdit {border: 1px solid rgb(186,186,186)}");
+
+	// Make sure that this window closes on main window close. Why set it to faslse? Only the QT gods know.
+	this->setAttribute(Qt::WA_QuitOnClose, false);
 }
 
 QSettings* SettingsMenu::getSettings()
