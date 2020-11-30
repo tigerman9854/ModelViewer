@@ -4,6 +4,7 @@
 #include "KeyBindEdit.h"
 #include "KeySequenceParse.h"
 
+#include <math.h>
 #include <QGridLayout>
 #include <QListWidget>
 #include <QLabel>
@@ -13,6 +14,8 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QScrollArea>
+#include <QComboBox>
 
 
 SettingsMenu::SettingsMenu(ViewerGraphicsWindow* gWindow, QWidget* parent)
@@ -31,27 +34,24 @@ SettingsMenu::SettingsMenu(ViewerGraphicsWindow* gWindow, QWidget* parent)
 	m_pSettingsList = new QListWidget(this);
 	new QListWidgetItem(m_MouseTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::mouse);
 	new QListWidgetItem(m_KebindTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::keybind);
-	// TODO: Decide if we need these
-	// new QListWidgetItem(m_ShaderTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::shader);
-	// new QListWidgetItem(m_ModelTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::model);
+	new QListWidgetItem(m_ViewTitle, m_pSettingsList, SettingsMenu::SETTINGSWIDGET::view);
 	m_pSettingsList->setMaximumWidth(100);
 
 	// Set up the indvidual setting menus
 	SetupMouseSettings();
 	SetupKeybindSettings();
-
-	// TODO: Decide if we need these
-	// SetupShaderSettings();
-	// SetupModelSettings();
+	SetupViewSettings();
 
 	m_pCurrentSettingsWidget = m_pMouseSettings;
 	m_pMainLayout->addWidget(m_pSettingsList, 0, 0, 5, 1);
 	m_pMainLayout->addWidget(m_pCurrentSettingsWidget, 0, 1, 5, 3);
 
 	connect(m_pSettingsList, &QListWidget::currentItemChanged, this, &SettingsMenu::ChangeWindow);
-	this->setStyleSheet("background-color: rgb(28,30,37); color: rgb(186,186,186); border-color: blue; selection-color: rgb(100,100,100)");
-	m_pMouseSettings->setStyleSheet("QLineEdit {border: 1px solid rgb(186,186,186)}");
-	m_pKeybindSettings->setStyleSheet("QLineEdit {border: 1px solid rgb(186,186,186)}");
+	this->setStyleSheet("background-color: rgb(28,30,37); color: rgb(186,186,186); border-color: blue; selection-color: rgb(100,100,100);");
+	m_pMouseSettings->setStyleSheet("QLineEdit {border-radius: 4px; border: 1px solid rgb(100,100,100)} QPushButton { border-style: outset; border-width: 1px; border-radius: 4px; border-color: rgb(100,100,100); padding: 3px;} QPushButton:pressed {background-color: rgb(128,130,137); border-style: inset;}");
+	m_pKeybindSettings->setStyleSheet("QLineEdit {border-radius: 4px; border: 1px solid rgb(100,100,100)} QPushButton { border-style: outset; border-width: 1px; border-radius: 4px; border-color: rgb(100,100,100); padding: 3px;} QPushButton:pressed {background-color: rgb(128,130,137); border-style: inset;}");
+	m_pViewSettings->setStyleSheet("QPushButton { border-style: outset; border-width: 1px; border-radius: 4px; border-color: rgb(100,100,100); padding: 3px;} QPushButton:pressed {background-color: rgb(128,130,137); border-style: inset;} QComboBox {border-style: inset; border-radius: 4px; border-width: 1px; border-color: rgb(100,100,100);}");
+
 
 	// Make sure that this window closes on main window close. Why set it to faslse? Only the QT gods know.
 	this->setAttribute(Qt::WA_QuitOnClose, false);
@@ -85,11 +85,8 @@ void SettingsMenu::ChangeWindow(QListWidgetItem* current, QListWidgetItem* previ
 		case int(SettingsMenu::SETTINGSWIDGET::keybind) :
 			swapCurrentWidget(m_pKeybindSettings);
 			break;
-		case int(SettingsMenu::SETTINGSWIDGET::shader):
-			swapCurrentWidget(m_pShaderSettings);
-			break;
-		case int(SettingsMenu::SETTINGSWIDGET::model):
-			swapCurrentWidget(m_pModelSettings);
+		case int(SettingsMenu::SETTINGSWIDGET::view):
+			swapCurrentWidget(m_pViewSettings);
 			break;
 	}
 }
@@ -326,24 +323,63 @@ void SettingsMenu::SetupKeybindSettings()
 	m_pKeybindSettings->hide();// As it's not the defalut
 }
 
-void SettingsMenu::SetupShaderSettings()
+void SettingsMenu::SetupViewSettings()
 {
-	// README: Non-0 chance that we wont use this b/c it will end up being a side bar
-	m_pShaderSettings = new QWidget(this);
-	QGridLayout* pShaderLayout = new QGridLayout(m_pShaderSettings);
-	QLabel* shaderText = new QLabel(QString::fromLatin1("Shader Placeholder"));
-	pShaderLayout->addWidget(shaderText, 0, 0);
-	m_pShaderSettings->setLayout(pShaderLayout);
-	m_pShaderSettings->hide();
-}
+	m_pViewSettings = new QWidget(this);
+	m_pViewSettings->setObjectName("viewsettings");
+	QFormLayout* layout = new QFormLayout(m_pViewSettings);
 
-void SettingsMenu::SetupModelSettings()
-{
-	// README: Non-0 chance that we wont use this b/c it will end up being a side bar
-	m_pModelSettings = new QWidget(this);
-	QGridLayout* pModelLayout = new QGridLayout(m_pModelSettings);
-	QLabel* modelText = new QLabel(QString::fromLatin1("Model Placeholder"));
-	pModelLayout->addWidget(modelText, 0, 0);
-	m_pModelSettings->setLayout(pModelLayout);
-	m_pModelSettings->hide();
+	// Load button states
+	QComboBox* msaa = new QComboBox();// Fix the text color
+	msaa->insertItem(0, "Off",0);
+	msaa->insertItem(1, "2x MSAA",2);
+	msaa->insertItem(2, "4x MSAA",4);
+	msaa->insertItem(3, "8x MSAA",8);
+	msaa->insertItem(4, "16x MSAA",16);
+	msaa->setCurrentIndex(int(sqrt(settings->value("ViewerGraphicsWindow/msaaLevel", 0).toInt())));
+	msaa->setToolTip("Higher for better quality, lower for better preformance");
+	QPushButton* toggleGrid = new QPushButton((settings->value("ViewerGraphicsWindow/toggleGrid", true).toBool()) ? "On" : "Off");
+	toggleGrid->setObjectName("toggleGrid");
+	QPushButton* toggleAxis = new QPushButton((settings->value("ViewerGraphicsWindow/toggleAxis", true).toBool()) ? "On" : "Off");
+	toggleAxis->setObjectName("toggleAxis");
+	QPushButton* toggleStats = new QPushButton((settings->value("ViewerGraphicsWindow/toggleStats", true).toBool()) ? "On" : "Off");
+	toggleStats->setObjectName("toggleStats");
+	QPushButton* reset = new QPushButton(QString::fromLatin1("Reset All"));
+	reset->setObjectName("resetKeybinds");
+
+	layout->addRow(tr("Anti Aliasing"), msaa);
+	layout->addRow(tr("Refrence Grid"), toggleGrid);
+	layout->addRow(tr("Axis Display"), toggleAxis);
+	layout->addRow(tr("Stats for Nerds"), toggleStats);
+	layout->addRow(QString(), reset);
+
+	connect(msaa, QOverload<int>::of(&QComboBox::currentIndexChanged),[=](int index) { 
+		settings->setValue("ViewerGraphicsWindow/msaaLevel", msaa->itemData(index).toInt());
+	});
+	connect(toggleGrid, &QPushButton::released, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/toggleGrid", !settings->value("ViewerGraphicsWindow/toggleGrid", true).toBool());
+		toggleGrid->setText((settings->value("ViewerGraphicsWindow/toggleGrid", true).toBool()) ? "On" : "Off");
+	});
+	connect(toggleAxis, &QPushButton::released, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/toggleAxis", !settings->value("ViewerGraphicsWindow/toggleAxis", true).toBool());
+		toggleAxis->setText((settings->value("ViewerGraphicsWindow/toggleAxis", true).toBool()) ? "On" : "Off");
+	});
+	connect(toggleStats, &QPushButton::released, this, [=] {
+		settings->setValue("ViewerGraphicsWindow/toggleStats", !settings->value("ViewerGraphicsWindow/toggleStats", true).toBool());
+		toggleStats->setText((settings->value("ViewerGraphicsWindow/toggleStats", true).toBool()) ? "On" : "Off");
+	});
+	connect(reset, &QPushButton::released, this, [=] {
+		// Remove the saved values
+		settings->remove("ViewerGraphicsWindow/toggleGrid");
+		settings->remove("ViewerGraphicsWindow/toggleAxis");
+		settings->remove("ViewerGraphicsWindow/toggleStats");
+		settings->remove("ViewerGraphicsWindow/msaaLevel");
+
+		toggleGrid->setText("On");
+		toggleAxis->setText("On");
+		toggleStats->setText("On");
+	});
+
+	
+	m_pViewSettings->hide();// As it's not the defalut
 }
