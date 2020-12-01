@@ -32,6 +32,7 @@ private slots:
 
 	void testShow();
 	void loadModel();
+	void saveModel();
 	void loadShader();
 	void loadCurrentShaders();
 	void editCurrentShaders();
@@ -249,9 +250,29 @@ void ModelViewerTest::testShow()
 
 void ModelViewerTest::loadModel()
 {
-	ModelLoader m;
-	Model loaded = m.LoadModel("../Data/Primitives/cube.obj");
+	Model loaded = ModelLoader::LoadModel("../Data/Primitives/cube.obj");
 	QVERIFY(loaded.m_isValid);
+}
+
+void ModelViewerTest::saveModel() 
+{
+	if (disableAnnoyingTests) {
+		return;
+	}
+
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+	GraphicsWindowDelegate* pGraphicsDelegate = m_pWindow->GetGraphicsDelegate();
+
+	// Load model
+	QString path("../Data/Models/cubeColor.ply");
+	m_pWindow->GetGraphicsWindow()->loadModel(path);
+
+	// Check the status after
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_model);
+
+	// Save model
+	bool success = ModelLoader::ExportModel("../Data/Models/");
+	QVERIFY(success);
 }
 
 void ModelViewerTest::loadShader()
