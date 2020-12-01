@@ -74,8 +74,7 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     emit BeginModelLoading(filepath);
 
     // Load the model
-    ModelLoader m;
-    m_currentModel = m.LoadModel(filepath);
+    m_currentModel = ModelLoader::LoadModel(filepath);
     
     // Let other widgets know that a model has been loaded
     emit EndModelLoading(m_currentModel.m_isValid, filepath);
@@ -92,6 +91,11 @@ bool ViewerGraphicsWindow::unloadModel()
     emit ModelUnloaded();
 
     return true;
+}
+
+void ViewerGraphicsWindow::saveModel()
+{
+    ModelLoader::ExportModel("../Data/Models/");
 }
 
 bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)

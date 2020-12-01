@@ -3,28 +3,107 @@
 #include <assimp/Importer.hpp>      // C++ importer interface
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
+#include <assimp/Exporter.hpp>      // C++ exporter interface
 
 #include <vector>
 #include <QMatrix4x4>
 #include <QImage>
+#include <QFileDialog>
+#include <QFileInfo>
+
+namespace {
+	// Static importer and scene
+	Assimp::Importer* pImporter = nullptr;
+	const aiScene* pCurrentScene = nullptr;
+}
+
 
 Model ModelLoader::LoadModel(const QString& file)
 {
-	// Create an instance of the Importer class
-	Assimp::Importer importer;
+	// Create a new instance of the Importer class
+	if (pImporter) {
+		delete pImporter;
+	}
+	pImporter = new Assimp::Importer();
 	
 	// And have it read the given file with some example postprocessing
 	// Usually - if speed is not the most important aspect for you - you'll
 	// probably to request more postprocessing than we do in this example.
-	const aiScene* pScene = importer.ReadFile(file.toStdString(), aiProcessPreset_TargetRealtime_Quality ^ aiProcess_GenSmoothNormals | aiProcess_GenNormals | aiProcess_GenBoundingBoxes);
+	pCurrentScene = pImporter->ReadFile(file.toStdString(), aiProcessPreset_TargetRealtime_Quality ^ aiProcess_GenSmoothNormals | aiProcess_GenNormals | aiProcess_GenBoundingBoxes);
 	
 	// If the import failed, report it
-	if (!pScene) {
+	if (!pCurrentScene) {
 		return Model();
 	}
 
 	// We're done. Everything will be cleaned up by the importer destructor
-	return ProcessModel(pScene);
+	return ProcessModel(pCurrentScene);
+}
+
+bool ModelLoader::ExportModel(const QString& path)
+{
+	if (!pCurrentScene) {
+		return false;
+	}
+
+	// Create an exporter
+	Assimp::Exporter exporter;
+
+	// Determine all available file formats
+	const size_t formatCount = exporter.GetExportFormatCount();
+	std::vector<const aiExportFormatDesc*> formatDescriptions;
+	for (size_t i = 0; i < formatCount; ++i) {
+		formatDescriptions.push_back(exporter.GetExportFormatDescription(i));
+	}
+
+	// Construct export format
+	QString filters;
+	QString defaultFilter;
+	for (auto it : formatDescriptions) {
+		filters += it->description + QString(" (*.") + it->fileExtension + QString(")");
+		if (it != *(formatDescriptions.end() - 1)) {
+			filters += ";;";
+		}
+
+		// Default filter to .obj
+		if (it->fileExtension == "obj") {
+			defaultFilter = it->description + QString(" (*.") + it->fileExtension + QString(")");
+		}
+	}
+
+	// Prompt the user to select a file type
+	QString filepath = QFileDialog::getSaveFileName(nullptr,
+		"Save Model",
+		path + "model",
+		filters);
+
+	// Ensure the user selected a path
+	if (filepath.isEmpty()) {
+		return false;
+	}
+
+
+	// Use QFileInfo to determine which type the user selected
+	QFileInfo fi(filepath);
+	QString ext = fi.suffix();
+	const char* chosenFormatId = nullptr;
+	for (auto it : formatDescriptions) {
+		if (it->fileExtension == ext) {
+			chosenFormatId = it->id;
+		}
+	}
+
+	// Ensure the file type was supported
+	if (!chosenFormatId) {
+		return false;
+	}
+
+
+	// Export the file
+	aiReturn ret = exporter.Export(pCurrentScene, chosenFormatId, filepath.toStdString());
+
+	// Return success
+	return (ret == AI_SUCCESS);
 }
 
 Mesh ModelLoader::ProcessMesh(aiScene const* pScene, uint meshIdx)

@@ -75,7 +75,7 @@ ModelViewer::ModelViewer(QWidget *parent)
 
     QMenu* pSaveMenu = pFileMenu->addMenu("Save");
     pSaveMenu->setObjectName("SaveMenu");
-    pSaveMenu->addAction("Model", [=] { /* TODO: m_pGraphicsWindow->saveModel(); */ }, QKeySequence(Qt::CTRL + Qt::Key_S));
+    pSaveMenu->addAction("Model", [=] { m_pGraphicsWindow->saveModel(); }, QKeySequence(Qt::CTRL + Qt::Key_S));
     pSaveMenu->addAction("Shader", [=] { /* TODO: m_pGraphicsWindow->saveShader(); */ }, QKeySequence(Qt::CTRL + Qt::Key_X));
 
     //Screenshot

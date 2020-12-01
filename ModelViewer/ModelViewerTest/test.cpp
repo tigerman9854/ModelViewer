@@ -249,8 +249,7 @@ void ModelViewerTest::testShow()
 
 void ModelViewerTest::loadModel()
 {
-	ModelLoader m;
-	Model loaded = m.LoadModel("../Data/Primitives/cube.obj");
+	Model loaded = ModelLoader::LoadModel("../Data/Primitives/cube.obj");
 	QVERIFY(loaded.m_isValid);
 }
 
