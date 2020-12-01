@@ -42,6 +42,7 @@ Model ModelLoader::LoadModel(const QString& file)
 
 bool ModelLoader::ExportModel(const QString& path)
 {
+	// Ensure the scene is valid
 	if (!pCurrentScene) {
 		return false;
 	}
@@ -56,17 +57,18 @@ bool ModelLoader::ExportModel(const QString& path)
 		formatDescriptions.push_back(exporter.GetExportFormatDescription(i));
 	}
 
-	// Construct export format
+	// Construct export formats
 	QString filters;
 	QString defaultFilter;
 	for (auto it : formatDescriptions) {
+		// Format is   <desc> (*.<ext>);;<desc2> (*.<ext2>);;
 		filters += it->description + QString(" (*.") + it->fileExtension + QString(")");
 		if (it != *(formatDescriptions.end() - 1)) {
 			filters += ";;";
 		}
 
-		// Default filter to .obj
-		if (it->fileExtension == "obj") {
+		// Set default filter to .obj
+		if (strcmp(it->id, "obj") == 0) {
 			defaultFilter = it->description + QString(" (*.") + it->fileExtension + QString(")");
 		}
 	}
@@ -75,7 +77,7 @@ bool ModelLoader::ExportModel(const QString& path)
 	QString filepath = QFileDialog::getSaveFileName(nullptr,
 		"Save Model",
 		path + "model",
-		filters);
+		filters, &defaultFilter);
 
 	// Ensure the user selected a path
 	if (filepath.isEmpty()) {
