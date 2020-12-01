@@ -865,11 +865,19 @@ void ViewerGraphicsWindow::screenshotDialog() {
         QDir().mkdir(defaultFolder);
     }
 
+    // Define formats
+    QString formats = "Portable Network Graphics (*.png);; \
+	                   Windows Bitmap (*.bmp);;\
+                       Joint Photographic Experts Group (*.jpg *.jpeg);;\
+                       Portable Pixmap (*.ppm);;\
+                       X11 Bitmap (*.xbm);;\
+                       X11 Pixmap (*.xpm)";
+
     // Have the user choose a file location
     QString filepath = QFileDialog::getSaveFileName(nullptr,
         tr("Save screenshot"),
-        defaultFolder + "capture.png",
-        tr("Images (*.bmp *.jpg *.jpeg *.png *.ppm *.xbm *.xpm)"));
+        defaultFolder + "capture",
+        formats);
 
     if (!filepath.isEmpty())
     {
