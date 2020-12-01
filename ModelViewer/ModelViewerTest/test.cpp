@@ -56,7 +56,7 @@ private:
 	QMatrix4x4 resetMatrix;
 
 	// Enable this setting to skip tests which require user input
-	bool disableAnnoyingTests = false;
+	bool disableAnnoyingTests = true;
 };
 
 
