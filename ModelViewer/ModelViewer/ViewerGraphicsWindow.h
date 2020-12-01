@@ -23,6 +23,7 @@ public:
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
     void setUniformLocations();
+    void setUniformVars();
 
     void screenshotDialog();
     void saveDialog(QString filePath);
@@ -77,6 +78,8 @@ public slots:
     void colorRChanged64(double val);
     void colorGChanged64(double val);
     void colorBChanged64(double val);
+    void colorRainbowChanged(int val);
+
     ////settings
     void lightingSwitch(bool val);
     void smoothingSwitch(bool val);

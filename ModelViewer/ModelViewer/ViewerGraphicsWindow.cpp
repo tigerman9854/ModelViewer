@@ -192,6 +192,56 @@ bool ViewerGraphicsWindow::editCurrentShaders()
     }
     return true;
 }
+void ViewerGraphicsWindow::setUniformVars() {
+    if (m_lightPosUniform != -1)
+    {
+        m_program->setUniformValue(m_lightPosUniform, lightPos);
+    }
+    if (m_uKa != -1)
+    {
+        m_program->setUniformValue(m_uKa, uKa);
+    }
+    if (m_uKd != -1)
+    {
+        m_program->setUniformValue(m_uKd, uKd);
+    }
+    if (m_uKs != -1)
+    {
+        m_program->setUniformValue(m_uKs, uKs);
+    }
+    if (m_uSpecularColor != -1)
+    {
+        m_program->setUniformValue(m_uSpecularColor, specularColor);
+    }
+    if (m_uShininess != -1)
+    {
+        m_program->setUniformValue(m_uShininess, shininess);
+    }
+    if (m_colAttr != -1)
+    {
+        m_program->setAttributeValue(m_colAttr, ADColor);
+    }
+    if (m_uMat4_1 != -1)
+    {
+        m_program->setUniformValue(m_uMat4_1, uMat4_1);
+    }
+    if (m_uVec3_1 != -1)
+    {
+        m_program->setUniformValue(m_uVec3_1, uVec3_1);
+    }
+    if (m_uVec4_1 != -1)
+    {
+        m_program->setUniformValue(m_uVec4_1, uVec4_1);
+    }
+    if (m_uFloat_1 != -1)
+    {
+        m_program->setUniformValue(m_uFloat_1, uFloat_1);
+    }
+    if (m_uInt_1 != -1)
+    {
+        m_program->setUniformValue(m_uInt_1, uInt_1);
+    }
+}
 
 void ViewerGraphicsWindow::setUniformLocations()
 {
@@ -428,32 +478,8 @@ void ViewerGraphicsWindow::paintGL()
 
     m_program->bind();
 
-    m_program->setUniformValue(m_matrixUniform, modelViewProjectionMatrix);
+    setUniformVars();
 
-    m_program->setUniformValue(m_modelviewUniform, modelMatrix);
-
-    QMatrix3x3 normal = modelMatrix.normalMatrix();
-    m_program->setUniformValue(m_normalUniform, normal);
-
-
-    m_program->setUniformValue(m_lightPosUniform, lightPos);
-
-    m_program->setUniformValue(m_uKa, uKa);
-    m_program->setUniformValue(m_uKd, uKd);
-    m_program->setUniformValue(m_uKs, uKs);
-
-    m_program->setUniformValue(m_uSpecularColor, specularColor);
-
-    m_program->setUniformValue(m_uShininess, shininess);
-
-    m_program->setAttributeValue(m_colAttr, ADColor);
-
-    m_program->setUniformValue(m_uMat4_1, uMat4_1);
-    m_program->setUniformValue(m_uVec3_1, uVec3_1);
-    m_program->setUniformValue(m_uVec4_1, uVec4_1);
-    m_program->setUniformValue(m_uFloat_1, uFloat_1);
-    m_program->setUniformValue(m_uInt_1, uInt_1);
-    
     glEnable(GL_DEPTH_TEST);
 
     if (m_currentModel.m_isValid)
@@ -791,17 +817,51 @@ bool ViewerGraphicsWindow::addPrimitive(QString primitiveName)
 
 void ViewerGraphicsWindow::colorRChanged(int val)
 {
-    setADColor(val, ADColor[1], ADColor[2]);
+    double double_val = (double(val) -127.0) / 255.0;
+    setLightLocation(double_val, lightPos[1], lightPos[2]);
 }
 
 void ViewerGraphicsWindow::colorGChanged(int val)
 {
-    setADColor(ADColor[0], val, ADColor[2]);
+    double double_val = (double(val) - 127.0) / 255.0;
+    setLightLocation(lightPos[0], double_val, lightPos[2]);
 }
 void ViewerGraphicsWindow::colorBChanged(int val)
 {
-    setADColor(ADColor[0], ADColor[1], val);
+    double double_val = (double(val) - 127.0) / 255.0;
+    setLightLocation(lightPos[0], lightPos[1], double_val);
 }
+
+void ViewerGraphicsWindow::colorRainbowChanged(int val)
+{
+    float color = float(val)/100.0;
+    float temp = 1.0/6.0;
+    if (color < temp)
+    {
+        setADColor(1.0, 0.0 + (color*6.0), 0.0);
+    }
+    else if (color < temp * 2.0)
+    {
+        setADColor(1 - ((color-temp) * 6.0), 1.0, 0.0);
+    }
+    else if (color < temp * 3.0) 
+    {
+        setADColor(0.0, 1.0, 0.0 + ((color - (temp*2))*6.0));
+    }
+    else if (color < temp * 4.0)
+    {
+        setADColor(0.0, 1.0 - ((color - (temp * 3)) * 6.0), 1.0);
+    }
+    else if (color < temp * 5.0)
+    {
+        setADColor(0.0 + ((color - (temp * 4)) * 6.0), 0.0, 1.0);
+    }
+    else if (color < temp * 6.0)
+    {
+        setADColor(1.0, 0.0, 1.0 - ((color - (temp * 5)) * 6.0));
+    }
+}
+
 void ViewerGraphicsWindow::colorRChanged64(double val)
 {
     //TO DO
