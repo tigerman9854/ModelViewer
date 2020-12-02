@@ -17,7 +17,6 @@
 #include <QScrollArea>
 #include <QComboBox>
 
-
 SettingsMenu::SettingsMenu(ViewerGraphicsWindow* gWindow, QWidget* parent)
 	: m_pGraphicsWindow(gWindow), QWidget(parent)
 {

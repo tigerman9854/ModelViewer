@@ -1,4 +1,5 @@
 #pragma once
+#include "LandingPage.h"
 #include <QWidget>
 #include <QLayout>
 #include <QLabel>
@@ -39,7 +40,7 @@ private:
 	QWidget* m_pCurrentWidget = nullptr;
 
 	// Widgets to change between to show 
-	QWidget* m_pEmptyWidget = nullptr;
+	LandingPage* m_pLandingWidget = nullptr;
 	QWidget* m_pModelWidget = nullptr;
 	QWidget* m_pErrorWidget = nullptr;
 	QWidget* m_pLoadingWidget = nullptr;

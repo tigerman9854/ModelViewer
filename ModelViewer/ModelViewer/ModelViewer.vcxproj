@@ -116,6 +116,8 @@
   <ItemGroup>
     <ClCompile Include="KeyBindEdit.cpp" />
     <ClCompile Include="KeySequenceParse.cpp" />
+    <ClCompile Include="LandingPage.cpp" />
+    <QtMoc Include="LandingPage.h" />
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="GraphicsWindowDelegate.cpp" />
     <ClCompile Include="SettingsMenu.cpp" />
