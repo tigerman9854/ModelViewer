@@ -45,6 +45,7 @@ private slots:
 	void defaultZoom();
 	void testKeyboard();
 	void testSettings();
+	void changeColorUniforms();
 
 private:
 	// Helpers
@@ -286,6 +287,16 @@ void ModelViewerTest::openShaderFile()
 
 	bool success = m_pWindow->GetGraphicsWindow()->openShaderFile("../Data/Shaders/basic.frag");
 	QVERIFY(success);
+}
+
+void ModelViewerTest::changeColorUniforms()
+{
+	m_pWindow->show();
+	m_pWindow->GetGraphicsWindow()->colorRChanged(0.5);
+	m_pWindow->GetGraphicsWindow()->colorGChanged(0.75);
+	m_pWindow->GetGraphicsWindow()->colorBChanged(1.0);
+	m_pWindow->hide();
+	return;
 }
 
 void ModelViewerTest::displayModel()

@@ -817,19 +817,25 @@ bool ViewerGraphicsWindow::addPrimitive(QString primitiveName)
 
 void ViewerGraphicsWindow::colorRChanged(int val)
 {
-    double double_val = (double(val) -127.0) / 255.0;
-    setLightLocation(double_val, lightPos[1], lightPos[2]);
+    double double_val = double(val) / 255.0;
+    setADColor(double_val, ADColor[1], ADColor[2]);
+    //double double_val = (double(val) -127.0) / 255.0;
+    //setLightLocation(double_val, lightPos[1], lightPos[2]);
 }
 
 void ViewerGraphicsWindow::colorGChanged(int val)
 {
-    double double_val = (double(val) - 127.0) / 255.0;
-    setLightLocation(lightPos[0], double_val, lightPos[2]);
+    double double_val = double(val) / 255.0;
+    setADColor(ADColor[0], double_val, ADColor[2]);
+    //double double_val = (double(val) - 127.0) / 255.0;
+    //setLightLocation(lightPos[0], double_val, lightPos[2]);
 }
 void ViewerGraphicsWindow::colorBChanged(int val)
 {
-    double double_val = (double(val) - 127.0) / 255.0;
-    setLightLocation(lightPos[0], lightPos[1], double_val);
+    double double_val = double(val) / 255.0;
+    setADColor(ADColor[0], ADColor[1], double_val);
+    //double double_val = (double(val) - 127.0) / 255.0;
+    //setLightLocation(lightPos[0], lightPos[1], double_val);
 }
 
 void ViewerGraphicsWindow::colorRainbowChanged(int val)
