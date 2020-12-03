@@ -30,6 +30,7 @@ This section is for developers.
 1. Open Visual Studio 2019
 2. Navigate to Extensions > Qt VS Tools > Qt Options.
 3. Add a Qt Version so Visual Studio knows where to look for Qt files. IMPORTANT: To allow each of us to compile without reconfiguring Qt, please name your Qt version exactly "msvc2019_64".
+
 ![](images/qt_vs_options.PNG)
 
 ### 4. Build
