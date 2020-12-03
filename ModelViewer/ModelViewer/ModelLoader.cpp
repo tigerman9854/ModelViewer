@@ -156,7 +156,24 @@ Mesh ModelLoader::ProcessMesh(aiScene const* pScene, uint meshIdx)
 
 	// Search for an ambient, diffuse, or specular texture.  We will only load the first one we find because our shader
 	// only handles a single texture
-	std::vector<aiTextureType> validTextureTypes = { aiTextureType_AMBIENT, aiTextureType_DIFFUSE, aiTextureType_SPECULAR };
+	std::vector<aiTextureType> validTextureTypes = { 
+		aiTextureType_AMBIENT, 
+		aiTextureType_DIFFUSE, 
+		aiTextureType_SPECULAR, 
+		aiTextureType_HEIGHT, 
+		aiTextureType_NORMALS, 
+		aiTextureType_SHININESS,  
+		aiTextureType_OPACITY, 
+		aiTextureType_DISPLACEMENT, 
+		aiTextureType_LIGHTMAP,
+		aiTextureType_REFLECTION,
+		aiTextureType_BASE_COLOR,
+		aiTextureType_NORMAL_CAMERA,
+		aiTextureType_EMISSION_COLOR,
+		aiTextureType_METALNESS,
+		aiTextureType_DIFFUSE_ROUGHNESS,
+		aiTextureType_AMBIENT_OCCLUSION,
+		aiTextureType_UNKNOWN };
 	newMesh.m_hasTexture = false;
 	for (auto it : validTextureTypes)
 	{
