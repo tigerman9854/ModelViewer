@@ -32,13 +32,7 @@ This section is for developers.
 3. Add a Qt Version so Visual Studio knows where to look for Qt files. IMPORTANT: To allow each of us to compile without reconfiguring Qt, please name your Qt version exactly "msvc2019_64".
 ![](images/qt_vs_options.PNG)
 
-### 4. Google Test
-1. Again, navigate to Extensions > Manage Extensions. Search for Google Test.
-![](images/google_test.PNG)
-2. Install the extension.
-3. Restart Visual Studio.
-
-### 5. Build
+### 4. Build
 1. Clone the repository.
 2. Open "ModelViewer/ModelViewer/ModelViewer.sln" using Visual Studio 2019.
 3. Press F5 to build and run.
