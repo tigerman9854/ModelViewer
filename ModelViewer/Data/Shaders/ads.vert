@@ -1,8 +1,9 @@
-#version 130
+#version 410
 
 attribute highp vec4 posAttr;
 attribute lowp vec4 colAttr;
 attribute highp vec3 normAttr;
+attribute highp vec2 uvAttr;
 
 varying lowp vec4 col;
 
@@ -17,6 +18,7 @@ vec3 eyeLightPosition = uLightPos;
 out lowp vec3 vNs;
 out lowp vec3 vLs;
 out lowp vec3 vEs;
+out vec2 texCoord;
 
 void main() {
 	vec4 ECposition = modelview * posAttr;
@@ -29,5 +31,6 @@ void main() {
 
 
    col = colAttr;
+   texCoord = uvAttr;
    gl_Position = matrix * posAttr;
 }

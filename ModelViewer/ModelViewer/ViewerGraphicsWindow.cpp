@@ -86,6 +86,34 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
+bool ViewerGraphicsWindow::loadTexture(QString filepath)
+{
+    // If no filepath was provided, open a file dialog for the user to choose a model
+
+    if (m_currentModel.m_isValid) 
+    {
+        for (Mesh& mesh : m_currentModel.m_meshes)
+        {
+            filepath = QFileDialog::getOpenFileName(nullptr, "Load Texture", "../Data/Models/", "");
+            if (filepath.isEmpty()) {
+                return false;
+            }
+
+            mesh.m_hasTexture = true;
+            mesh.m_texture = new QOpenGLTexture(QImage(filepath).mirrored());
+            mesh.m_texture->setMinificationFilter(QOpenGLTexture::Linear);
+            mesh.m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
+            mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::ClampToEdge);
+            mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::ClampToEdge);
+            mesh.m_texture->bind(0);
+            m_program->setUniformValue(m_uTexture, 0);
+
+            GLboolean uHasTexture = GL_TRUE;
+            m_program->setUniformValue(m_uHasTexture, uHasTexture);
+        }
+    }
+}
+
 bool ViewerGraphicsWindow::unloadModel()
 {
     m_currentModel = Model();
@@ -143,6 +171,8 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     m_uKs = m_program->uniformLocation("uKs");
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
+    m_uTexture = m_program->uniformLocation("uTexture");
+    m_uHasTexture = m_program->uniformLocation("uHasTexture");
     
     emit ClearError();
     return true;
@@ -202,6 +232,8 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     m_uKs = m_program->uniformLocation("uKs");
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
+    m_uTexture = m_program->uniformLocation("uTexture");
+    m_uHasTexture = m_program->uniformLocation("uHasTexture");
 
     emit ClearError();
     return true;
@@ -372,7 +404,7 @@ void ViewerGraphicsWindow::initializeGL()
     m_posAttr = m_program->attributeLocation("posAttr");
     Q_ASSERT(m_posAttr != -1);
     m_colAttr = m_program->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
+    //Q_ASSERT(m_colAttr != -1);
     m_matrixUniform = m_program->uniformLocation("matrix");
     Q_ASSERT(m_matrixUniform != -1);
     
@@ -404,6 +436,9 @@ void ViewerGraphicsWindow::initializeGL()
     //m_uADColor = m_program->uniformLocation("uADColor");
     m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
     m_uShininess = m_program->uniformLocation("uShininess");
+    m_uTexture = m_program->uniformLocation("uTexture");
+    m_uHasTexture = m_program->uniformLocation("uHasTexture");
+    
 
 
     emit Initialized();
@@ -459,6 +494,9 @@ void ViewerGraphicsWindow::paintGL()
     GLfloat uShininess = 0.3;
     m_program->setUniformValue(m_uShininess, uShininess);
 
+    GLboolean uHasTexture = GL_FALSE;
+    m_program->setUniformValue(m_uHasTexture, uHasTexture);
+
     glEnable(GL_DEPTH_TEST);
 
     if (m_currentModel.m_isValid)
@@ -467,7 +505,18 @@ void ViewerGraphicsWindow::paintGL()
         for (Mesh& mesh : m_currentModel.m_meshes) {
             mesh.m_vertexBuffer.bind();
             mesh.m_indexBuffer.bind();
-            
+
+            if (mesh.m_hasTexture) {
+                mesh.m_texture->setMinificationFilter(QOpenGLTexture::Linear);
+                mesh.m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
+                mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::ClampToEdge);
+                mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::ClampToEdge);
+                mesh.m_texture->bind(0);
+                m_program->setUniformValue(m_uTexture, 0);
+                GLboolean uHasTexture = GL_TRUE;
+                m_program->setUniformValue(m_uHasTexture, uHasTexture);
+            }
+
             // Handle transformation for each mesh
             QMatrix4x4 modelTransformed = modelMatrix * mesh.m_transform;
             QMatrix4x4 modelViewProjectionMatrix;

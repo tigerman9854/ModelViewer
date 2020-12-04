@@ -22,6 +22,7 @@ public:
     bool addPrimitive(QString filepath);
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
+    bool loadTexture(QString filepath = QString());
 
     void screenshotDialog();
     void saveDialog(QString filePath);
@@ -133,6 +134,9 @@ private:
     GLint m_flatShaderPosAttr = 0;
     GLint m_flatShaderColAttr = 0;
     GLint m_flatShaderMatrixAttr = 0;
+
+    GLint m_uTexture = 0;
+    GLint m_uHasTexture = 0;
 
     QOpenGLShaderProgram* m_program = nullptr;
     QOpenGLShaderProgram* m_flatShader = nullptr;

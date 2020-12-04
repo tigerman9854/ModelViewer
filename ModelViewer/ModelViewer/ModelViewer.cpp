@@ -59,6 +59,7 @@ ModelViewer::ModelViewer(QWidget *parent)
     pShaderMenu->addAction("Fragment", [=]{m_pGraphicsWindow->loadFragmentShader(); });
     pShaderMenu->addAction("Reload Current Shaders", [=]{m_pGraphicsWindow->reloadCurrentShaders(); });
 
+    pLoadMenu->addAction("Texture", [=] {  m_pGraphicsWindow->loadTexture(); });
 
     // Primitive
     QMenu* pPrimitiveMenu = pLoadMenu->addMenu("Primitive");
