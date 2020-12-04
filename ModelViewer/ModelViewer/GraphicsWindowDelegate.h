@@ -5,6 +5,7 @@
 
 // Forward Declares
 class ViewerGraphicsWindow;
+class LandingPage;
 
 
 class GraphicsWindowDelegate : public QWidget
@@ -20,6 +21,8 @@ public:
 		k_error,
 		k_loading,
 	};
+
+	LandingPage* GetLandingWidget();
 
 	void SetStatus(Status s);
 	Status GetStatus();
@@ -39,7 +42,7 @@ private:
 	QWidget* m_pCurrentWidget = nullptr;
 
 	// Widgets to change between to show 
-	QWidget* m_pEmptyWidget = nullptr;
+	LandingPage* m_pLandingWidget = nullptr;
 	QWidget* m_pModelWidget = nullptr;
 	QWidget* m_pErrorWidget = nullptr;
 	QWidget* m_pLoadingWidget = nullptr;

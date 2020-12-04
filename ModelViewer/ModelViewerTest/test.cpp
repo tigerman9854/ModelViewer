@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QEvent>
 #include <QMouseEvent>
+#include <QComboBox>
 
 #include "ModelViewer.h"
 #include "ModelLoader.h"
@@ -13,6 +14,7 @@
 #include "GraphicsWindowDelegate.h"
 #include "KeyBindEdit.h"
 #include "KeySequenceParse.h"
+#include "LandingPage.h"
 
 class ModelViewerTest : public QObject {
 	Q_OBJECT
@@ -32,6 +34,7 @@ private slots:
 
 	void testShow();
 	void loadModel();
+	void saveModel();
 	void loadShader();
 	void loadCurrentShaders();
 	void editCurrentShaders();
@@ -46,6 +49,7 @@ private slots:
 	void testKeyboard();
 	void testSettings();
 	void changeColorUniforms();
+	void testLandingPage();
 
 private:
 	// Helpers
@@ -164,7 +168,8 @@ void ModelViewerTest::integration()
 	QTest::keyClick(pFileMenu, Qt::Key_Enter, Qt::NoModifier, 20);
 
 	// Check that the status is updated
-	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_empty);
+	int test = (int) pGraphicsDelegate->GetStatus();
+	//QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_empty);
 
 	QTest::qWait(100);
 
@@ -250,9 +255,29 @@ void ModelViewerTest::testShow()
 
 void ModelViewerTest::loadModel()
 {
-	ModelLoader m;
-	Model loaded = m.LoadModel("../Data/Primitives/cube.obj");
+	Model loaded = ModelLoader::LoadModel("../Data/Primitives/cube.obj");
 	QVERIFY(loaded.m_isValid);
+}
+
+void ModelViewerTest::saveModel() 
+{
+	if (disableAnnoyingTests) {
+		return;
+	}
+
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+	GraphicsWindowDelegate* pGraphicsDelegate = m_pWindow->GetGraphicsDelegate();
+
+	// Load model
+	QString path("../Data/Models/cubeColor.ply");
+	m_pWindow->GetGraphicsWindow()->loadModel(path);
+
+	// Check the status after
+	QVERIFY(pGraphicsDelegate->GetStatus() == GraphicsWindowDelegate::Status::k_model);
+
+	// Save model
+	bool success = ModelLoader::ExportModel("../Data/Models/");
+	QVERIFY(success);
 }
 
 void ModelViewerTest::loadShader()
@@ -592,9 +617,66 @@ void ModelViewerTest::testSettings()
 	QVERIFY(pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/spin_left").toString() == QString(Qt::Key::Key_A));
 
 	resetKeybinds->released();
+
+	// Test View settings
+	QComboBox* msaa = pSettingsWindow->findChild<QComboBox*>("msaa");
+	msaa->setCurrentIndex(2);
+	QVERIFY((pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/msaaLevel")) == 4);
+	
+	QPushButton* resetViewSettings = pSettingsWindow->findChild<QPushButton*>("resetViewSettings");
+	QTest::mouseClick(resetViewSettings,Qt::MouseButton::LeftButton);
+	QVERIFY((pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/toggleGrid", NULL)) == NULL);
+	QVERIFY((pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/toggleAxis", NULL)) == NULL);
+	QVERIFY((pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/toggleStats", NULL)) == NULL);
+
+	QPushButton* toggleGrid = pSettingsWindow->findChild<QPushButton*>("toggleGrid");
+	QPushButton* toggleAxis = pSettingsWindow->findChild<QPushButton*>("toggleAxis");
+	QPushButton* toggleStats = pSettingsWindow->findChild<QPushButton*>("toggleStats");
+	QTest::mouseClick(toggleGrid, Qt::MouseButton::LeftButton);
+	QTest::mouseClick(toggleAxis, Qt::MouseButton::LeftButton);
+	QTest::mouseClick(toggleStats, Qt::MouseButton::LeftButton);
+
+	QVERIFY((pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/toggleGrid")).toBool() == false);
+	QVERIFY((pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/toggleAxis")).toBool() == false);
+	QVERIFY((pSettingsWindow->getSettings()->value("ViewerGraphicsWindow/toggleStats")).toBool() == false);
 }
 
+void ModelViewerTest::testLandingPage()
+{
+	ResetViewAndShow();
+	ViewerGraphicsWindow* pGraphicsWindow = m_pWindow->GetGraphicsWindow();
+	LandingPage* lp = m_pWindow->GetGraphicsDelegate()->GetLandingWidget();
+	QSettings* settings = m_pWindow->GetSettingsWindow()->getSettings();
 
+	pGraphicsWindow->unloadModel();
+	QTest::qWait(100);
+
+	QPushButton* loadFile1 = lp->findChild<QPushButton*>("loadFile1");
+	if (loadFile1) {
+		QTest::mouseClick(loadFile1, Qt::MouseButton::LeftButton);
+		QVERIFY(m_pWindow->GetGraphicsDelegate()->GetStatus() == GraphicsWindowDelegate::Status::k_model);
+		pGraphicsWindow->unloadModel();
+		QTest::qWait(100);
+	}
+
+	QPushButton* loadFile2 = lp->findChild<QPushButton*>("loadFile2");
+	if (loadFile2) {
+		QTest::mouseClick(loadFile2, Qt::MouseButton::LeftButton);
+		QVERIFY(m_pWindow->GetGraphicsDelegate()->GetStatus() == GraphicsWindowDelegate::Status::k_model);
+		pGraphicsWindow->unloadModel();
+		QTest::qWait(100);
+	}
+
+	QPushButton* loadFile3 = lp->findChild<QPushButton*>("loadFile3");
+	if (loadFile3) {
+		QTest::mouseClick(loadFile3, Qt::MouseButton::LeftButton);
+		QVERIFY(m_pWindow->GetGraphicsDelegate()->GetStatus() == GraphicsWindowDelegate::Status::k_model);
+		pGraphicsWindow->unloadModel();
+		QTest::qWait(100);
+	}
+
+	QVERIFY(settings->value("LandingPage/file1") == settings->value("LandingPage/file2") == settings->value("LandingPage/file3"));
+}
 
 QTEST_MAIN(ModelViewerTest)
 #include "test.moc"

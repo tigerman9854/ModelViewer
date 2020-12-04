@@ -27,7 +27,7 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWidget* parent)
     : QOpenGLWidget(parent)
 {
     QSurfaceFormat format;
-    format.setSamples(16);
+    format.setSamples(settings->value("ViewerGraphicsWindow/msaaLevel", 8).toInt());
     setFormat(format);
 
     resetView();
@@ -74,8 +74,7 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     emit BeginModelLoading(filepath);
 
     // Load the model
-    ModelLoader m;
-    m_currentModel = m.LoadModel(filepath);
+    m_currentModel = ModelLoader::LoadModel(filepath);
     
     // Let other widgets know that a model has been loaded
     emit EndModelLoading(m_currentModel.m_isValid, filepath);
@@ -92,6 +91,11 @@ bool ViewerGraphicsWindow::unloadModel()
     emit ModelUnloaded();
 
     return true;
+}
+
+void ViewerGraphicsWindow::saveModel()
+{
+    ModelLoader::ExportModel("../Data/Models/");
 }
 
 bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
@@ -545,13 +549,21 @@ void ViewerGraphicsWindow::paintGL()
     m_program->release();
 
     // Draw a grid for the object
-    RenderGrid(viewMatrix * modelMatrix);
+    if (settings->value("ViewerGraphicsWindow/toggleGrid", true).toBool()) {
+        RenderGrid(viewMatrix * modelMatrix);
+    }
+    
 
     // Draw axes so the user understands direction
-    RenderAxes();
+    if (settings->value("ViewerGraphicsWindow/toggleAxis", true).toBool()) {
+        RenderAxes();
+    }
+    
 
     // Draw the framerate counter and size of this mesh
-    RenderText();
+    if (settings->value("ViewerGraphicsWindow/toggleStats", true).toBool()) {
+        RenderText();
+    }
 
     // Increase the frame counter by one
     ++m_frame;
@@ -922,11 +934,19 @@ void ViewerGraphicsWindow::screenshotDialog() {
         QDir().mkdir(defaultFolder);
     }
 
+    // Define formats
+    QString formats = "Portable Network Graphics (*.png);; \
+	                   Windows Bitmap (*.bmp);;\
+                       Joint Photographic Experts Group (*.jpg *.jpeg);;\
+                       Portable Pixmap (*.ppm);;\
+                       X11 Bitmap (*.xbm);;\
+                       X11 Pixmap (*.xpm)";
+
     // Have the user choose a file location
     QString filepath = QFileDialog::getSaveFileName(nullptr,
         tr("Save screenshot"),
-        defaultFolder + "capture.png",
-        tr("Images (*.bmp *.jpg *.jpeg *.png *.ppm *.xbm *.xpm)"));
+        defaultFolder + "capture",
+        formats);
 
     if (!filepath.isEmpty())
     {

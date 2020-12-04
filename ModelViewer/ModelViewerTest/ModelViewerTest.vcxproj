@@ -55,7 +55,7 @@
       </AdditionalIncludeDirectories>
     </QtMoc>
     <Link>
-      <AdditionalLibraryDirectories>$(SOLUTIONDIR)x64\Debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SOLUTIONDIR)x64\Debug;$(SOLUTIONDIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>ModelViewer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

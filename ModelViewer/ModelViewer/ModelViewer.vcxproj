@@ -48,9 +48,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(Qt_INCLUDEPATH_);$(SOLUTIONDIR)ThirdParty\assimp5.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
+    <ClCompile />
     <Lib>
       <AdditionalLibraryDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc142-mtd.lib</AdditionalDependencies>
@@ -59,6 +57,9 @@
       <Message>Copy dll files to output folder</Message>
       <Command>xcopy /s /y "$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Debug\*.dll" "$(OUTPUTPATH)"</Command>
     </PostBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\workspace\ModelViewer\ModelViewer\ThirdParty\assimp5.0.1\include;$(SOLUTIONDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -115,6 +116,8 @@
   <ItemGroup>
     <ClCompile Include="KeyBindEdit.cpp" />
     <ClCompile Include="KeySequenceParse.cpp" />
+    <ClCompile Include="LandingPage.cpp" />
+    <QtMoc Include="LandingPage.h" />
     <ClCompile Include="ModelLoader.cpp" />
     <ClCompile Include="GraphicsWindowDelegate.cpp" />
     <ClCompile Include="SettingsMenu.cpp" />

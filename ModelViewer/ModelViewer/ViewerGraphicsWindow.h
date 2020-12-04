@@ -28,6 +28,7 @@ public:
     void screenshotDialog();
     void saveDialog(QString filePath);
     void exportFrame(QString filePath);
+    void saveModel();
     bool IsModelValid();
 
     bool editCurrentShaders();
