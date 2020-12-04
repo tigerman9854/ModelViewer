@@ -48,6 +48,7 @@ private slots:
 	void defaultZoom();
 	void testKeyboard();
 	void testSettings();
+	void changeColorUniforms();
 	void testLandingPage();
 
 private:
@@ -311,6 +312,26 @@ void ModelViewerTest::openShaderFile()
 
 	bool success = m_pWindow->GetGraphicsWindow()->openShaderFile("../Data/Shaders/basic.frag");
 	QVERIFY(success);
+}
+
+void ModelViewerTest::changeColorUniforms()
+{
+	m_pWindow->show();
+	m_pWindow->GetGraphicsWindow()->colorRChanged(255);
+	m_pWindow->GetGraphicsWindow()->colorGChanged(255);
+	m_pWindow->GetGraphicsWindow()->colorBChanged(255);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->getADColor()[0] == 1.0
+		&& m_pWindow->GetGraphicsWindow()->getADColor()[1] == 1.0
+		&& m_pWindow->GetGraphicsWindow()->getADColor()[2] == 1.0);
+
+	m_pWindow->GetGraphicsWindow()->lightAmbient(0.20);
+	m_pWindow->GetGraphicsWindow()->lightDiffuse(0.40);
+	m_pWindow->GetGraphicsWindow()->lightSpecular(0.30);
+	m_pWindow->hide();
+	QVERIFY(m_pWindow->GetGraphicsWindow()->getADS()[0] > 0.18 && m_pWindow->GetGraphicsWindow()->getADS()[0] < 0.22);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->getADS()[1] > 0.38 && m_pWindow->GetGraphicsWindow()->getADS()[1] < 0.42);
+	QVERIFY(m_pWindow->GetGraphicsWindow()->getADS()[2] > 0.28 && m_pWindow->GetGraphicsWindow()->getADS()[2] < 0.32);
+
 }
 
 void ModelViewerTest::displayModel()
