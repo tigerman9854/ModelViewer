@@ -27,7 +27,7 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWidget* parent)
     : QOpenGLWidget(parent)
 {
     QSurfaceFormat format;
-    format.setSamples(settings->value("ViewerGraphicsWindow/msaaLevel", 0).toInt());
+    format.setSamples(settings->value("ViewerGraphicsWindow/msaaLevel", 8).toInt());
     setFormat(format);
 
     resetView();

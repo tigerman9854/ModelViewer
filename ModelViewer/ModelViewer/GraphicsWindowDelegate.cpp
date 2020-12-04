@@ -75,6 +75,11 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::ModelUnloaded, this, &GraphicsWindowDelegate::OnModelUnloaded);
 }
 
+LandingPage* GraphicsWindowDelegate::GetLandingWidget()
+{
+	return m_pLandingWidget;
+}
+
 void GraphicsWindowDelegate::SetStatus(Status s)
 {
 	if (m_status == s) {

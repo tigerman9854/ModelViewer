@@ -330,6 +330,7 @@ void SettingsMenu::SetupViewSettings()
 
 	// Load button states
 	QComboBox* msaa = new QComboBox();// Fix the text color
+	msaa->setObjectName("msaa");
 	msaa->insertItem(0, "Off",0);
 	msaa->insertItem(1, "2x MSAA",2);
 	msaa->insertItem(2, "4x MSAA",4);
@@ -344,7 +345,7 @@ void SettingsMenu::SetupViewSettings()
 	QPushButton* toggleStats = new QPushButton((settings->value("ViewerGraphicsWindow/toggleStats", true).toBool()) ? "On" : "Off");
 	toggleStats->setObjectName("toggleStats");
 	QPushButton* reset = new QPushButton(QString::fromLatin1("Reset All"));
-	reset->setObjectName("resetKeybinds");
+	reset->setObjectName("resetViewSettings");
 
 	layout->addRow(tr("Anti Aliasing"), msaa);
 	layout->addRow(tr("Refrence Grid"), toggleGrid);

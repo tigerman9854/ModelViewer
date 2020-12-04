@@ -21,16 +21,13 @@ LandingPage::LandingPage(ViewerGraphicsWindow* gWindow, QWidget* parent)
 	// Do a first-time setup of the menu
 	setupPreviousFiles(true);
 	
-	// Set up the layout format
+	// Setup the layout format
 	m_pMainLayout->addWidget(m_pWelcomeText, 1, 0, 1, 3);
 	m_pMainLayout->addWidget(pLoadButton, 3, 1, 1, 1);
 	m_pMainLayout->addItem(spacer, 4,1,1,5);
 	m_pMainLayout->addLayout(previousFilesLayout,6,0,1,2);
 
 	// Connect up all the buttons
-	connect(loadFile1, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(settings->value("LandingPage/file1", "").toString()); });
-	connect(loadFile2, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(settings->value("LandingPage/file2", "").toString()); });
-	connect(loadFile3, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(settings->value("LandingPage/file3", "").toString()); });
 	connect(pLoadButton, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(); });
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::ModelUnloaded, this, [=] {setupPreviousFiles();});
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::EndModelLoading, this, [=] (bool ok, QString filepath) {
@@ -57,10 +54,13 @@ void LandingPage::setupPreviousFiles(bool first) {
 	QString file3 = settings->value("LandingPage/file3", "").toString();
 
 	QPushButton* loadFile1 = new QPushButton("Load Model");
+	loadFile1->setObjectName("loadFile1");
 	loadFile1->setMaximumWidth(80);
 	QPushButton* loadFile2 = new QPushButton("Load Model");
+	loadFile2->setObjectName("loadFile2");
 	loadFile2->setMaximumWidth(80);
 	QPushButton* loadFile3 = new QPushButton("Load Model");
+	loadFile3->setObjectName("loadFile3");
 	loadFile3->setMaximumWidth(80);
 
 	// Remove old entries if it's not the first time
@@ -89,7 +89,7 @@ void LandingPage::setupPreviousFiles(bool first) {
 	if (!file3.isEmpty()) {
 		previousFilesLayout->addRow(QFileInfo(file3).fileName(), loadFile3);
 	}
-	
+
 	connect(loadFile1, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(settings->value("LandingPage/file1", "").toString()); });
 	connect(loadFile2, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(settings->value("LandingPage/file2", "").toString()); });
 	connect(loadFile3, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(settings->value("LandingPage/file3", "").toString()); });

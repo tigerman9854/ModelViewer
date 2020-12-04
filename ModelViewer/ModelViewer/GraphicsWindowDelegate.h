@@ -1,11 +1,11 @@
 #pragma once
-#include "LandingPage.h"
 #include <QWidget>
 #include <QLayout>
 #include <QLabel>
 
 // Forward Declares
 class ViewerGraphicsWindow;
+class LandingPage;
 
 
 class GraphicsWindowDelegate : public QWidget
@@ -21,6 +21,8 @@ public:
 		k_error,
 		k_loading,
 	};
+
+	LandingPage* GetLandingWidget();
 
 	void SetStatus(Status s);
 	Status GetStatus();
