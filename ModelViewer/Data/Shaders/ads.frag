@@ -41,4 +41,5 @@ void main() {
 
 	vec4 specular = uKs * s * uSpecularColor;
 
+	gl_FragColor = vec4( ambient.rgb + diffuse.rgb + specular.rgb, 1. );
 }
