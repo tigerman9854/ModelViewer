@@ -1,5 +1,6 @@
 #include "GraphicsWindowDelegate.h"
 #include "ViewerGraphicsWindow.h"
+#include "LandingPage.h"
 
 #include <QGridLayout>
 #include <QLabel>
@@ -29,19 +30,8 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	};
 
 	// Empty screen (i.e. before any model has been loaded)
-	m_pEmptyWidget = new QWidget(); 
-	QGridLayout* pEmptyLayout = new QGridLayout(m_pEmptyWidget);
-	pEmptyLayout->setAlignment(Qt::AlignCenter);
-	m_pEmptyText = new QLabel("Welcome to Model Viewer!");
-	QPushButton* pLoadButton = new QPushButton("Load Model", m_pEmptyWidget);
-	connect(pLoadButton, &QPushButton::pressed, this, [=] {m_pGraphicsWindow->loadModel(); });
-
-	pEmptyLayout->setRowStretch(0, 5);
-	pEmptyLayout->addWidget(m_pEmptyText, 1, 0, 1, 3);
-	pEmptyLayout->setRowStretch(2, 1);
-	pEmptyLayout->addWidget(pLoadButton, 3, 1, 1, 1);
-	pEmptyLayout->setRowStretch(4, 5);
-	m_pEmptyWidget->setLayout(pEmptyLayout);
+	m_pLandingWidget = new LandingPage(m_pGraphicsWindow, this);
+	
 
 	// Error screen, shown when there is an issue loading
 	m_pErrorWidget = new QWidget();
@@ -60,7 +50,7 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	m_pLoadingWidget->setLayout(pLoadingLayout);
 
 	// Setup the style for placeholder widgets
-	styleWidget(m_pEmptyWidget);
+	styleWidget(m_pLandingWidget);
 	styleWidget(m_pErrorWidget);
 	styleWidget(m_pLoadingWidget);
 
@@ -83,6 +73,11 @@ GraphicsWindowDelegate::GraphicsWindowDelegate(ViewerGraphicsWindow* graphicsWin
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::Error, this, &GraphicsWindowDelegate::OnError);
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::ClearError, this, &GraphicsWindowDelegate::OnClearError);
 	connect(m_pGraphicsWindow, &ViewerGraphicsWindow::ModelUnloaded, this, &GraphicsWindowDelegate::OnModelUnloaded);
+}
+
+LandingPage* GraphicsWindowDelegate::GetLandingWidget()
+{
+	return m_pLandingWidget;
 }
 
 void GraphicsWindowDelegate::SetStatus(Status s)
@@ -114,7 +109,7 @@ void GraphicsWindowDelegate::DoOnStatusChanged() {
 
 	switch (m_status) {
 	case Status::k_empty:
-		swapCurrentWidget(m_pEmptyWidget);
+		swapCurrentWidget(m_pLandingWidget);
 		break;
 	case Status::k_model:
 		swapCurrentWidget(m_pModelWidget);

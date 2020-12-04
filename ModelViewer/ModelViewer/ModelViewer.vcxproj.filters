@@ -46,6 +46,9 @@
     <ClCompile Include="UniformController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LandingPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="ModelViewer.h">
@@ -64,6 +67,9 @@
       <Filter>Header Files\lib</Filter>
     </QtMoc>
     <QtMoc Include="UniformController.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="LandingPage.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

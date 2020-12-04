@@ -81,14 +81,15 @@ ModelViewer::ModelViewer(QWidget *parent)
     //Screenshot
     pFileMenu->addAction("Screenshot", [=] {  m_pGraphicsWindow->screenshotDialog(); }, QKeySequence(Qt::CTRL + Qt::Key_P));
 
+    // setings menu
+    pFileMenu->addAction("Settings", [=] { m_pSettingsMenu->show(); }, QKeySequence(Qt::Key_F1));
+
     // Close
-    pFileMenu->addAction("Close", [=] { m_pGraphicsWindow->unloadModel(); }, QKeySequence(Qt::CTRL + Qt::Key_W));
+    pFileMenu->addAction("Close Model", [=] { m_pGraphicsWindow->unloadModel(); }, QKeySequence(Qt::CTRL + Qt::Key_W));
 
     // quit button
     pFileMenu->addAction("Quit", [=] { GetQuit();}, QKeySequence(Qt::CTRL + Qt::Key_Q));
-
-    // setings menu
-    pFileMenu->addAction("Settings", [=] { m_pSettingsMenu->show(); });
+    
 
     // -> Edit menu
     QMenu* pEditMenu = new FocusMenu(m_pGraphicsWindow, "Edit", this);
@@ -111,6 +112,9 @@ ModelViewer::ModelViewer(QWidget *parent)
     menuBar()->addMenu(pHelpMenu);
     pHelpMenu->setObjectName("HelpMenu");
     pHelpMenu->addAction("Help", [=] {GetHelp(); }, QKeySequence(Qt::CTRL + Qt::Key_F1));
+
+    this->setStyleSheet("background-color: rgb(28,30,37); color: rgb(186,186,186); border-color: blue; selection-color: rgb(100,100,100);");
+    m_pGraphicsWindowDelegate->setStyleSheet("QPushButton { border-style: outset; border-width: 2px; border-radius: 10px; border-color: rgb(100,100,100); padding: 3px;} QPushButton:pressed {background-color: rgb(128,130,137); border-style: inset;}");
 }
 
 

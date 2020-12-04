@@ -27,7 +27,7 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWidget* parent)
     : QOpenGLWidget(parent)
 {
     QSurfaceFormat format;
-    format.setSamples(16);
+    format.setSamples(settings->value("ViewerGraphicsWindow/msaaLevel", 8).toInt());
     setFormat(format);
 
     resetView();
@@ -528,13 +528,21 @@ void ViewerGraphicsWindow::paintGL()
     m_program->release();
 
     // Draw a grid for the object
-    RenderGrid(viewMatrix * modelMatrix);
+    if (settings->value("ViewerGraphicsWindow/toggleGrid", true).toBool()) {
+        RenderGrid(viewMatrix * modelMatrix);
+    }
+    
 
     // Draw axes so the user understands direction
-    RenderAxes();
+    if (settings->value("ViewerGraphicsWindow/toggleAxis", true).toBool()) {
+        RenderAxes();
+    }
+    
 
     // Draw the framerate counter and size of this mesh
-    RenderText();
+    if (settings->value("ViewerGraphicsWindow/toggleStats", true).toBool()) {
+        RenderText();
+    }
 
     // Increase the frame counter by one
     ++m_frame;
