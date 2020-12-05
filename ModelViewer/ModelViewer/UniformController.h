@@ -19,6 +19,8 @@ class GraphicsWindowUniform : public QWidget
 public:
     GraphicsWindowUniform(ViewerGraphicsWindow* graphicsWindow, QWidget* parent = nullptr);
 
+    void UpdateControllerValues();
+
 private:
     void createColorController32();
     void createColorController64();

@@ -58,7 +58,7 @@
       <Command>xcopy /s /y "$(SOLUTIONDIR)ThirdParty\assimp5.0.1\bin\Debug\*.dll" "$(OUTPUTPATH)"</Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\workspace\ModelViewer\ModelViewer\ThirdParty\assimp5.0.1\include;$(SOLUTIONDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SOLUTIONDIR)ThirdParty\assimp5.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
