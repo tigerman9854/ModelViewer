@@ -1,14 +1,17 @@
-#version 130
+#version 410
 
 varying lowp vec4 col;
 
 in lowp vec3 vNs;
 in lowp vec3 vLs;
 in lowp vec3 vEs;
+in vec2 texCoord;
 
 uniform float uKa, uKd, uKs;
 uniform vec4 uSpecularColor;
 uniform float uShininess;
+uniform bool uHasTexture;
+uniform sampler2D uTexture;
 
 void main() {
 	vec3 Normal;
@@ -19,6 +22,11 @@ void main() {
 	Light = normalize(vLs);
 	Eye = normalize(vEs);
 
+	//if (uHasTexture == true)
+	//{
+		vec4 col = texture(uTexture, texCoord);
+	//}
+	
 	vec4 ambient = uKa * col;
 
 	float d = max(dot(Normal, Light), 0.);
@@ -33,5 +41,5 @@ void main() {
 
 	vec4 specular = uKs * s * uSpecularColor;
 
-   gl_FragColor = vec4( ambient.rgb + diffuse.rgb + specular.rgb, 1. );
+	gl_FragColor = vec4( ambient.rgb + diffuse.rgb + specular.rgb, 1. );
 }

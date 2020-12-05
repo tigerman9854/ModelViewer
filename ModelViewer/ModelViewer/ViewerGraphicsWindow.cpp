@@ -85,6 +85,34 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
+bool ViewerGraphicsWindow::loadTexture(QString filepath)
+{
+    // If no filepath was provided, open a file dialog for the user to choose a model
+
+    if (m_currentModel.m_isValid) 
+    {
+        for (Mesh& mesh : m_currentModel.m_meshes)
+        {
+            filepath = QFileDialog::getOpenFileName(nullptr, "Load Texture", "../Data/Models/", "");
+            if (filepath.isEmpty()) {
+                return false;
+            }
+
+            mesh.m_hasTexture = true;
+            mesh.m_texture = new QOpenGLTexture(QImage(filepath).mirrored());
+            mesh.m_texture->setMinificationFilter(QOpenGLTexture::Linear);
+            mesh.m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
+            mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::ClampToEdge);
+            mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::ClampToEdge);
+            mesh.m_texture->bind(0);
+            m_program->setUniformValue(m_uTexture, 0);
+
+            GLboolean uHasTexture = GL_TRUE;
+            m_program->setUniformValue(m_uHasTexture, uHasTexture);
+        }
+    }
+}
+
 bool ViewerGraphicsWindow::unloadModel()
 {
     m_currentModel = Model();
@@ -128,6 +156,7 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     }
 
     currentVertFile = vertfilepath;
+
     setUniformLocations();
     
     emit ClearError();
@@ -169,6 +198,7 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     }
     
     currentFragFile = fragfilepath;
+    
     setUniformLocations();
 
     emit ClearError();
@@ -252,7 +282,7 @@ void ViewerGraphicsWindow::setUniformLocations()
     m_posAttr = m_program->attributeLocation("posAttr");
     Q_ASSERT(m_posAttr != -1);
     m_colAttr = m_program->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
+    //Q_ASSERT(m_colAttr != -1);
     m_matrixUniform = m_program->uniformLocation("matrix");
     Q_ASSERT(m_matrixUniform != -1);
 
@@ -274,6 +304,9 @@ void ViewerGraphicsWindow::setUniformLocations()
     m_uVec4_1 = m_program->uniformLocation("uVec4_1");
     m_uFloat_1 = m_program->uniformLocation("uFloat_1");
     m_uInt_1 = m_program->uniformLocation("uInt_1");
+  
+    m_uTexture = m_program->uniformLocation("uTexture");
+    m_uHasTexture = m_program->uniformLocation("uHasTexture");
 }
 
 bool ViewerGraphicsWindow::reloadCurrentShaders()
@@ -433,7 +466,7 @@ void ViewerGraphicsWindow::initializeGL()
 
     // Set up the default view
     resetView();
-
+  
     lightPos = QVector3D(1., 1., -1.);
     uKa = 0.30;
     uKd = 0.40;
@@ -484,6 +517,9 @@ void ViewerGraphicsWindow::paintGL()
 
     setUniformVars();
 
+    GLboolean uHasTexture = GL_FALSE;
+    m_program->setUniformValue(m_uHasTexture, uHasTexture);
+
     glEnable(GL_DEPTH_TEST);
 
     if (m_currentModel.m_isValid)
@@ -492,7 +528,18 @@ void ViewerGraphicsWindow::paintGL()
         for (Mesh& mesh : m_currentModel.m_meshes) {
             mesh.m_vertexBuffer.bind();
             mesh.m_indexBuffer.bind();
-            
+
+            if (mesh.m_hasTexture) {
+                mesh.m_texture->setMinificationFilter(QOpenGLTexture::Linear);
+                mesh.m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
+                mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::ClampToEdge);
+                mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::ClampToEdge);
+                mesh.m_texture->bind(0);
+                m_program->setUniformValue(m_uTexture, 0);
+                GLboolean uHasTexture = GL_TRUE;
+                m_program->setUniformValue(m_uHasTexture, uHasTexture);
+            }
+
             // Handle transformation for each mesh
             QMatrix4x4 modelTransformed = modelMatrix * mesh.m_transform;
             QMatrix4x4 modelViewProjectionMatrix;
