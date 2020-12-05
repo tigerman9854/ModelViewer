@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 ; NOTE: Change these two values when creating a new installer
-#define MyAppVersion "0.3"
+#define MyAppVersion "0.4"
 #define MyAppPath "C:\Users\khieb\OneDrive\Documents\School\CS561"
 
 #define MyAppName "ModelViewer"
@@ -40,8 +40,9 @@ Source: "{#MyAppPath}\ModelViewer\ModelViewer\x64\Release\*"; DestDir: "{app}\bi
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}";	IconFilename: "{#MyAppPath}\ModelViewer\images\icon.png"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}";	IconFilename: "{#MyAppPath}\ModelViewer\images\icon.png"; Tasks: desktopicon
+
 
 [Run]
 Filename: "{app}\bin\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
