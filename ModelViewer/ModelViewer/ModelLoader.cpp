@@ -206,9 +206,12 @@ Mesh ModelLoader::ProcessMesh(aiScene const* pScene, uint meshIdx)
 
 			// Load the texture to Qt
 			QImage image(texturePath);
-			newMesh.m_texture = new QOpenGLTexture(image.mirrored());
-			newMesh.m_hasTexture = true;
-			break;
+			if (!image.isNull())
+			{
+				newMesh.m_texture = new QOpenGLTexture(image.mirrored());
+				newMesh.m_hasTexture = true;
+				break;
+			}
 		}
 	}
 
