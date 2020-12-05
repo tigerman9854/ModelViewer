@@ -40,8 +40,8 @@ Source: "{#MyAppPath}\ModelViewer\ModelViewer\x64\Release\*"; DestDir: "{app}\bi
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}";	IconFilename: "{#MyAppPath}\ModelViewer\images\icon.png"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}";	IconFilename: "{#MyAppPath}\ModelViewer\images\icon.png"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}";	IconFilename: "{#MyAppPath}\ModelViewer\images\icon.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}";	IconFilename: "{#MyAppPath}\ModelViewer\images\icon.ico"; Tasks: desktopicon
 
 
 [Run]
