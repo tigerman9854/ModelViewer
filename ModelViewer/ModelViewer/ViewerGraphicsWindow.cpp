@@ -90,15 +90,16 @@ void ViewerGraphicsWindow::loadTexture(QString filepath)
     // If no filepath was provided, open a file dialog for the user to choose a model
     if (m_currentModel.m_isValid) 
     {
+        filepath = QFileDialog::getOpenFileName(nullptr, "Load Texture", "../Data/Models/", "");
+        if (filepath.isEmpty()) {
+            return;
+        }
+        QOpenGLTexture* texture = new QOpenGLTexture(QImage(filepath).mirrored());
+
         for (Mesh& mesh : m_currentModel.m_meshes)
         {
-            filepath = QFileDialog::getOpenFileName(nullptr, "Load Texture", "../Data/Models/", "");
-            if (filepath.isEmpty()) {
-                return;
-            }
-
             mesh.m_hasTexture = true;
-            mesh.m_texture = new QOpenGLTexture(QImage(filepath).mirrored());
+            mesh.m_texture = texture;
         }
     }
 }
