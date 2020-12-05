@@ -42,6 +42,9 @@ Source: "{#MyAppPath}\ModelViewer\ModelViewer\x64\Release\*"; DestDir: "{app}\bi
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}";	IconFilename: "{MyAppPatch}\C:\Users\Zunyue\Desktop\cs561_project\ModelViewer\images\icon.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}";	IconFilename: "{MyAppPatch}\C:\Users\Zunyue\Desktop\cs561_project\ModelViewer\images\icon.ico"; Tasks: desktopicon
+
 
 [Run]
 Filename: "{app}\bin\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
