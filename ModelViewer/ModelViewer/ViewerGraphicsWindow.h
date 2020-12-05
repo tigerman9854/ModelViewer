@@ -22,7 +22,7 @@ public:
     bool addPrimitive(QString filepath);
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
-    bool loadTexture(QString filepath = QString());
+    void loadTexture(QString filepath = QString());
     void setUniformLocations();
     void setUniformVars();
 

@@ -10,7 +10,7 @@ in vec2 texCoord;
 uniform float uKa, uKd, uKs;
 uniform vec4 uSpecularColor;
 uniform float uShininess;
-uniform bool uHasTexture;
+uniform float uHasTexture;
 uniform sampler2D uTexture;
 
 void main() {
@@ -22,15 +22,12 @@ void main() {
 	Light = normalize(vLs);
 	Eye = normalize(vEs);
 
-	//if (uHasTexture == true)
-	//{
-		vec4 col = texture(uTexture, texCoord);
-	//}
+	vec4 adsColor = (texture(uTexture, texCoord) * uHasTexture) + col * (1.0 - uHasTexture);
 	
-	vec4 ambient = uKa * col;
+	vec4 ambient = uKa * adsColor;
 
 	float d = max(dot(Normal, Light), 0.);
-	vec4 diffuse = uKd * d * col;
+	vec4 diffuse = uKd * d * adsColor;
 
 	float s = 0.;
 	if( dot(Normal,Light) > 0. ) // only do specular if the light can see the point

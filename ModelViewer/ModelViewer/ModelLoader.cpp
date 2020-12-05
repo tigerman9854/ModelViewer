@@ -10,11 +10,13 @@
 #include <QImage>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QDir>
 
 namespace {
 	// Static importer and scene
 	Assimp::Importer* pImporter = nullptr;
 	const aiScene* pCurrentScene = nullptr;
+	QString lastImportedPath;
 }
 
 
@@ -35,6 +37,9 @@ Model ModelLoader::LoadModel(const QString& file)
 	if (!pCurrentScene) {
 		return Model();
 	}
+
+	// Store the path for later use
+	lastImportedPath = file;
 
 	// We're done. Everything will be cleaned up by the importer destructor
 	return ProcessModel(pCurrentScene);
@@ -189,12 +194,24 @@ Mesh ModelLoader::ProcessMesh(aiScene const* pScene, uint meshIdx)
 			aiString path;
 			pMaterial->GetTexture(it, i, &path);
 
-			// Load the texture to Qt
+			// Use QFileInfo to strip the just the file name
 			QString qPath(path.C_Str());
-			QImage image(qPath);
-			newMesh.m_texture = new QOpenGLTexture(image);
-			newMesh.m_hasTexture = true;
-			break;
+			QFileInfo fi(qPath);
+			QString textureFileName = fi.fileName();
+
+			// Search for this file in the current dir
+			fi = QFileInfo(lastImportedPath);
+			QString folderPath = fi.dir().absolutePath();
+			QString texturePath = folderPath + "/" + textureFileName;
+
+			// Load the texture to Qt
+			QImage image(texturePath);
+			if (!image.isNull())
+			{
+				newMesh.m_texture = new QOpenGLTexture(image.mirrored());
+				newMesh.m_hasTexture = true;
+				break;
+			}
 		}
 	}
 
