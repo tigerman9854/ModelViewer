@@ -89,10 +89,11 @@ struct Model {
 class ModelLoader
 {
 public:
-	Model LoadModel(const QString& file);
+	static Model LoadModel(const QString& file);
+	static bool ExportModel(const QString& path);
 
 private:
-	Mesh ProcessMesh(aiScene const* pObject, uint meshIdx);
-	void TraverseNodeTree(aiNode const* pNode, aiScene const* pObject, Model& model, QMatrix4x4 transform);
-	Model ProcessModel(aiScene const* pScene);
+	static Mesh ProcessMesh(aiScene const* pObject, uint meshIdx);
+	static void TraverseNodeTree(aiNode const* pNode, aiScene const* pObject, Model& model, QMatrix4x4 transform);
+	static Model ProcessModel(aiScene const* pScene);
 };

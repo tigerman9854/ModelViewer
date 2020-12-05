@@ -25,8 +25,7 @@ private:
 	enum SETTINGSWIDGET {
 		mouse,
 		keybind,
-		shader,
-		model
+		view,
 	};
 
 	ViewerGraphicsWindow* m_pGraphicsWindow = nullptr;
@@ -45,13 +44,9 @@ private:
 	QWidget* m_pKeybindSettings = nullptr;
 	QString m_KebindTitle = QString::fromLatin1("Keybindings");
 
-	void SetupShaderSettings();
-	QWidget* m_pShaderSettings = nullptr;
-	QString m_ShaderTitle = QString::fromLatin1("Shader");
-
-	void SetupModelSettings();
-	QWidget* m_pModelSettings = nullptr;
-	QString m_ModelTitle = QString::fromLatin1("Model");
+	void SetupViewSettings();
+	QWidget* m_pViewSettings = nullptr;
+	QString m_ViewTitle = QString::fromLatin1("View");
 };
 
 
@@ -79,4 +74,9 @@ ViewerGraphicsWindow/
 	fieldOfView | Float
 	nearPlane | Float
 	farPlane | Float
+
+	gridToggle | Bool
+	toggleAxis | Bool
+	toggleStats | Bool
+	msaaLevel | Int
 */

@@ -23,15 +23,29 @@ public:
     bool loadVertexShader(QString vertfilepath = QString());
     bool loadFragmentShader(QString fragfilepath = QString());
     bool loadTexture(QString filepath = QString());
+    void setUniformLocations();
+    void setUniformVars();
 
     void screenshotDialog();
     void saveDialog(QString filePath);
     void exportFrame(QString filePath);
+    void saveModel();
     bool IsModelValid();
 
     bool editCurrentShaders();
     bool reloadCurrentShaders();
     bool openShaderFile(QString filepath = QString());
+
+    QVector3D getLightLocation();
+    void setLightLocation(float x, float y, float z);
+    QVector3D getADS();
+    void setADS(float a, float d, float s);
+    QVector4D getADColor();
+    void setADColor(float r, float g, float b);
+    QVector4D getSpecularColor();
+    void setSpecularColor(float r, float g, float b);
+    float getShininess();
+    void setShininess(float new_shininess);
 
     bool GetLeftMousePressed();
     bool GetRightMousePressed();
@@ -66,6 +80,8 @@ public slots:
     void colorRChanged64(double val);
     void colorGChanged64(double val);
     void colorBChanged64(double val);
+    void colorRainbowChanged(int val);
+
     ////settings
     void lightingSwitch(bool val);
     void smoothingSwitch(bool val);
@@ -130,6 +146,26 @@ private:
     //GLint m_uADColor = 0;
     GLint m_uSpecularColor = 0;
     GLint m_uShininess = 0;
+
+    GLint m_uMat4_1;
+    GLint m_uVec3_1;
+    GLint m_uVec4_1;
+    GLint m_uFloat_1;
+    GLint m_uInt_1;
+
+    QVector3D lightPos;
+    QVector4D ADColor;
+    QVector4D specularColor;
+    float uKa;
+    float uKd;
+    float uKs;
+    float shininess = 1.0;
+
+    QMatrix4x4 uMat4_1;
+    QVector3D uVec3_1;
+    QVector4D uVec4_1;
+    float uFloat_1;
+    int uInt_1;
 
     GLint m_flatShaderPosAttr = 0;
     GLint m_flatShaderColAttr = 0;

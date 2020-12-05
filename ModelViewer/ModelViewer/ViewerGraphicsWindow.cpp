@@ -27,7 +27,7 @@ ViewerGraphicsWindow::ViewerGraphicsWindow(QWidget* parent)
     : QOpenGLWidget(parent)
 {
     QSurfaceFormat format;
-    format.setSamples(16);
+    format.setSamples(settings->value("ViewerGraphicsWindow/msaaLevel", 8).toInt());
     setFormat(format);
 
     resetView();
@@ -74,8 +74,7 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     emit BeginModelLoading(filepath);
 
     // Load the model
-    ModelLoader m;
-    m_currentModel = m.LoadModel(filepath);
+    m_currentModel = ModelLoader::LoadModel(filepath);
     
     // Let other widgets know that a model has been loaded
     emit EndModelLoading(m_currentModel.m_isValid, filepath);
@@ -122,6 +121,11 @@ bool ViewerGraphicsWindow::unloadModel()
     return true;
 }
 
+void ViewerGraphicsWindow::saveModel()
+{
+    ModelLoader::ExportModel("../Data/Models/");
+}
+
 bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
 {
     if (!initialized)
@@ -152,27 +156,8 @@ bool ViewerGraphicsWindow::loadVertexShader(QString vertfilepath)
     }
 
     currentVertFile = vertfilepath;
-    m_posAttr = m_program->attributeLocation("posAttr");
-    Q_ASSERT(m_posAttr != -1);
-    m_colAttr = m_program->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
-    m_matrixUniform = m_program->uniformLocation("matrix");
-    Q_ASSERT(m_matrixUniform != -1);
 
-    m_normAttr = m_program->attributeLocation("normAttr");
-    m_uvAttr = m_program->attributeLocation("uvAttr");
-
-    m_modelviewUniform = m_program->uniformLocation("modelview");
-    m_normalUniform = m_program->uniformLocation("normalMat");
-
-    m_lightPosUniform = m_program->uniformLocation("uLightPos");
-    m_uKa = m_program->uniformLocation("uKa");
-    m_uKd = m_program->uniformLocation("uKd");
-    m_uKs = m_program->uniformLocation("uKs");
-    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
-    m_uShininess = m_program->uniformLocation("uShininess");
-    m_uTexture = m_program->uniformLocation("uTexture");
-    m_uHasTexture = m_program->uniformLocation("uHasTexture");
+    setUniformLocations();
     
     emit ClearError();
     return true;
@@ -213,27 +198,8 @@ bool ViewerGraphicsWindow::loadFragmentShader(QString fragfilepath)
     }
     
     currentFragFile = fragfilepath;
-    m_posAttr = m_program->attributeLocation("posAttr");
-    Q_ASSERT(m_posAttr != -1);
-    m_colAttr = m_program->attributeLocation("colAttr");
-    Q_ASSERT(m_colAttr != -1);
-    m_matrixUniform = m_program->uniformLocation("matrix");
-    Q_ASSERT(m_matrixUniform != -1);
-
-    m_normAttr = m_program->attributeLocation("normAttr");
-    m_uvAttr = m_program->attributeLocation("uvAttr");
-
-    m_modelviewUniform = m_program->uniformLocation("modelview");
-    m_normalUniform = m_program->uniformLocation("normalMat");
-
-    m_lightPosUniform = m_program->uniformLocation("uLightPos");
-    m_uKa = m_program->uniformLocation("uKa");
-    m_uKd = m_program->uniformLocation("uKd");
-    m_uKs = m_program->uniformLocation("uKs");
-    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
-    m_uShininess = m_program->uniformLocation("uShininess");
-    m_uTexture = m_program->uniformLocation("uTexture");
-    m_uHasTexture = m_program->uniformLocation("uHasTexture");
+    
+    setUniformLocations();
 
     emit ClearError();
     return true;
@@ -259,6 +225,88 @@ bool ViewerGraphicsWindow::editCurrentShaders()
         return false;
     }
     return true;
+}
+void ViewerGraphicsWindow::setUniformVars() {
+    if (m_lightPosUniform != -1)
+    {
+        m_program->setUniformValue(m_lightPosUniform, lightPos);
+    }
+    if (m_uKa != -1)
+    {
+        m_program->setUniformValue(m_uKa, uKa);
+    }
+    if (m_uKd != -1)
+    {
+        m_program->setUniformValue(m_uKd, uKd);
+    }
+    if (m_uKs != -1)
+    {
+        m_program->setUniformValue(m_uKs, uKs);
+    }
+    if (m_uSpecularColor != -1)
+    {
+        m_program->setUniformValue(m_uSpecularColor, specularColor);
+    }
+    if (m_uShininess != -1)
+    {
+        m_program->setUniformValue(m_uShininess, shininess);
+    }
+    if (m_colAttr != -1)
+    {
+        m_program->setAttributeValue(m_colAttr, ADColor);
+    }
+    if (m_uMat4_1 != -1)
+    {
+        m_program->setUniformValue(m_uMat4_1, uMat4_1);
+    }
+    if (m_uVec3_1 != -1)
+    {
+        m_program->setUniformValue(m_uVec3_1, uVec3_1);
+    }
+    if (m_uVec4_1 != -1)
+    {
+        m_program->setUniformValue(m_uVec4_1, uVec4_1);
+    }
+    if (m_uFloat_1 != -1)
+    {
+        m_program->setUniformValue(m_uFloat_1, uFloat_1);
+    }
+    if (m_uInt_1 != -1)
+    {
+        m_program->setUniformValue(m_uInt_1, uInt_1);
+    }
+}
+
+void ViewerGraphicsWindow::setUniformLocations()
+{
+    m_posAttr = m_program->attributeLocation("posAttr");
+    Q_ASSERT(m_posAttr != -1);
+    m_colAttr = m_program->attributeLocation("colAttr");
+    //Q_ASSERT(m_colAttr != -1);
+    m_matrixUniform = m_program->uniformLocation("matrix");
+    Q_ASSERT(m_matrixUniform != -1);
+
+    m_normAttr = m_program->attributeLocation("normAttr");
+    m_uvAttr = m_program->attributeLocation("uvAttr");
+
+    m_modelviewUniform = m_program->uniformLocation("modelview");
+    m_normalUniform = m_program->uniformLocation("normalMat");
+
+    m_lightPosUniform = m_program->uniformLocation("uLightPos");
+    m_uKa = m_program->uniformLocation("uKa");
+    m_uKd = m_program->uniformLocation("uKd");
+    m_uKs = m_program->uniformLocation("uKs");
+    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
+    m_uShininess = m_program->uniformLocation("uShininess");
+
+    m_uMat4_1 = m_program->uniformLocation("uMat4_1");
+    m_uVec3_1 = m_program->uniformLocation("uVec3_1");
+    m_uVec4_1 = m_program->uniformLocation("uVec4_1");
+    m_uFloat_1 = m_program->uniformLocation("uFloat_1");
+    m_uInt_1 = m_program->uniformLocation("uInt_1");
+  
+    m_uTexture = m_program->uniformLocation("uTexture");
+    m_uHasTexture = m_program->uniformLocation("uHasTexture");
 }
 
 bool ViewerGraphicsWindow::reloadCurrentShaders()
@@ -401,12 +449,8 @@ void ViewerGraphicsWindow::initializeGL()
     m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, currentVertFile);
     m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, currentFragFile);
     m_program->link();
-    m_posAttr = m_program->attributeLocation("posAttr");
-    Q_ASSERT(m_posAttr != -1);
-    m_colAttr = m_program->attributeLocation("colAttr");
-    //Q_ASSERT(m_colAttr != -1);
-    m_matrixUniform = m_program->uniformLocation("matrix");
-    Q_ASSERT(m_matrixUniform != -1);
+
+    setUniformLocations();
     
     // Load the flat shader
     m_flatShader = new QOpenGLShaderProgram(this);
@@ -422,24 +466,20 @@ void ViewerGraphicsWindow::initializeGL()
 
     // Set up the default view
     resetView();
+  
+    lightPos = QVector3D(1., 1., -1.);
+    uKa = 0.30;
+    uKd = 0.40;
+    uKs = 0.35;
+    ADColor = QVector4D(0., 1., 0., 1.);
+    specularColor = QVector4D(1., 1., 1., 1.);
+    shininess = 1.0;
 
-    m_normAttr = m_program->attributeLocation("normAttr");
-    m_uvAttr = m_program->attributeLocation("uvAttr");
-
-    m_modelviewUniform = m_program->uniformLocation("modelview");
-    m_normalUniform = m_program->uniformLocation("normalMat");
-
-    m_lightPosUniform = m_program->uniformLocation("uLightPos");
-    m_uKa = m_program->uniformLocation("uKa");
-    m_uKd = m_program->uniformLocation("uKd");
-    m_uKs = m_program->uniformLocation("uKs");
-    //m_uADColor = m_program->uniformLocation("uADColor");
-    m_uSpecularColor = m_program->uniformLocation("uSpecularColor");
-    m_uShininess = m_program->uniformLocation("uShininess");
-    m_uTexture = m_program->uniformLocation("uTexture");
-    m_uHasTexture = m_program->uniformLocation("uHasTexture");
-    
-
+    uMat4_1 = QMatrix4x4();
+    uVec3_1 = QVector3D(0.5, 0.5, 0.);
+    uVec4_1 = QVector4D(1., 1., 1., 1.);
+    uFloat_1 = 0.;
+    uInt_1 = 0;
 
     emit Initialized();
 
@@ -475,24 +515,7 @@ void ViewerGraphicsWindow::paintGL()
 
     m_program->bind();
 
-    QVector3D lightPos = QVector3D(1., 1., -1.);
-    m_program->setUniformValue(m_lightPosUniform, lightPos);
-
-    float uKa = 0.35;
-    m_program->setUniformValue(m_uKa, uKa);
-    float uKd = 0.45;
-    m_program->setUniformValue(m_uKd, uKd);
-    float uKs = 0.15;
-    m_program->setUniformValue(m_uKs, uKs);
-
-    //QVector4D uADColor = QVector4D(1., 1., 1., 1.);
-    //m_program->setUniformValue(m_uADColor, uADColor);
-
-    QVector4D uSpecularColor = QVector4D(1., 1., 1., 1.);
-    m_program->setUniformValue(m_uSpecularColor, uSpecularColor);
-
-    GLfloat uShininess = 0.3;
-    m_program->setUniformValue(m_uShininess, uShininess);
+    setUniformVars();
 
     GLboolean uHasTexture = GL_FALSE;
     m_program->setUniformValue(m_uHasTexture, uHasTexture);
@@ -573,13 +596,21 @@ void ViewerGraphicsWindow::paintGL()
     m_program->release();
 
     // Draw a grid for the object
-    RenderGrid(viewMatrix * modelMatrix);
+    if (settings->value("ViewerGraphicsWindow/toggleGrid", true).toBool()) {
+        RenderGrid(viewMatrix * modelMatrix);
+    }
+    
 
     // Draw axes so the user understands direction
-    RenderAxes();
+    if (settings->value("ViewerGraphicsWindow/toggleAxis", true).toBool()) {
+        RenderAxes();
+    }
+    
 
     // Draw the framerate counter and size of this mesh
-    RenderText();
+    if (settings->value("ViewerGraphicsWindow/toggleStats", true).toBool()) {
+        RenderText();
+    }
 
     // Increase the frame counter by one
     ++m_frame;
@@ -845,17 +876,57 @@ bool ViewerGraphicsWindow::addPrimitive(QString primitiveName)
 
 void ViewerGraphicsWindow::colorRChanged(int val)
 {
-    //TO DO
+    double double_val = double(val) / 255.0;
+    setADColor(double_val, ADColor[1], ADColor[2]);
+    //double double_val = (double(val) -127.0) / 255.0;
+    //setLightLocation(double_val, lightPos[1], lightPos[2]);
 }
 
 void ViewerGraphicsWindow::colorGChanged(int val)
 {
-    //TO DO
+    double double_val = double(val) / 255.0;
+    setADColor(ADColor[0], double_val, ADColor[2]);
+    //double double_val = (double(val) - 127.0) / 255.0;
+    //setLightLocation(lightPos[0], double_val, lightPos[2]);
 }
 void ViewerGraphicsWindow::colorBChanged(int val)
 {
-    //TO DO
+    double double_val = double(val) / 255.0;
+    setADColor(ADColor[0], ADColor[1], double_val);
+    //double double_val = (double(val) - 127.0) / 255.0;
+    //setLightLocation(lightPos[0], lightPos[1], double_val);
 }
+
+void ViewerGraphicsWindow::colorRainbowChanged(int val)
+{
+    float color = float(val)/100.0;
+    float temp = 1.0/6.0;
+    if (color < temp)
+    {
+        setADColor(1.0, 0.0 + (color*6.0), 0.0);
+    }
+    else if (color < temp * 2.0)
+    {
+        setADColor(1 - ((color-temp) * 6.0), 1.0, 0.0);
+    }
+    else if (color < temp * 3.0) 
+    {
+        setADColor(0.0, 1.0, 0.0 + ((color - (temp*2))*6.0));
+    }
+    else if (color < temp * 4.0)
+    {
+        setADColor(0.0, 1.0 - ((color - (temp * 3)) * 6.0), 1.0);
+    }
+    else if (color < temp * 5.0)
+    {
+        setADColor(0.0 + ((color - (temp * 4)) * 6.0), 0.0, 1.0);
+    }
+    else if (color < temp * 6.0)
+    {
+        setADColor(1.0, 0.0, 1.0 - ((color - (temp * 5)) * 6.0));
+    }
+}
+
 void ViewerGraphicsWindow::colorRChanged64(double val)
 {
     //TO DO
@@ -886,17 +957,17 @@ void ViewerGraphicsWindow::effectType(int val)
 
 void ViewerGraphicsWindow::lightAmbient(float val)
 {
-    m_program->setUniformValue(m_uKa, val);
+    setADS(val, uKd, uKs);
 }
 
 void ViewerGraphicsWindow::lightDiffuse(float val)
 {
-    m_program->setUniformValue(m_uKd, val);
+    setADS(uKa, val, uKs);
 }
 
 void ViewerGraphicsWindow::lightSpecular(float val)
 {
-    m_program->setUniformValue(m_uKs, val);
+    setADS(uKa, uKd, val);
 }
 
 void ViewerGraphicsWindow::screenshotDialog() {
@@ -910,11 +981,19 @@ void ViewerGraphicsWindow::screenshotDialog() {
         QDir().mkdir(defaultFolder);
     }
 
+    // Define formats
+    QString formats = "Portable Network Graphics (*.png);; \
+	                   Windows Bitmap (*.bmp);;\
+                       Joint Photographic Experts Group (*.jpg *.jpeg);;\
+                       Portable Pixmap (*.ppm);;\
+                       X11 Bitmap (*.xbm);;\
+                       X11 Pixmap (*.xpm)";
+
     // Have the user choose a file location
     QString filepath = QFileDialog::getSaveFileName(nullptr,
         tr("Save screenshot"),
-        defaultFolder + "capture.png",
-        tr("Images (*.bmp *.jpg *.jpeg *.png *.ppm *.xbm *.xpm)"));
+        defaultFolder + "capture",
+        formats);
 
     if (!filepath.isEmpty())
     {
@@ -992,4 +1071,56 @@ QMatrix4x4 ViewerGraphicsWindow::GetModelMatrix()
 bool ViewerGraphicsWindow::IsModelValid() 
 {
     return m_currentModel.m_isValid;
+}
+
+//uniform vars getters and setters
+QVector3D ViewerGraphicsWindow::getLightLocation()
+{
+    return lightPos;
+}
+
+void ViewerGraphicsWindow::setLightLocation(float x, float y, float z)
+{
+    lightPos = QVector3D(x, y, z);
+    //m_program->setUniformValue(m_lightPosUniform, lightPos);
+}
+
+QVector3D ViewerGraphicsWindow::getADS()
+{
+    QVector3D ADS = QVector3D(uKa, uKd, uKs);
+    return(ADS);
+}
+
+void ViewerGraphicsWindow::setADS(float a, float d, float s)
+{
+    uKa = a;
+    uKd = d;
+    uKs = s;
+}
+
+QVector4D ViewerGraphicsWindow::getSpecularColor()
+{
+    return specularColor;
+}
+
+void ViewerGraphicsWindow::setSpecularColor(float r, float g, float b)
+{
+    specularColor = QVector4D(r, g, b, 1.);
+}
+
+float ViewerGraphicsWindow::getShininess()
+{
+    return shininess;
+}
+void ViewerGraphicsWindow::setShininess(float new_shininess)
+{
+    shininess = new_shininess;
+}
+QVector4D ViewerGraphicsWindow::getADColor()
+{
+    return ADColor;
+}
+void ViewerGraphicsWindow::setADColor(float r, float g, float b)
+{
+    ADColor = QVector4D(r, g, b, 1.);
 }

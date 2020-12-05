@@ -7,6 +7,7 @@ Model Viewer is a Desktop 3D Model Viewing application which allows users to qui
 
 Model Viewer competes with Microsoft’s 3D Viewer and Google’s web-based model viewer. Our project is innovative because it outperforms the other applications in a few ways.  First, our application supports more filetypes since Microsoft only supports 7 and Google only supports a single proprietary filetype.  Second, our project is open source, unlike Microsoft.  Third, our application supports custom GLSL shaders written by the user so various aspects of the model, such as material qualities and texturing, can be tested before using the model elsewhere.  Fourth, our viewer is lightweight and small, striving for maximum performance with minimal CPU/GPU usage, and a small installation size.
 
+![](images/car_screenshot.PNG)
 
 
 ## Building the Project
@@ -29,15 +30,10 @@ This section is for developers.
 1. Open Visual Studio 2019
 2. Navigate to Extensions > Qt VS Tools > Qt Options.
 3. Add a Qt Version so Visual Studio knows where to look for Qt files. IMPORTANT: To allow each of us to compile without reconfiguring Qt, please name your Qt version exactly "msvc2019_64".
+
 ![](images/qt_vs_options.PNG)
 
-### 4. Google Test
-1. Again, navigate to Extensions > Manage Extensions. Search for Google Test.
-![](images/google_test.PNG)
-2. Install the extension.
-3. Restart Visual Studio.
-
-### 5. Build
+### 4. Build
 1. Clone the repository.
 2. Open "ModelViewer/ModelViewer/ModelViewer.sln" using Visual Studio 2019.
 3. Press F5 to build and run.

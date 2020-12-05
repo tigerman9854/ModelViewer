@@ -44,6 +44,8 @@ GraphicsWindowUniform::GraphicsWindowUniform(ViewerGraphicsWindow* graphicsWindo
     setWindowTitle(tr("Uniform"));
 }
 
+
+
 void GraphicsWindowUniform::createColorController32() {
     colorGroup32 = new QGroupBox("Color");
 
@@ -87,6 +89,9 @@ void GraphicsWindowUniform::createColorController32() {
         m_pGraphicsWindow, &ViewerGraphicsWindow::colorGChanged);
     connect(colorBSlider, &QSlider::valueChanged, 
         m_pGraphicsWindow, &ViewerGraphicsWindow::colorBChanged);
+
+    connect(colorDial, &QDial::valueChanged,
+        m_pGraphicsWindow, &ViewerGraphicsWindow::colorRainbowChanged);
 
     //set the layout
     QGridLayout* colorLayout = new QGridLayout;
