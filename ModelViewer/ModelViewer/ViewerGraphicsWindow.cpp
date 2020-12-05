@@ -85,30 +85,20 @@ bool ViewerGraphicsWindow::loadModel(QString filepath) {
     return m_currentModel.m_isValid;
 }
 
-bool ViewerGraphicsWindow::loadTexture(QString filepath)
+void ViewerGraphicsWindow::loadTexture(QString filepath)
 {
     // If no filepath was provided, open a file dialog for the user to choose a model
-
     if (m_currentModel.m_isValid) 
     {
         for (Mesh& mesh : m_currentModel.m_meshes)
         {
             filepath = QFileDialog::getOpenFileName(nullptr, "Load Texture", "../Data/Models/", "");
             if (filepath.isEmpty()) {
-                return false;
+                return;
             }
 
             mesh.m_hasTexture = true;
             mesh.m_texture = new QOpenGLTexture(QImage(filepath).mirrored());
-            mesh.m_texture->setMinificationFilter(QOpenGLTexture::Linear);
-            mesh.m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
-            mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::ClampToEdge);
-            mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::ClampToEdge);
-            mesh.m_texture->bind(0);
-            m_program->setUniformValue(m_uTexture, 0);
-
-            GLboolean uHasTexture = GL_TRUE;
-            m_program->setUniformValue(m_uHasTexture, uHasTexture);
         }
     }
 }
@@ -274,6 +264,10 @@ void ViewerGraphicsWindow::setUniformVars() {
     if (m_uInt_1 != -1)
     {
         m_program->setUniformValue(m_uInt_1, uInt_1);
+    }
+    if (m_uHasTexture != -1) 
+    {
+        m_program->setUniformValue(m_uHasTexture, 0.f);
     }
 }
 
@@ -517,9 +511,6 @@ void ViewerGraphicsWindow::paintGL()
 
     setUniformVars();
 
-    GLboolean uHasTexture = GL_FALSE;
-    m_program->setUniformValue(m_uHasTexture, uHasTexture);
-
     glEnable(GL_DEPTH_TEST);
 
     if (m_currentModel.m_isValid)
@@ -536,8 +527,7 @@ void ViewerGraphicsWindow::paintGL()
                 mesh.m_texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::ClampToEdge);
                 mesh.m_texture->bind(0);
                 m_program->setUniformValue(m_uTexture, 0);
-                GLboolean uHasTexture = GL_TRUE;
-                m_program->setUniformValue(m_uHasTexture, uHasTexture);
+                m_program->setUniformValue(m_uHasTexture, 1.f);
             }
 
             // Handle transformation for each mesh
