@@ -4,6 +4,7 @@
 
 #include <QGridLayout>
 #include <QLabel>
+#include <QSignalBlocker>
 
 GraphicsWindowUniform::GraphicsWindowUniform(ViewerGraphicsWindow* graphicsWindow, QWidget* parent)
     : m_pGraphicsWindow(graphicsWindow), QWidget(parent)
@@ -42,9 +43,61 @@ GraphicsWindowUniform::GraphicsWindowUniform(ViewerGraphicsWindow* graphicsWindo
     setLayout(layout);
 
     setWindowTitle(tr("Uniform"));
+
+    // Take the default values from the Viewer Graphics Window
+    connect(m_pGraphicsWindow, &ViewerGraphicsWindow::Initialized, this, &GraphicsWindowUniform::UpdateControllerValues);
 }
 
+void GraphicsWindowUniform::UpdateControllerValues()
+{
+    // Update the values to match the values in the Viewer Graphics Window
+    const QVector3D& ads = m_pGraphicsWindow->getADS();
+    const QVector4D& adColor = m_pGraphicsWindow->getADColor();
 
+    // Block signals coming from the sliders so they do not create an infinite loop of updating
+    const QSignalBlocker blocker1(colorRSlider);
+    const QSignalBlocker blocker2(colorGSlider);
+    const QSignalBlocker blocker3(colorBSlider);
+    const QSignalBlocker blocker4(ambientSpinBox);
+    const QSignalBlocker blocker5(diffuseSpinBox);
+    const QSignalBlocker blocker6(specularSpinBox);
+    const QSignalBlocker blocker7(colorDial);
+
+    // Update the sliders
+    colorRSlider->setValue(adColor.x() * 255);
+    colorGSlider->setValue(adColor.y() * 255);
+    colorBSlider->setValue(adColor.z() * 255);
+
+    // Update spinboxes
+    ambientSpinBox->setValue(ads.x());
+    diffuseSpinBox->setValue(ads.y());
+    specularSpinBox->setValue(ads.z());
+
+    // Update dial using the inverse of colorRainbowChanged()
+    // Convert adColor so the largest component it 1
+    const float largestComponent = std::max({ adColor.x(), adColor.y(), adColor.z(), 0.0001f });
+    const QVector4D normalizedColor = QVector4D(adColor.toVector3D() / largestComponent, 1.f);
+
+    float temp = 1.f / 6.f;
+    if (normalizedColor.x() == 1.f && normalizedColor.y() > 0) {
+        colorDial->setValue(normalizedColor.y() / 6.f * 100.f);
+    }
+    else if (normalizedColor.y() == 1.f && normalizedColor.x() > 0) {
+        colorDial->setValue((((1.f - normalizedColor.x()) / 6.f) + temp) * 100.f);
+    }
+    else if (normalizedColor.y() == 1.f && normalizedColor.z() > 0) {
+        colorDial->setValue(((normalizedColor.z() / 6.f) + (temp * 2)) * 100.f);
+    }
+    else if (normalizedColor.z() == 1.f && normalizedColor.y() > 0) {
+        colorDial->setValue((((1.f - normalizedColor.y()) / 6.f) + (temp * 3)) * 100.f);
+    }
+    else if (normalizedColor.z() == 1.f && normalizedColor.x() > 0) {
+        colorDial->setValue(((normalizedColor.x() / 6.f) + (temp * 4)) * 100.f);
+    }
+    else if (normalizedColor.x() == 1.f && normalizedColor.z() > 0) {
+        colorDial->setValue((((1.f - normalizedColor.z()) / 6.f) + (temp * 5)) * 100.f);
+    }
+}
 
 void GraphicsWindowUniform::createColorController32() {
     colorGroup32 = new QGroupBox("Color");
@@ -79,6 +132,7 @@ void GraphicsWindowUniform::createColorController32() {
 
     // not finish
     colorDial = new QDial;
+    colorDial->setWrapping(true);
     colorDial->setFocusPolicy(Qt::StrongFocus);
 
     //Singal
@@ -92,6 +146,15 @@ void GraphicsWindowUniform::createColorController32() {
 
     connect(colorDial, &QDial::valueChanged,
         m_pGraphicsWindow, &ViewerGraphicsWindow::colorRainbowChanged);
+
+    connect(colorRSlider, &QSlider::valueChanged,
+        this, &GraphicsWindowUniform::UpdateControllerValues);
+    connect(colorGSlider, &QSlider::valueChanged,
+        this, &GraphicsWindowUniform::UpdateControllerValues);
+    connect(colorBSlider, &QSlider::valueChanged,
+        this, &GraphicsWindowUniform::UpdateControllerValues);
+    connect(colorDial, &QDial::valueChanged,
+        this, &GraphicsWindowUniform::UpdateControllerValues);
 
     //set the layout
     QGridLayout* colorLayout = new QGridLayout;
